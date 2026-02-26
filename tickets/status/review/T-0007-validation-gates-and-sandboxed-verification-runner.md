@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0007
-- Status: ready
+- Status: review
 - Priority: P2
 - Type: feature
 - Area: core
@@ -52,18 +52,45 @@ Add a validation gate that runs tests/smoke checks in an isolated environment be
 - F-20260226-001
 
 ## Acceptance Criteria
-- [ ] There is a single command (documented) (for example `npm run validate`) that runs the v1 required checks (at minimum desktop build + runtime-contract smoke).
-- [ ] The command can be executed in an isolated sandbox with least-privilege defaults (document what is and isn’t supported yet).
-- [ ] Validation output is captured as an artifact directory under `tickets/meta/qa/artifacts/validate/` containing at least:
+- [x] There is a single command (documented) (for example `npm run validate`) that runs the v1 required checks (at minimum desktop build + runtime-contract smoke).
+- [x] The command can be executed in an isolated sandbox with least-privilege defaults (document what is and isn’t supported yet).
+- [x] Validation output is captured as an artifact directory under `tickets/meta/qa/artifacts/validate/` containing at least:
   - a short human-readable summary (`README.md`),
   - raw logs per step,
   - a machine-readable status summary (`summary.json`).
 
 ## Subtasks
-- [ ] Define the standard validation command(s) and required steps (v1).
-- [ ] Add a minimal sandbox execution wrapper (documented; can start as “Codex sandbox + constraints”).
-- [ ] Write artifacts to `tickets/meta/qa/artifacts/validate/` and document conventions.
+- [x] Define the standard validation command(s) and required steps (v1).
+- [x] Add a minimal sandbox execution wrapper (documented; can start as “Codex sandbox + constraints”).
+- [x] Write artifacts to `tickets/meta/qa/artifacts/validate/` and document conventions.
+
+## Evidence (Verification)
+- Validation runner implementation:
+  - Added root command surface in `package.json`:
+    - `npm run validate`
+    - `npm run validate:sandbox`
+  - Added orchestrator script: `scripts/validate.mjs`
+    - Runs required checks:
+      - desktop build (`npm run build` in `apps/desktop`)
+      - runtime contract smoke (`npm run smoke` in `apps/desktop`) with auto-managed `node scripts/runtime-stub.mjs`
+    - Writes immutable timestamped artifacts under `tickets/meta/qa/artifacts/validate/<run-id>/`:
+      - `README.md`
+      - `summary.json`
+      - `logs/*.log`
+    - Marks environment-constrained checks as `skipped` with explicit reasons (for example sandbox `EPERM` on local port binding) and exits non-zero when required checks fail/skip.
+- Documentation updates:
+  - `README.md` now documents `npm run validate` and artifact structure.
+  - `apps/desktop/README.md` now documents validation checks, artifact paths, and sandbox behavior.
+- Command evidence:
+  - `npm run validate` in sandbox: artifact `tickets/meta/qa/artifacts/validate/2026-02-26T19-56-05-423Z` (expected non-zero due `runtime-contract-smoke` skip with `EPERM`).
+  - `npm run validate` with escalated permissions: artifact `tickets/meta/qa/artifacts/validate/2026-02-26T19-57-17-328Z` (overall `passed`).
+
+## QA Evidence Links (Required For `review/`/`done/`)
+- QA checkpoint: `tickets/meta/qa/2026-02-26-qa-checkpoint-t0007.md`
 
 ## Change Log
 - 2026-02-26: Ticket created.
 - 2026-02-26: Moved to `ready/` with v1 validate command + artifact format specified.
+- 2026-02-26: Moved to `in-progress/` and implemented root `npm run validate` orchestrator with timestamped artifact output and explicit sandbox skip handling.
+- 2026-02-26: Moved to `review/` after recording validation artifacts and documentation updates.
+- 2026-02-26: Automatic QA phase completed with no blocking findings (`tickets/meta/qa/2026-02-26-qa-checkpoint-t0007.md`).

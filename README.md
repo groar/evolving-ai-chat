@@ -23,3 +23,15 @@ Project-agnostic repository scaffold for AI-assisted delivery workflows.
 ## Desktop App Setup
 For the local desktop shell bootstrap and environment commands, see:
 - `apps/desktop/README.md`
+
+## Validation Gate (v1)
+Run the required validation checks and produce a timestamped artifact:
+
+```bash
+npm run validate
+```
+
+Artifacts are written under `tickets/meta/qa/artifacts/validate/<run-id>/` with:
+- `README.md` summary
+- `summary.json` machine-readable status
+- `logs/` raw per-step logs

@@ -1,0 +1,10 @@
+{
+  "name": "evolving-ai-chat",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "validate:sandbox": "node scripts/validate.mjs --sandbox"
+  }
+}

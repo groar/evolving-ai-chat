@@ -62,3 +62,23 @@ For desktop startup verification under the same constraint:
 ```bash
 /bin/zsh -c 'npm run tauri:dev >/tmp/t0003-tauri.log 2>&1 & pid=$!; sleep 20; kill $pid; wait $pid 2>/dev/null; tail -n 120 /tmp/t0003-tauri.log'
 ```
+
+## Validation Gate (T-0007)
+From the repository root:
+
+```bash
+npm run validate
+```
+
+What it runs (required checks):
+- `npm run build` in `apps/desktop`
+- `npm run smoke` in `apps/desktop` with an auto-managed local Node runtime stub
+
+Artifacts:
+- `tickets/meta/qa/artifacts/validate/<timestamp>/README.md`
+- `tickets/meta/qa/artifacts/validate/<timestamp>/summary.json`
+- `tickets/meta/qa/artifacts/validate/<timestamp>/logs/*.log`
+
+Sandbox support:
+- Use `npm run validate:sandbox` when you want the run labeled as sandbox mode.
+- If local port bind is denied (`EPERM`), runtime smoke is marked `skipped` with reason and the overall run exits non-zero.
