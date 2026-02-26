@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0009
-- Status: review
+- Status: done
 - Priority: P3
 - Type: spike
 - Area: core
@@ -95,3 +95,4 @@ Adopt a local-first patch workflow as v1 baseline, with optional PR mirroring wh
 - 2026-02-26: Moved to `ready/` for pickup after T-0010.
 - 2026-02-26: Moved to `in-progress/` and evaluated pi.dev-like PR loop vs local-first patch workflow.
 - 2026-02-26: Selected local-first patch workflow baseline (with optional PR mirror), recorded v1 adoption plan, and moved to `review/`.
+- 2026-02-26: Accepted as docs-only spike; moved to `done/`.

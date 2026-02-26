@@ -39,11 +39,11 @@ Prove the core promise safely: the desktop app can observe friction/feedback, pr
 
 ## Progress (Ticket Status)
 - Done:
-  - T-0002, T-0003, T-0004, T-0005, T-0006, T-0007, T-0010
+  - T-0002, T-0003, T-0004, T-0005, T-0006, T-0007, T-0009, T-0010
 - Next up:
-  - T-0009
-- Planned:
   - T-0008
+- Planned:
+  - (none)
 
 ## Notes
 Keep slices small. Ship something “boring but solid” first, then accelerate iteration once gates are trustworthy.
