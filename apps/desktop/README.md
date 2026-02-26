@@ -21,6 +21,7 @@ cargo --version
 ```bash
 npm install
 npm i -D @tauri-apps/cli
+python3 -m pip install -r runtime/requirements.txt
 ```
 
 ## Run Desktop App
@@ -29,9 +30,14 @@ npm run tauri:dev
 ```
 
 ## Smoke Checks
-Start a temporary local runtime in terminal A:
+Start the local FastAPI runtime in terminal A:
 ```bash
 npm run runtime:stub
+```
+
+If Python dependencies are not available in your environment, use the Node fallback stub for local smoke checks:
+```bash
+npm run runtime:stub:node
 ```
 
 Then run the health probe in terminal B:

@@ -24,7 +24,14 @@ const server = createServer((req, res) => {
         message = "";
       }
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ reply: `stub: ${message}` }));
+      res.end(
+        JSON.stringify({
+          reply: `stub: ${message}`,
+          model_id: "stub",
+          created_at: new Date().toISOString(),
+          cost: 0
+        })
+      );
     });
     return;
   }
@@ -36,4 +43,3 @@ const server = createServer((req, res) => {
 server.listen(port, host, () => {
   console.log(`runtime stub on http://${host}:${port}`);
 });
-

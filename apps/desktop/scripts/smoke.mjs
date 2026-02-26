@@ -7,6 +7,28 @@ const checks = [
       const response = await fetch(`${base}/health`);
       return response.ok;
     }
+  },
+  {
+    name: "Runtime chat payload contract",
+    run: async () => {
+      const response = await fetch(`${base}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "hello runtime" })
+      });
+      if (!response.ok) {
+        return false;
+      }
+
+      const payload = await response.json();
+      return (
+        payload.reply === "stub: hello runtime" &&
+        payload.model_id === "stub" &&
+        typeof payload.created_at === "string" &&
+        payload.created_at.length > 0 &&
+        typeof payload.cost === "number"
+      );
+    }
   }
 ];
 
@@ -31,4 +53,3 @@ for (const check of checks) {
 if (failed) {
   process.exit(1);
 }
-

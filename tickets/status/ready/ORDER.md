@@ -15,7 +15,6 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Why now |
 | --- | --- | --- | --- |
-| 1 | T-0004 | P1 | Connects UI to a local runtime boundary; required for end-to-end loop proof. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

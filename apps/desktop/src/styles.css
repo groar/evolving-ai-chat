@@ -160,6 +160,12 @@ body {
   white-space: pre-wrap;
 }
 
+.message-meta {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
 .message.user {
   margin-left: auto;
   background: #fff2e6;
@@ -184,6 +190,25 @@ body {
   border-radius: 10px;
   padding: 9px 11px;
   font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.retry-btn {
+  border: 1px solid #cb5627;
+  border-radius: 8px;
+  background: #fff7f3;
+  color: #8d2400;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.retry-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .composer {
@@ -244,4 +269,3 @@ body {
     min-height: 68vh;
   }
 }
-

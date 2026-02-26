@@ -4,6 +4,7 @@ type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   text: string;
+  meta?: string;
 };
 
 const runtimeUrl = "http://127.0.0.1:8787/chat";
@@ -24,6 +25,22 @@ export function App() {
   const hasMessages = messages.length > 0;
   const canSend = composer.trim().length > 0 && !isSending;
   const channelLabel = useMemo(() => "Stable (default)", []);
+  const canRetry = !isSending;
+
+  async function retryRuntime() {
+    if (!canRetry) {
+      return;
+    }
+    try {
+      const response = await fetch("http://127.0.0.1:8787/health");
+      if (!response.ok) {
+        throw new Error("Runtime unavailable");
+      }
+      setRuntimeError(null);
+    } catch {
+      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+    }
+  }
 
   async function sendMessage() {
     if (!canSend) {
@@ -52,15 +69,25 @@ export function App() {
         throw new Error(`Runtime returned ${response.status}`);
       }
 
-      const payload = (await response.json()) as { reply?: string };
+      const payload = (await response.json()) as {
+        reply?: string;
+        model_id?: string;
+        created_at?: string;
+        cost?: number;
+      };
       const reply = payload.reply?.trim() || "No reply received from runtime.";
+      const modelId = payload.model_id?.trim() || "stub";
+      const createdAt = payload.created_at?.trim() || "unknown";
+      const cost = typeof payload.cost === "number" ? payload.cost : 0;
+      const meta = `${modelId} | ${createdAt} | $${cost.toFixed(2)}`;
 
       setMessages((existing) => [
         ...existing,
         {
           id: crypto.randomUUID(),
           role: "assistant",
-          text: reply
+          text: reply,
+          meta
         }
       ]);
       setRuntimeError(null);
@@ -113,6 +140,7 @@ export function App() {
             <article key={message.id} className={`message ${message.role}`}>
               <h2>{message.role === "user" ? "You" : "Assistant"}</h2>
               <p>{message.text}</p>
+              {message.meta && <p className="message-meta">{message.meta}</p>}
             </article>
           ))}
         </div>
@@ -121,6 +149,9 @@ export function App() {
           {runtimeError && (
             <div role="alert" className="runtime-error">
               <strong>Runtime status:</strong> {runtimeError}
+              <button type="button" className="retry-btn" disabled={!canRetry} onClick={() => void retryRuntime()}>
+                Retry
+              </button>
             </div>
           )}
 
