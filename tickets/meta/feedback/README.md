@@ -33,6 +33,7 @@ Use the same severity scale as bug tickets (see `tickets/README.md`):
 
 ## PM Checkpoint Summary Convention
 - Filename: `YYYY-MM-DD-pm-checkpoint.md`
+- If multiple PM runs happen on the same date, suffix with `-N` (for example `YYYY-MM-DD-pm-checkpoint-2.md`).
 - Example: `2026-02-14-pm-checkpoint.md`
 - Minimum content:
   - Feedback themes (grouped, de-duplicated).

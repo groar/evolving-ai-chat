@@ -16,6 +16,7 @@ This file is the source of truth for ready-ticket pickup order.
 | Rank | Ticket | Priority | Why now |
 | --- | --- | --- | --- |
 | 1 | T-0007 | P2 | Establishes consistent validation artifacts so changes can ship safely. |
+| 2 | T-0006 | P2 | Adds stable/experimental channel control so change velocity doesn’t break daily use. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

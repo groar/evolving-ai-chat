@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0006
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: feature
 - Area: core
@@ -48,3 +48,4 @@ Introduce feature flags and two release channels (stable vs experimental) so the
 
 ## Change Log
 - 2026-02-26: Ticket created.
+- 2026-02-26: Moved to `ready/` (sequenced after T-0007 to keep the pickup queue non-empty).
