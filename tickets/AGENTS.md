@@ -29,15 +29,28 @@ This guide defines periodic Product Manager (PM) workflow runs in `tickets/`.
    - Use feedback IDs (`F-YYYYMMDD-NNN`) for traceability.
 2. Review recent delivery:
    - Inspect `tickets/status/done/` and `tickets/status/review/`.
-3. Sanitize and structure feedback:
+3. Decide whether to request user testing (qualitative validation):
+   - Default: do not ask every PM run. Ask when the product meaningfully changed since the last PM summary.
+   - Heuristic for "meaningfully changed":
+     - A batch shipped (typically 2-5 tickets moved to `done/` since the last PM summary), or
+     - Any high-risk user-facing change shipped (new concept/flow, onboarding change, copy that changes a promise, new gating/eligibility rule, new persisted state), or
+     - The current `review/` queue contains user-facing changes whose acceptance criteria include user perception (comprehension, trust, preference).
+   - Use the Validation Ladder and Trigger Checklist below to choose tier 1 vs tier 2 (micro-validation) vs tier 3 (external validation).
+   - If tier 2/3 is warranted, ask explicitly for one of:
+     - External testing (real or target users), or
+     - Internal testing (teammates unfamiliar with the feature).
+   - Keep asks small and decision-oriented:
+     - Micro probes: 1-3 questions max (for example "What do you think this does?", "What would you do next?", "What feels confusing?").
+     - External test plan: 5-10 minutes, 3-7 prompts, clear "what decision this informs".
+4. Sanitize and structure feedback:
    - Consolidate duplicates.
    - Remove personal/sensitive details unless explicitly required.
    - Tag by theme and severity.
-4. Convert feedback into decisions:
+5. Convert feedback into decisions:
    - Choose one action per item: update ticket, create ticket, update epic/roadmap, defer, or close.
    - Record rationale for defer/close decisions.
    - Link feedback IDs in both feedback files and ticket files when work is created.
-5. Design spec pass (when needed):
+6. Design spec pass (when needed):
    - Rule: do not start implementation when behavior is design-ambiguous or introduces a new system lever/state rule.
    - For any ticket that would otherwise force implementers to "invent" behavior, add a concrete `Design Spec` section before moving it to `ready/` (or before continuing if reopened).
    - Minimum design spec contents:
@@ -47,7 +60,7 @@ This guide defines periodic Product Manager (PM) workflow runs in `tickets/`.
      - Scope bounds (how the change stays constrained).
      - Edge cases and failure modes.
      - Validation plan (deterministic checks and/or targeted user probe).
-6. Ticket quality pass:
+7. Ticket quality pass:
    - Ensure metadata and `Updated` fields are current.
    - Ensure acceptance criteria are observable and testable.
    - For user-facing changes, include at least one user-observable acceptance criterion (not just internal correctness).
@@ -55,10 +68,10 @@ This guide defines periodic Product Manager (PM) workflow runs in `tickets/`.
    - Split oversized tickets and merge duplicates as needed.
    - Move each ticket to the correct status folder.
    - Update `tickets/status/ready/ORDER.md` with exact pickup order.
-7. Epic management:
+8. Epic management:
    - Create/update files in `tickets/meta/epics/`.
    - Keep linked tickets and epic goals aligned.
-8. Process improvement:
+9. Process improvement:
    - Propose one concrete PM process improvement per checkpoint.
    - Update docs if adopted.
 
@@ -99,9 +112,11 @@ Escalate to tier 2 or 3 when at least one is true:
 - `tickets/status/ready/ORDER.md` updated when ranking changes.
 - When a ticket is design-ambiguous, the ticket includes a `Design Spec` section before implementation starts.
 - One suggested commit message included at the end of the PM run summary/hand-off.
+- End with one explicit next-step suggestion (exactly one recommended action, with optional alternates if the user is blocked).
 - One dated summary file in `tickets/meta/feedback/` containing:
   - Feedback themes
   - Interview topics and key answers (if run)
+  - User testing ask/plan (if requested) or a one-line "skipped + why" note (if not)
   - Decisions and rationale
   - Feedback IDs touched and resulting status changes
   - Ticket/epic updates
@@ -114,7 +129,7 @@ Escalate to tier 2 or 3 when at least one is true:
 
 ## Development Workflow Hooks
 - When a ticket enters `tickets/status/ready/`, PM ensures it meets DoR and is ordered in `tickets/status/ready/ORDER.md`.
-- When a ticket is moved to `tickets/status/review/`, PM should ensure a QA validation pass happens before acceptance.
+- When a ticket is moved to `tickets/status/review/`, PM should ensure a QA validation pass happens before acceptance (by default the Implementation agent triggers an automatic QA phase immediately after moving to `review/`).
 - When QA marks a ticket as passing, PM accepts and moves it to `tickets/status/done/`.
 - When QA finds issues, PM triages by selecting one action with explicit rationale recorded:
 1. Reprioritize the original ticket.

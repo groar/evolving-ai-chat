@@ -68,7 +68,8 @@ Default agent sequencing (Single-Agent Mode vs Development Workflow Mode, and De
 2. Move to `tickets/status/ready/` when it meets Definition of Ready (DoR).
 3. Move to `tickets/status/in-progress/` when implementation starts.
 4. Move to `tickets/status/review/` when implementation is complete and evidence is recorded.
-5. Move to `tickets/status/done/` only after validation and acceptance are recorded.
+5. Run QA validation on tickets in `tickets/status/review/` (in Development Workflow mode, this is triggered automatically immediately after implementation moves the ticket to `review/`, unless explicitly waived).
+6. Move to `tickets/status/done/` only after validation and acceptance are recorded.
 - If blocked, move to `tickets/status/blocked/` and record blocker.
 - If no longer relevant, move to `tickets/status/cancelled/` with rationale.
 

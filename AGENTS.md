@@ -36,8 +36,8 @@ In this mode the user invokes exactly one role agent (PM or QA) and it determine
 In this mode work progresses through a deterministic agent sequence with clear handoffs:
 
 1. PM prepares work (DoR) and orders the queue (`ready/ORDER.md`).
-2. Implementation agent builds the next ready ticket and moves it to `review/` with evidence.
-3. QA agent validates the ticket in `review/`.
+2. Implementation agent builds the next ready ticket, moves it to `review/` with evidence, then immediately runs QA on that ticket (unless explicitly waived) by switching to the QA workflow in `tests/AGENTS.md`.
+3. QA agent validates the ticket in `review/` (either as a dedicated QA run, or as the automatic QA phase that follows implementation).
 4. PM agent accepts and moves the ticket to `done/`, or re-triages if QA found issues.
 
 If the user explicitly waives a step (for example “skip QA for this ticket”), record the waiver and rationale in the ticket.
@@ -48,7 +48,8 @@ If the user explicitly waives a step (for example “skip QA for this ticket”)
 3. Implement in small slices: design/spec -> implementation -> tests -> docs.
 4. Update ticket checklist and change log as work progresses.
 5. Move to `tickets/status/review/` when implementation/tests/docs are complete.
-6. Move to `tickets/status/done/` only after verification and acceptance are recorded (QA validation and PM acceptance in Development Workflow).
+6. Automatic QA phase (default): after moving to `review/`, switch roles to QA and validate the ticket using `tests/AGENTS.md`. Do not continue implementation during this phase; record findings and create bug tickets as needed.
+7. Move to `tickets/status/done/` only after verification and acceptance are recorded (QA validation and PM acceptance in Development Workflow).
 
 If blocked, move the ticket to `tickets/status/blocked/` and capture the blocker and next action.
 
@@ -75,6 +76,7 @@ If blocked, move the ticket to `tickets/status/blocked/` and capture the blocker
 - Implementation runs should end with one suggested commit message summarizing the change set.
 - PM runs should end with one suggested commit message summarizing PM artifacts/board updates.
 - QA runs should end with one suggested commit message summarizing QA artifacts/findings updates.
+- After any agent run (PM/Implementation/QA), end with one explicit next-step suggestion (exactly one recommended action, with optional alternates if the user is blocked).
 
 ## Non-Goals
 - External ticketing tools as source of truth.

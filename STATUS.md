@@ -1,59 +1,112 @@
-# Project Status
+# Project Status — Self-Evolving Personal Chat Software
 
-This is the living snapshot of the project: what we believe is true right now, what "good" looks like, and what we plan to do next.
-
-It starts as an initial project description before development begins. As the project progresses, it becomes the shared reference for vision, scope, constraints, and near-term direction.
+This is the living snapshot of the project: what we believe is true right now, what “good” looks like, and what we plan to do next.
 
 ## Ownership And Update Policy
-- Owner: Product Manager by default (or whoever the user designates).
+- Owner: User (project sponsor) until delegated; PM role updates this file by default.
 - Update cadence:
-  - At project start (initial fill).
+  - Initial fill (2026-02-26).
   - At each milestone/epic boundary.
   - After major discoveries, pivots, or user feedback.
-- Rule: If STATUS and tickets disagree, update STATUS or adjust tickets so they match the intended direction.
+- Rule: If `STATUS.md` and tickets disagree, update `STATUS.md` or adjust tickets so they match the intended direction.
 
 ## Current Snapshot
 ### One-Liner
-<One sentence describing the product.>
+A personal, chatbot-like AI workbench that continuously adapts its UI/UX and capabilities from your usage, using agentic coding in the background—without sacrificing safety, stability, or control.
 
 ### Target Users
-- <Who this is for.>
+- Primary: a single power user who wants a “living” assistant that improves daily and can go in surprising directions (by consent).
+- Later (optional): small teams that want a shared, evolving assistant with guardrails and clear change ownership.
 
 ### Problem / Opportunity
-- <What pain or opportunity you are addressing.>
+- Today’s AI chat products are powerful but largely static: same UX, same feature set, slow iteration, and shallow personalization.
+- LLMs + tools can observe friction, generate improvements, and ship changes quickly—if we can do it safely (tests, rollback, audit, user control).
+- The opportunity is “personal software” reborn: software that molds to one person’s workflows over time, including UI and new agent behaviors.
 
-### Success Criteria
-- <How you will know the project is successful.>
+### What “Self-Evolving” Means Here (Pragmatic)
+Self-evolving ≠ random. It means a tight loop with guardrails:
+1. Observe: capture interaction signals (explicit feedback + implicit friction).
+2. Propose: agents draft small, reviewable changes (UX tweaks, new commands, new tools, better prompts/routing).
+3. Validate: run fast checks (lint/tests/evals, smoke flows, cost/safety budgets).
+4. Release: ship behind a feature flag / channel with easy rollback and a changelog.
+
+Agentic harness options (to evaluate): pi.dev-style “coding agents that open PRs/tickets”, plus local sandboxed execution for tests and UI builds.
+
+### Success Criteria (Initial)
+- Trust: changes are explainable, attributable, and reversible (one-click rollback for end-user-facing regressions).
+- Stability: core chat never becomes unusable; “stable mode” remains predictable.
+- Momentum: meaningful improvements land weekly (initially), then daily once validation is solid.
+- Personal fit: the assistant measurably reduces time/friction for the primary user’s top 3 workflows.
+- Safety/privacy: user data stays within the intended boundary (local-first preferred), with explicit consent for any external sharing.
 
 ### Scope
 - In scope:
-  - <Bullets>
-- Out of scope (non-goals):
-  - <Bullets>
+  - Chat UI/UX that can be iterated continuously (layouts, shortcuts, “workbench” panels, saved views).
+  - Multi-model routing (e.g., ChatGPT/Claude/Gemini equivalents), with clear provenance of outputs and costs.
+  - Agent runtime that can run tools (filesystem, shell, web, project-specific tools later) with explicit permissions.
+  - A “self-improvement pipeline”: propose → validate → release, driven by tickets in this repo.
+  - Observability: interaction logs (redacted), cost tracking, failure tracking, and per-change evaluation results.
+  - Guardrails: feature flags, release channels (stable/experimental), rollback, and an auditable changelog.
+- Out of scope (non-goals) for initial phases:
+  - Multi-tenant SaaS hosting, enterprise auth/compliance.
+  - Fully autonomous self-modification with no review gates.
+  - “Collect everything” surveillance analytics.
+  - Product-specific integrations until the base loop is reliable.
 
-### Key Constraints
-- <Tech / time / policy / platform constraints.>
+### Key Constraints (Non-Negotiables)
+- User control: no high-impact changes without opt-in (UI redesigns, data migrations, tool permission expansions).
+- Auditability: every shipped change ties back to a ticket, diff, and validation evidence.
+- Rollback-first: the system must be able to revert UI and behavior changes quickly.
+- Security: treat secrets as toxic; avoid exfiltration; run code in a sandbox; least-privilege tool permissions.
+- Cost boundaries: model/tool usage should be budgeted; “expensive modes” must be explicit.
 
-### Current State
+### Initial Technology Choices (v1)
+- Desktop container: Tauri (Rust shell) for a local-first desktop app.
+- UI: React + Vite + Tailwind + shadcn/ui; state: Zustand.
+- Local API/runtime: Python `FastAPI` + `pydantic` for the agent runtime API and tool permission layer.
+- Storage: SQLite for settings/events/feature flags/runs; filesystem for artifacts.
+- Eval + test gates: Vitest (UI), Pytest (runtime), Playwright (smoke), plus a lightweight prompt/behavior eval runner.
+- Safe execution: run agent-proposed changes and tests in an isolated sandbox (e.g., Docker) before applying patches to the working copy.
+- Model adapters: thin provider wrappers per vendor (OpenAI/Anthropic/Google), with a later option to unify via LiteLLM if needed.
+
+### Current State (2026-02-26)
 - Shipped / working:
-  - <Bullets>
+  - This repository scaffold: ticketing board + PM/QA workflow docs.
+  - A process path for agentic iteration (tickets → in-progress → review → QA → done).
 - Known gaps:
-  - <Bullets>
+  - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).
+  - The MVP chat experience and the “observe → propose → validate → release” loop.
+  - An evaluation harness (tests/evals) that can gate changes automatically.
 - Known risks:
-  - <Bullets>
+  - UX churn: frequent changes can annoy more than help without stability controls.
+  - Regressions: agent-written changes can break core flows without strong tests/evals.
+  - Privacy drift: “helpful” logging can become invasive if not constrained early.
+  - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- Next milestone:
-  - <Name and definition of "done".>
+- Next milestone: M0 — “End-to-End Safe Change Loop”
+  - Definition of done:
+    - A minimal chat UI exists (even crude).
+    - The system can capture a small piece of feedback/friction.
+    - An agent can propose a small, bounded change (e.g., add a shortcut, tweak a panel, improve a command).
+    - The change runs through automated checks (at least smoke tests + basic evals).
+    - The user can accept/reject and rollback, with a short changelog entry.
 - Next tickets to prioritize:
-  - <Link to tickets in `tickets/status/ready/ORDER.md` or list ticket IDs.>
+  - Create initial backlog tickets that cover: platform choice, MVP UI, agent runtime/tooling, data boundary, and eval gating.
+  - Then order them in `tickets/status/ready/ORDER.md`.
 
-## Decisions (Optional)
+## Decisions (Draft; confirm/adjust as we start)
 Record important decisions so future agents do not re-litigate context.
 
 | Date | Decision | Rationale | Links |
 | --- | --- | --- | --- |
-| YYYY-MM-DD | <Decision> | <Why> | <Ticket/PR/Doc refs> |
+| 2026-02-26 | Single-user first, local-first bias | Simplifies privacy/trust and accelerates iteration | STATUS.md |
+| 2026-02-26 | Two release channels: stable + experimental | Enables “unexpected directions” without breaking daily use | STATUS.md |
+| 2026-02-26 | No silent high-impact changes | Keeps user agency and reduces risk of trust loss | STATUS.md |
+| 2026-02-26 | Ticket-driven self-evolution | Forces traceability: every change has scope, tests, and rollback plan | tickets/README.md |
+| 2026-02-26 | Desktop-first via Tauri | Local-first UX, tighter control over permissions and data boundaries | STATUS.md |
 
-## Open Questions (Optional)
-- <Question> (owner: <name>, by: YYYY-MM-DD)
+## Open Questions (Pick early; unblock architecture)
+- What data boundary? (strict local-only vs optional encrypted sync) (owner: user/PM, by: 2026-03-05)
+- What autonomy level is acceptable by default? (suggest-only vs auto-apply low-risk changes) (owner: user/PM, by: 2026-03-05)
+- Which agentic harness baseline? (pi.dev-like workflow vs custom) (owner: user/PM, by: 2026-03-05)

@@ -32,6 +32,8 @@ This guide defines the agentic QA workflow for project teams using this scaffold
 - For any ticket that changes user-facing text, include a copy regression sweep (typos, ambiguity, misleading implications, and term consistency).
 
 ## QA Workflow
+If QA is invoked as the automatic QA phase immediately after implementation moves a ticket to `tickets/status/review/`, treat it as a normal QA run scoped to that ticket. Do not continue implementation during this phase unless the user explicitly requests it.
+
 1. Build a scoped test plan:
    - Identify impacted mechanics, workflows, and edge cases.
 2. Execute automated tests:
@@ -59,12 +61,14 @@ This guide defines the agentic QA workflow for project teams using this scaffold
 - Ticket evidence updated for each validated item in `review/`.
 - One dated QA summary file in `tickets/meta/qa/`.
 - One suggested commit message included at the end of the QA run summary/hand-off.
+- End with one explicit next-step suggestion (exactly one recommended action, with optional alternates if the user is blocked).
 
 ## Development Workflow Integration
 1. Default trigger: validate tickets currently in `tickets/status/review/` (or the specific ticket the user/PM points to).
-2. For each validated ticket, record evidence in the ticket (tests run, manual scenarios, notable risks).
-3. If issues are found, create bug ticket(s) and move the original ticket back to `in-progress/` (or `blocked/`) with a short summary and links.
-4. If validation passes, leave the ticket in `review/` for PM acceptance.
+2. Implementation hook: in Development Workflow mode, the Implementation agent should switch to this QA workflow immediately after moving its ticket to `review/` (unless explicitly waived), so a single implementation run produces both implementation evidence and QA evidence.
+3. For each validated ticket, record evidence in the ticket (tests run, manual scenarios, notable risks).
+4. If issues are found, create bug ticket(s) and move the original ticket back to `in-progress/` (or `blocked/`) with a short summary and links.
+5. If validation passes, leave the ticket in `review/` for PM acceptance.
 
 ## Bug Ticket Quality Bar
 - One bug per ticket.
