@@ -37,6 +37,7 @@ This project uses a filesystem-based ticket board under `tickets/`.
 - QA workflow instructions live in `tests/AGENTS.md`.
 - Run QA after impactful tickets, at epic boundaries, or manually.
 - QA runs should create/update bug tickets and emit a dated summary in `tickets/meta/qa/`.
+  - Docs-only `.md` changes (no software/behavior impact) do not require a QA run; record a doc review instead.
 
 ## Ticket Naming
 - Format: `T-XXXX-short-kebab-title.md`
@@ -68,7 +69,7 @@ Default agent sequencing (Single-Agent Mode vs Development Workflow Mode, and De
 2. Move to `tickets/status/ready/` when it meets Definition of Ready (DoR).
 3. Move to `tickets/status/in-progress/` when implementation starts.
 4. Move to `tickets/status/review/` when implementation is complete and evidence is recorded.
-5. Run QA validation on tickets in `tickets/status/review/` (in Development Workflow mode, this is triggered automatically immediately after implementation moves the ticket to `review/`, unless explicitly waived).
+5. Run QA validation on tickets in `tickets/status/review/` **only when changes affect software/behavior** (in Development Workflow mode, this is triggered automatically immediately after implementation moves the ticket to `review/`, unless explicitly waived).
 6. Move to `tickets/status/done/` only after validation and acceptance are recorded.
 - If blocked, move to `tickets/status/blocked/` and record blocker.
 - If no longer relevant, move to `tickets/status/cancelled/` with rationale.
@@ -87,7 +88,7 @@ Each ticket must include:
 - Links to relevant product/technical docs in the host project.
 - A change log section with dated updates.
 - A `Design Spec` section when behavior is ambiguous or introduces new state/rule transitions.
-- QA evidence links before moving tickets from `review/` to `done/`.
+- QA evidence links before moving tickets from `review/` to `done/` only when changes affect software/behavior.
 
 For bug tickets, use `tickets/meta/templates/TEMPLATE.bug-ticket.md`.
 

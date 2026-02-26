@@ -64,7 +64,7 @@ If the ticket depends on external user-report validation, add at least one deter
 - Blocks:
 - Sequencing notes:
 
-## QA Evidence Links (Required For `review/`/`done/`)
+## QA Evidence Links (Required Only When Software/Behavior Changes)
 - QA checkpoint:
 - Screenshots/artifacts:
 
@@ -72,6 +72,7 @@ If the ticket depends on external user-report validation, add at least one deter
 - Tests run:
 - Manual checks performed:
 - Screenshots/logs/notes:
+- Doc review (for docs-only changes):
 
 ## Subtasks
 - [ ] Design updates

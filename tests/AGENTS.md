@@ -12,6 +12,7 @@ This guide defines the agentic QA workflow for project teams using this scaffold
 - At epic boundaries.
 - After shipping potentially impactful tickets.
 - Manually on user request.
+  - Docs-only `.md` changes (no software/behavior impact) do not require a QA run; record a doc review instead.
 
 ## Source of Truth
 - Product behavior docs in the host project.
@@ -37,9 +38,10 @@ If QA is invoked as the automatic QA phase immediately after implementation move
 1. Build a scoped test plan:
    - Identify impacted mechanics, workflows, and edge cases.
 2. Execute automated tests:
-   - Run relevant suites and capture failures.
+   - Run relevant suites and capture failures **only when software/behavior changed**.
+   - If the change is docs-only `.md` (no software/behavior impact), skip automated tests and do a focused doc consistency pass instead (links, terminology, copy regressions).
 3. Execute manual scenarios:
-   - Run at least one normal-flow and one edge-case scenario.
+   - Run at least one normal-flow and one edge-case scenario (software/behavior changes only).
 4. Copy regression sweep (only if user-facing text changed):
    - Check term/format consistency against product docs.
    - Check "promise control": text does not imply unavailable behaviors/events.
@@ -65,7 +67,8 @@ If QA is invoked as the automatic QA phase immediately after implementation move
 
 ## Development Workflow Integration
 1. Default trigger: validate tickets currently in `tickets/status/review/` (or the specific ticket the user/PM points to).
-2. Implementation hook: in Development Workflow mode, the Implementation agent should switch to this QA workflow immediately after moving its ticket to `review/` (unless explicitly waived), so a single implementation run produces both implementation evidence and QA evidence.
+2. Implementation hook: in Development Workflow mode, the Implementation agent should switch to this QA workflow immediately after moving its ticket to `review/` **when the ticket changes software/behavior** (unless explicitly waived), so a single implementation run produces both implementation evidence and QA evidence.
+   - For docs-only tickets, do not run QA; ensure a doc review is recorded on the ticket before PM acceptance.
 3. For each validated ticket, record evidence in the ticket (tests run, manual scenarios, notable risks).
 4. If issues are found, create bug ticket(s) and move the original ticket back to `in-progress/` (or `blocked/`) with a short summary and links.
 5. If validation passes, leave the ticket in `review/` for PM acceptance.

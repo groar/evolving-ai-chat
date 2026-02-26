@@ -36,8 +36,8 @@ In this mode the user invokes exactly one role agent (PM or QA) and it determine
 In this mode work progresses through a deterministic agent sequence with clear handoffs:
 
 1. PM prepares work (DoR) and orders the queue (`ready/ORDER.md`).
-2. Implementation agent builds the next ready ticket, moves it to `review/` with evidence, then immediately runs QA on that ticket (unless explicitly waived) by switching to the QA workflow in `tests/AGENTS.md`.
-3. QA agent validates the ticket in `review/` (either as a dedicated QA run, or as the automatic QA phase that follows implementation).
+2. Implementation agent builds the next ready ticket, moves it to `review/` with evidence, then immediately runs QA on that ticket **only when changes affect software/behavior** (unless explicitly waived) by switching to the QA workflow in `tests/AGENTS.md`.
+3. QA agent validates the ticket in `review/` (either as a dedicated QA run, or as the automatic QA phase that follows implementation) **only when changes affect software/behavior**.
 4. PM agent accepts and moves the ticket to `done/`, or re-triages if QA found issues.
 
 If the user explicitly waives a step (for example “skip QA for this ticket”), record the waiver and rationale in the ticket.
@@ -48,8 +48,9 @@ If the user explicitly waives a step (for example “skip QA for this ticket”)
 3. Implement in small slices: design/spec -> implementation -> tests -> docs.
 4. Update ticket checklist and change log as work progresses.
 5. Move to `tickets/status/review/` when implementation/tests/docs are complete.
-6. Automatic QA phase (default): after moving to `review/`, switch roles to QA and validate the ticket using `tests/AGENTS.md`. Do not continue implementation during this phase; record findings and create bug tickets as needed.
-7. Move to `tickets/status/done/` only after verification and acceptance are recorded (QA validation and PM acceptance in Development Workflow).
+6. Automatic QA phase (default): after moving to `review/`, switch roles to QA and validate the ticket using `tests/AGENTS.md` **only when changes affect software/behavior**. Do not continue implementation during this phase; record findings and create bug tickets as needed.
+7. For docs-only `.md` changes (no software/behavior impact), do not run QA; record a doc review instead.
+8. Move to `tickets/status/done/` only after required verification and acceptance are recorded.
 
 If blocked, move the ticket to `tickets/status/blocked/` and capture the blocker and next action.
 

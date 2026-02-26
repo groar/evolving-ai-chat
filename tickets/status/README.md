@@ -6,7 +6,7 @@ This folder contains live ticket files organized by status.
 - `ready/` scoped and next-up work (`ready/ORDER.md` defines pickup order)
 - `in-progress/` active implementation
 - `blocked/` paused due to blockers
-- `review/` awaiting acceptance/review
+- `review/` awaiting QA (if software/behavior changed) and acceptance/review
 - `done/` accepted complete work
 - `cancelled/` intentionally dropped work
 
@@ -15,7 +15,7 @@ Only ticket files (`T-*.md`) should move across these folders. Supporting docs l
 ## Ownership And Responsibility
 - PM owns `ready/` quality (DoR) and `ready/ORDER.md`, and is the default acceptor for `done/`.
 - Implementation agent owns `in-progress/` execution and prepares the `review/` handoff with verification evidence.
-- QA agent validates tickets in `review/`, creates bug tickets, and documents results.
+- QA agent validates tickets in `review/` (software/behavior changes only), creates bug tickets, and documents results.
 - Any role can move a ticket to `blocked/` when a blocker is discovered, but must record the blocker and next action.
 
 ## Definition Of Ready (DoR)
@@ -34,6 +34,7 @@ A ticket is eligible for `done/` when:
 - [ ] Acceptance criteria are satisfied and verified (tests, manual checks, or both).
 - [ ] Any required docs are updated.
 - [ ] Evidence of verification is recorded in the ticket (or linked from it).
+- [ ] If software/behavior changed, QA validation evidence is captured (or a waiver is recorded).
 - [ ] Follow-ups are ticketed (not left as “TODO” in notes).
 - [ ] If `Area: ui`, UX acceptance criteria are verified and evidence is recorded (notes and/or screenshots).
 - [ ] If user-facing text changed, a copy regression sweep was performed (typos, ambiguity, implication control, and term consistency).
