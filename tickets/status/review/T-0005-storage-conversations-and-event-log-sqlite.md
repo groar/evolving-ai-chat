@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0005
-- Status: ready
+- Status: review
 - Priority: P2
 - Type: feature
 - Area: core
@@ -54,20 +54,53 @@ Persist conversations and a minimal event log locally (SQLite) to enable continu
 - F-20260226-001
 
 ## Acceptance Criteria
-- [ ] Conversations and messages are persisted locally in SQLite.
-- [ ] On app restart, the last opened conversation can be restored.
-- [ ] A minimal event log table exists for recording:
+- [x] Conversations and messages are persisted locally in SQLite.
+- [x] On app restart, the last opened conversation can be restored.
+- [x] A minimal event log table exists for recording:
   - message sent/received,
   - runtime errors,
   - validation runs (later tickets can expand fields).
-- [ ] There is a documented way to delete all local data (even if via a dev command initially).
+- [x] There is a documented way to delete all local data (even if via a dev command initially).
 
 ## Subtasks
-- [ ] Define SQLite schema for conversations/messages/events.
-- [ ] Decide initial ownership of persistence (runtime-first preferred; UI-only acceptable if clearly documented).
-- [ ] Implement read/write paths (create/load conversation, append messages, append events).
-- [ ] Add a basic “delete all local data” pathway and document it.
+- [x] Define SQLite schema for conversations/messages/events.
+- [x] Decide initial ownership of persistence (runtime-first preferred; UI-only acceptable if clearly documented).
+- [x] Implement read/write paths (create/load conversation, append messages, append events).
+- [x] Add a basic “delete all local data” pathway and document it.
+
+## QA Evidence Links (Required For `review/`/`done/`)
+- QA checkpoint: `tickets/meta/qa/2026-02-26-qa-checkpoint-t0005.md`
+
+## Evidence (Verification)
+- Runtime storage:
+  - Added SQLite-backed runtime persistence in `apps/desktop/runtime/storage.py` with schema tables:
+    - `schema_version`
+    - `conversations`
+    - `messages`
+    - `events`
+    - `settings` (for `last_opened_conversation_id` restore)
+  - Added runtime endpoints in `apps/desktop/runtime/main.py` for:
+    - `GET /state` (restore active conversation + messages)
+    - `POST /conversations`
+    - `POST /conversations/{conversation_id}/activate`
+    - `DELETE /data` (delete all local data + fresh default conversation)
+  - Event logging implemented for:
+    - `message_sent`
+    - `message_received`
+    - `runtime_error`
+    - storage lifecycle events (`conversation_created`, `local_data_reset`)
+- Desktop UI integration:
+  - Updated `apps/desktop/src/App.tsx` to load runtime state on boot, switch/create conversations, route sends through the active conversation, and expose a user-facing `Delete Local Data` action.
+  - Updated `apps/desktop/src/styles.css` for conversation controls and reset action styling.
+- Commands run:
+  - `npm run build` -> PASS.
+  - `npm run smoke:storage` -> PASS.
+  - `npm run smoke` (with local `runtime:stub:node` server) -> PASS.
+  - `npm test` -> FAIL (`vitest`: no test files found).
 
 ## Change Log
 - 2026-02-26: Ticket created.
 - 2026-02-26: Moved to `ready/` with design spec for schema + reset semantics.
+- 2026-02-26: Moved to `in-progress/` and implemented runtime-first SQLite persistence with conversation restore + event log.
+- 2026-02-26: Added user-facing `Delete Local Data` flow in the desktop UI and recorded smoke/build evidence.
+- 2026-02-26: Moved to `review/` and completed automatic QA checkpoint with no blocking defects.

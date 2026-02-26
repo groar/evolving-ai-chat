@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Why now |
 | --- | --- | --- | --- |
-| 1 | T-0005 | P2 | Enables continuity + local audit/event log required for “observe → propose → validate → release”. |
-| 2 | T-0007 | P2 | Establishes consistent validation artifacts so changes can ship safely. |
+| 1 | T-0007 | P2 | Establishes consistent validation artifacts so changes can ship safely. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

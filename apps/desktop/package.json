@@ -11,6 +11,7 @@
     "runtime:stub": "python3 -m uvicorn runtime.main:app --host 127.0.0.1 --port 8787",
     "runtime:stub:node": "node scripts/runtime-stub.mjs",
     "smoke": "node scripts/smoke.mjs",
+    "smoke:storage": "python3 runtime/smoke_storage.py",
     "tauri:dev": "npx tauri dev"
   },
   "dependencies": {
