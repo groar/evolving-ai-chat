@@ -13,4 +13,4 @@ Tracks all feedback intake items for easy triage, deferral, and ticket linkage.
 ## Items
 | ID | Status | Theme | Severity | Linked Tickets | Updated |
 | --- | --- | --- | --- | --- | --- |
-| _None_ | - | - | - | - | - |
+| F-20260226-001 | ticketed | direction | S2 | T-0002, T-0003, T-0004, T-0005, T-0006, T-0007, T-0008, T-0009 | 2026-02-26 |

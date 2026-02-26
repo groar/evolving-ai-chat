@@ -2,13 +2,13 @@
 
 ## Metadata
 - ID: T-0001
-- Status: backlog
+- Status: done
 - Priority: P1
 - Type: chore
 - Epic: none
 - Owner: ai-agent
 - Created: 2026-02-15
-- Updated: 2026-02-15
+- Updated: 2026-02-26
 
 ## Summary
 Create a minimal bootstrap checklist so a fresh project can start using this scaffold with clear product docs, an initial ticket queue, and a defined first pickup order.
@@ -26,10 +26,18 @@ Create a minimal bootstrap checklist so a fresh project can start using this sca
 - none
 
 ## Acceptance Criteria
-- [ ] Product intent docs are added in the host project and linked from ticket references.
-- [ ] At least three initial tickets exist in `tickets/status/backlog/` with testable acceptance criteria.
-- [ ] At least one scoped ticket is moved to `tickets/status/ready/`.
-- [ ] `tickets/status/ready/ORDER.md` lists the canonical ready-ticket pickup order.
+- [x] Product intent docs are added in the host project and linked from ticket references.
+- [x] At least three initial tickets exist in `tickets/status/backlog/` with testable acceptance criteria.
+- [x] At least one scoped ticket is moved to `tickets/status/ready/`.
+- [x] `tickets/status/ready/ORDER.md` lists the canonical ready-ticket pickup order.
+
+## Evidence (Verification)
+- Product intent: `STATUS.md`
+- Feedback intake: `tickets/meta/feedback/inbox/F-20260226-001-self-evolving-desktop-ai-chat.md`
+- Initial queue:
+  - Backlog: T-0005..T-0009
+  - Ready: T-0002..T-0004
+- Ordering: `tickets/status/ready/ORDER.md`
 
 ## Subtasks
 - [ ] Add or link product intent documents (PRD/MVP/roadmap/architecture as applicable).
@@ -43,3 +51,4 @@ Keep this checklist intentionally minimal and adapt follow-up tickets to the hos
 
 ## Change Log
 - 2026-02-15: Ticket created.
+- 2026-02-26: Checklist completed; moved to `done/`.
