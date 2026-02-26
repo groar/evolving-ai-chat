@@ -105,8 +105,8 @@ Record important decisions so future agents do not re-litigate context.
 | 2026-02-26 | No silent high-impact changes | Keeps user agency and reduces risk of trust loss | STATUS.md |
 | 2026-02-26 | Ticket-driven self-evolution | Forces traceability: every change has scope, tests, and rollback plan | tickets/README.md |
 | 2026-02-26 | Desktop-first via Tauri | Local-first UX, tighter control over permissions and data boundaries | STATUS.md |
+| 2026-02-26 | Data boundary: local-only (default) | Keeps trust surface small; explicit opt-in required for any export/sync | tickets/status/review/T-0002-define-autonomy-and-data-boundary-defaults.md |
+| 2026-02-26 | Autonomy: UI-level gated changes (default) | Seamless experience with user control; code diffs remain auditable when needed | tickets/status/review/T-0002-define-autonomy-and-data-boundary-defaults.md |
 
 ## Open Questions (Pick early; unblock architecture)
-- What data boundary? (strict local-only vs optional encrypted sync) (owner: user/PM, by: 2026-03-05)
-- What autonomy level is acceptable by default? (suggest-only vs auto-apply low-risk changes) (owner: user/PM, by: 2026-03-05)
 - Which agentic harness baseline? (pi.dev-like workflow vs custom) (owner: user/PM, by: 2026-03-05)
