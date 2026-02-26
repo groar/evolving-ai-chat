@@ -16,6 +16,7 @@ This file is the source of truth for ready-ticket pickup order.
 | Rank | Ticket | Priority | Why now |
 | --- | --- | --- | --- |
 | 1 | T-0009 | P3 | Choose and document the harness workflow so future self-evolution stays auditable and reviewable. |
+| 2 | T-0008 | P3 | Add user-facing changelog + rollback controls so frequent iteration remains trust-preserving. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

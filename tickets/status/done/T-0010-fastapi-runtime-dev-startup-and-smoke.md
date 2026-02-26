@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0010
-- Status: review
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: core
@@ -67,3 +67,4 @@ Non-goal: solving offline dependency installation in restricted sandboxes (that 
 - 2026-02-26: Updated smoke payload assertions to validate contract fields instead of Node-stub literal values.
 - 2026-02-26: Updated desktop README runbook with copy-pastable FastAPI install/run/smoke steps.
 - 2026-02-26: Moved to `review/` for QA validation.
+- 2026-02-26: Accepted to `done/` after QA PASS (`tickets/meta/qa/2026-02-26-qa-checkpoint-t0010.md`).

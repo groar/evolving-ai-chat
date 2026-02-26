@@ -49,6 +49,10 @@ Use when the ticket introduces new rules/state/transitions or would otherwise fo
 
 If the ticket depends on external user-report validation, add at least one deterministic guardrail criterion so iteration can verify known mismatches before the next external check.
 
+## Release Note (Optional; Recommended For User-Facing Changes)
+- Title:
+- Summary (1–2 lines, user-facing; avoid over-promising):
+
 ## User-Facing Acceptance Criteria (Only If End-User Behavior Changes)
 - [ ] At least one criterion is verifiable from a normal user flow (not only internal state checks).
 - [ ] Copy/microcopy does not imply unsupported behavior or unavailable follow-up actions.
