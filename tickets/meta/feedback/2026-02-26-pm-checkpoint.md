@@ -6,32 +6,25 @@
 - Interest in a pi.dev-like agentic harness to drive changes as ticketed, reviewable diffs.
 
 ## Interview Topics + Key Answers
-Skipped (no interview run). Rationale: we’re still at “direction + v1 queue” and have no shipped UI to probe yet.
+Skipped (no interview run). Rationale: still early in M0; no new user-facing release since the prior checkpoint.
 
 ## User Testing Ask / Plan
-Skipped for this checkpoint. Rationale: no user-facing build shipped yet; next ask should happen after the first runnable desktop UI baseline exists (T-0003).
+Skipped for this checkpoint. Rationale: waiting on a QA-validated desktop UI baseline (T-0003) before requesting probes.
 
 ## Decisions + Rationale
-- Desktop-first approach (Tauri): aligns with local-first control and personal-software feel.
-- Establish stable vs experimental release channels early: enables “unexpected directions” without breaking daily use.
-- Treat autonomy and data boundary as explicit, user-confirmed defaults (T-0002): prevents accidental trust/privacy drift.
-  - Confirmed: Data boundary is local-only; autonomy uses policy-gated seamless review (UI-level approvals) with optional auto-accept by policy in `experimental`.
+- Keep M0 focus on the end-to-end safe change loop; do not expand scope until runtime wiring (T-0004) is ready.
+- Hold T-0003 in `review/` until QA checkpoint evidence is added.
 
 ## Feedback IDs Touched
-- F-20260226-001 (captured + ticketed)
+- F-20260226-001 (no status change)
 
 ## Ticket Updates
-- Created:
-  - T-0002..T-0009 (initial v1 queue)
-- Moved to `ready/` and ordered:
-  - T-0002 (rank 1), T-0003 (rank 2), T-0004 (rank 3)
-- Closed:
-  - T-0001 moved to `done/` (bootstrap checklist satisfied)
-  - T-0002 moved to `done/` (QA waived by user: docs-only change)
+- Ready queue corrected:
+  - Removed duplicate `ready/` copy of T-0003 (now only in `review/`).
+  - Updated `ready/ORDER.md` to make T-0004 the next pickup.
 
 ## Epic Updates
-- Created:
-  - E-0001 (M0 end-to-end safe change loop)
+- None
 
 ## Proposed PM Process Improvement (Next Cycle)
-Add a lightweight “Decision Ticket” convention for any change that touches user trust boundaries (autonomy, logging, permissions). Gate implementation tickets on a linked decision ticket being resolved.
+Add a lightweight “status integrity check” step to PM checkpoints: confirm each ticket exists in exactly one status folder and `ready/ORDER.md` matches the `ready/` directory.
