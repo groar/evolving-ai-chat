@@ -15,6 +15,7 @@ Skipped for this checkpoint. Rationale: no user-facing build shipped yet; next a
 - Desktop-first approach (Tauri): aligns with local-first control and personal-software feel.
 - Establish stable vs experimental release channels early: enables “unexpected directions” without breaking daily use.
 - Treat autonomy and data boundary as explicit, user-confirmed defaults (T-0002): prevents accidental trust/privacy drift.
+  - Confirmed: Data boundary is local-only; autonomy uses policy-gated seamless review (UI-level approvals) with optional auto-accept by policy in `experimental`.
 
 ## Feedback IDs Touched
 - F-20260226-001 (captured + ticketed)
@@ -26,6 +27,7 @@ Skipped for this checkpoint. Rationale: no user-facing build shipped yet; next a
   - T-0002 (rank 1), T-0003 (rank 2), T-0004 (rank 3)
 - Closed:
   - T-0001 moved to `done/` (bootstrap checklist satisfied)
+  - T-0002 moved to `done/` (QA waived by user: docs-only change)
 
 ## Epic Updates
 - Created:
@@ -33,4 +35,3 @@ Skipped for this checkpoint. Rationale: no user-facing build shipped yet; next a
 
 ## Proposed PM Process Improvement (Next Cycle)
 Add a lightweight “Decision Ticket” convention for any change that touches user trust boundaries (autonomy, logging, permissions). Gate implementation tickets on a linked decision ticket being resolved.
-

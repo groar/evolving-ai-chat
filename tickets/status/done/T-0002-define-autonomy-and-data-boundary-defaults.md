@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0002
-- Status: review
+- Status: done
 - Priority: P0
 - Type: feature
 - Area: core
@@ -96,7 +96,11 @@ Optional setting (off by default):
 ## Evidence (Verification)
 - Decisions recorded in `STATUS.md`.
 
+## QA Evidence Links (Required For `review/`/`done/`)
+- QA checkpoint: waived by user (2026-02-26) — docs-only change.
+
 ## Change Log
 - 2026-02-26: Ticket created.
 - 2026-02-26: Moved to `ready/`.
 - 2026-02-26: Decisions confirmed; moved to `review/`.
+- 2026-02-26: Accepted by PM; moved to `done/` (QA waived: docs-only).
