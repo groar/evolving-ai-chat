@@ -25,7 +25,7 @@ Create the desktop app shell with a basic, keyboard-usable chat UI so we have a 
 - F-20260226-001
 
 ## Acceptance Criteria
-- [ ] A Tauri desktop app launches locally and renders the UI without errors.
+- [x] A Tauri desktop app launches locally and renders the UI without errors.
 - [x] The UI includes:
   - conversation list (can be placeholder),
   - message transcript area (placeholder),
@@ -48,8 +48,8 @@ Create the desktop app shell with a basic, keyboard-usable chat UI so we have a 
 - [x] Add smoke instructions to ticket Evidence section.
 
 ## QA Evidence Links (Required For `review/`/`done/`)
-- QA checkpoint: pending
-- Screenshots/artifacts: pending
+- QA checkpoint: `tickets/meta/qa/2026-02-26-qa-checkpoint.md`
+- Screenshots/artifacts: startup and smoke logs captured in QA checkpoint notes (no screenshot artifact in this run)
 
 ## Evidence (Verification)
 - Files added:
@@ -60,11 +60,17 @@ Create the desktop app shell with a basic, keyboard-usable chat UI so we have a 
 - Smoke command run:
   - `npm run smoke` -> FAIL in current env because runtime is not running (`fetch failed`), expected for runtime-unavailable path.
 - Verification limits in this environment:
-  - Rust toolchain (`cargo`) is not installed, so `tauri dev` could not be executed here.
-  - Dependency install did not complete in this sandbox, so full build/test execution is pending.
+  - In sandboxed execution, local port binding is blocked (`EPERM`), so runtime and Vite startup checks required one escalated run.
+- QA run results (2026-02-26):
+  - `npm run build` -> PASS.
+  - `npm run smoke` with runtime down -> FAIL as expected (`fetch failed`), matching runtime-unavailable behavior.
+  - `npm run smoke` with `runtime:stub` running -> PASS (`Runtime health endpoint`).
+  - `npm run tauri:dev` startup probe -> PASS (`cargo run` completed and app process started: `Running target/debug/evolving_ai_chat_desktop`).
+  - `npm test` -> no test files found (exit 1); no automated unit coverage exists yet for this ticket.
 
 ## Change Log
 - 2026-02-26: Ticket created.
 - 2026-02-26: Moved to `ready/`.
 - 2026-02-26: Moved to `in-progress/` for implementation.
 - 2026-02-26: Implemented desktop app skeleton and moved to `review/`.
+- 2026-02-26: QA checkpoint completed; evidence added.
