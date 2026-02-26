@@ -12,6 +12,8 @@ from typing import Any
 DEFAULT_RELEASE_CHANNEL = "stable"
 ALLOWED_RELEASE_CHANNELS = {"stable", "experimental"}
 EXPERIMENTAL_FLAG_KEYS = {"show_runtime_diagnostics"}
+CHANGELOG_MAX_ITEMS = 20
+CURRENT_TICKET_ID = "T-0008"
 
 
 def utc_now_iso() -> str:
@@ -66,6 +68,16 @@ class RuntimeStorage:
                 CREATE TABLE IF NOT EXISTS settings (
                   key TEXT PRIMARY KEY,
                   value TEXT NOT NULL
+                );
+
+                CREATE TABLE IF NOT EXISTS changelog_entries (
+                  changelog_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  created_at TEXT NOT NULL,
+                  title TEXT NOT NULL,
+                  summary TEXT NOT NULL,
+                  channel TEXT NOT NULL,
+                  ticket_id TEXT,
+                  flags_changed_json TEXT
                 );
                 """
             )
@@ -165,6 +177,65 @@ class RuntimeStorage:
             "active_flags": active_flags,
         }
 
+    def _append_changelog_entry_locked(
+        self,
+        connection: sqlite3.Connection,
+        *,
+        title: str,
+        summary: str,
+        channel: str,
+        ticket_id: str | None = CURRENT_TICKET_ID,
+        flags_changed: list[str] | None = None,
+    ) -> None:
+        normalized_channel = channel if channel in ALLOWED_RELEASE_CHANNELS else DEFAULT_RELEASE_CHANNEL
+        normalized_flags = [flag_key for flag_key in (flags_changed or []) if flag_key in EXPERIMENTAL_FLAG_KEYS]
+        connection.execute(
+            """
+            INSERT INTO changelog_entries(created_at, title, summary, channel, ticket_id, flags_changed_json)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                utc_now_iso(),
+                title,
+                summary,
+                normalized_channel,
+                ticket_id,
+                json.dumps(normalized_flags, separators=(",", ":")),
+            ),
+        )
+
+    def _list_changelog_locked(self, connection: sqlite3.Connection, limit: int = CHANGELOG_MAX_ITEMS) -> list[dict[str, Any]]:
+        rows = connection.execute(
+            """
+            SELECT created_at, title, summary, channel, ticket_id, flags_changed_json
+            FROM changelog_entries
+            ORDER BY created_at DESC, changelog_id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+
+        entries: list[dict[str, Any]] = []
+        for row in rows:
+            raw_flags = row["flags_changed_json"] or "[]"
+            try:
+                parsed_flags = json.loads(raw_flags)
+            except json.JSONDecodeError:
+                parsed_flags = []
+            flags_changed = [flag for flag in parsed_flags if isinstance(flag, str)]
+            channel = row["channel"] if row["channel"] in ALLOWED_RELEASE_CHANNELS else DEFAULT_RELEASE_CHANNEL
+            entries.append(
+                {
+                    "created_at": str(row["created_at"]),
+                    "title": str(row["title"]),
+                    "summary": str(row["summary"]),
+                    "channel": channel,
+                    "ticket_id": str(row["ticket_id"]) if row["ticket_id"] is not None else None,
+                    "flags_changed": flags_changed,
+                }
+            )
+        return entries
+
     def _create_conversation_locked(self, connection: sqlite3.Connection, title: str) -> str:
         conversation_id = str(uuid.uuid4())
         now = utc_now_iso()
@@ -235,6 +306,7 @@ class RuntimeStorage:
                 "conversations": [dict(row) for row in conversations],
                 "messages": [dict(row) for row in messages],
                 "settings": self._read_release_settings_locked(connection),
+                "changelog": self._list_changelog_locked(connection),
             }
 
     def get_release_settings(self) -> dict[str, Any]:
@@ -247,6 +319,12 @@ class RuntimeStorage:
         with self._lock, self._connect() as connection:
             self._set_setting(connection, "release_channel", channel)
             self.append_event_locked(connection, "release_channel_updated", {"channel": channel})
+            self._append_changelog_entry_locked(
+                connection,
+                title=f"Release channel set to {channel}",
+                summary="Updated feature toggle channel preference. This does not roll back code or data.",
+                channel=channel,
+            )
             return self._read_release_settings_locked(connection)
 
     def set_experimental_flag(self, flag_key: str, enabled: bool) -> dict[str, Any]:
@@ -268,6 +346,37 @@ class RuntimeStorage:
                 connection,
                 "experimental_flag_updated",
                 {"flag": flag_key, "enabled": bool(enabled)},
+            )
+            self._append_changelog_entry_locked(
+                connection,
+                title=f"{flag_key} {'enabled' if enabled else 'disabled'}",
+                summary=f"Feature toggle rollback only: set {flag_key} to {'on' if enabled else 'off'}.",
+                channel=settings["channel"],
+                flags_changed=[flag_key],
+            )
+            return self._read_release_settings_locked(connection)
+
+    def reset_experiments(self) -> dict[str, Any]:
+        with self._lock, self._connect() as connection:
+            settings = self._read_release_settings_locked(connection)
+            next_flags = {flag_key: False for flag_key in settings["experimental_flags"]}
+            changed_flags = [flag_key for flag_key, enabled in settings["experimental_flags"].items() if enabled]
+            self._set_setting(
+                connection,
+                "experimental_flags_json",
+                json.dumps(next_flags, separators=(",", ":"), sort_keys=True),
+            )
+            self.append_event_locked(
+                connection,
+                "experimental_flags_reset",
+                {"changed_flags": changed_flags},
+            )
+            self._append_changelog_entry_locked(
+                connection,
+                title="Experiments reset",
+                summary="Disabled all experimental feature toggles. This does not roll back code or stored data.",
+                channel=settings["channel"],
+                flags_changed=changed_flags,
             )
             return self._read_release_settings_locked(connection)
 
@@ -325,6 +434,7 @@ class RuntimeStorage:
             connection.execute("DELETE FROM events")
             connection.execute("DELETE FROM conversations")
             connection.execute("DELETE FROM settings")
+            connection.execute("DELETE FROM changelog_entries")
 
             fresh_id = self._create_conversation_locked(connection, title="Today's Session")
             self._set_active_conversation_id(connection, fresh_id)

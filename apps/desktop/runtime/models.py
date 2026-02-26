@@ -38,12 +38,22 @@ class RuntimeStateResponse(BaseModel):
     conversations: list[ConversationSummary]
     messages: list[MessageRecord]
     settings: "RuntimeSettings"
+    changelog: list["ChangelogEntry"] = Field(default_factory=list)
 
 
 class RuntimeSettings(BaseModel):
     channel: Literal["stable", "experimental"]
     experimental_flags: dict[str, bool]
     active_flags: dict[str, bool]
+
+
+class ChangelogEntry(BaseModel):
+    created_at: str
+    title: str
+    summary: str
+    channel: Literal["stable", "experimental"]
+    ticket_id: str | None = None
+    flags_changed: list[str] = Field(default_factory=list)
 
 
 class NewConversationRequest(BaseModel):

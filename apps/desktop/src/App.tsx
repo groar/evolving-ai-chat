@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { SettingsPanel, type ChangelogEntry, type RuntimeSettings } from "./settingsPanel";
 
 type ChatMessage = {
   id: string | number;
@@ -14,12 +15,6 @@ type Conversation = {
   updated_at: string;
 };
 
-type RuntimeSettings = {
-  channel: "stable" | "experimental";
-  experimental_flags: Record<string, boolean>;
-  active_flags: Record<string, boolean>;
-};
-
 type RuntimeStatePayload = {
   active_conversation_id: string;
   conversations: Conversation[];
@@ -30,6 +25,7 @@ type RuntimeStatePayload = {
     meta?: string | null;
   }>;
   settings: RuntimeSettings;
+  changelog: ChangelogEntry[];
 };
 
 const runtimeBase = "http://127.0.0.1:8787";
@@ -49,6 +45,9 @@ export function App() {
   const [isBooting, setIsBooting] = useState(true);
   const [isResetting, setIsResetting] = useState(false);
   const [settings, setSettings] = useState<RuntimeSettings>(defaultSettings);
+  const [changelog, setChangelog] = useState<ChangelogEntry[]>([]);
+  const [settingsNotice, setSettingsNotice] = useState<string | null>(null);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
   const [runtimeError, setRuntimeError] = useState<string | null>(
     "Runtime unavailable. Start the local runtime to enable responses."
   );
@@ -85,6 +84,7 @@ export function App() {
       }))
     );
     setSettings(payload.settings ?? defaultSettings);
+    setChangelog(payload.changelog ?? []);
     setRuntimeError(null);
   }
 
@@ -96,8 +96,10 @@ export function App() {
       }
       const payload = (await response.json()) as RuntimeStatePayload;
       applyState(payload, preferredConversationId);
+      setSettingsError(null);
     } catch {
       setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setSettingsError("Could not load changelog and settings.");
     } finally {
       setIsBooting(false);
     }
@@ -184,9 +186,13 @@ export function App() {
       }
       const payload = (await response.json()) as { settings: RuntimeSettings };
       setSettings(payload.settings);
+      if (nextChannel === "stable") {
+        setSettingsNotice("Switched to Stable. Feature toggle rollback applied.");
+      }
       await refreshState(activeConversationId);
     } catch {
       setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setSettingsError("Could not update release channel.");
     }
   }
 
@@ -205,8 +211,32 @@ export function App() {
       }
       const payload = (await response.json()) as { settings: RuntimeSettings };
       setSettings(payload.settings);
+      setSettingsNotice(`Updated diagnostics experiment: ${enabled ? "enabled" : "disabled"}.`);
+      await refreshState(activeConversationId);
     } catch {
       setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setSettingsError("Could not update experimental flag.");
+    }
+  }
+
+  async function resetExperiments() {
+    if (isSending || isResetting) {
+      return;
+    }
+    try {
+      const response = await fetch(`${runtimeBase}/settings/experiments/reset`, {
+        method: "POST"
+      });
+      if (!response.ok) {
+        throw new Error("Experiment reset failed");
+      }
+      const payload = (await response.json()) as { settings: RuntimeSettings };
+      setSettings(payload.settings);
+      setSettingsNotice("All experimental toggles reset. This does not roll back code or data.");
+      await refreshState(activeConversationId);
+    } catch {
+      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setSettingsError("Could not reset experiments.");
     }
   }
 
@@ -274,39 +304,19 @@ export function App() {
           ))}
         </ul>
         <div className="left-rail-actions">
-          <section className="settings-panel" aria-label="Release channel settings">
-            <p className="settings-title">Release Channel</p>
-            <p className="settings-copy">Local-only setting. Stable hides experiments; Experimental lets you test opt-in features.</p>
-            <div className="channel-toggle">
-              <button
-                type="button"
-                className={`channel-btn ${settings.channel === "stable" ? "active" : ""}`}
-                onClick={() => void updateChannel("stable")}
-                disabled={isSending || isResetting}
-              >
-                Stable
-              </button>
-              <button
-                type="button"
-                className={`channel-btn ${settings.channel === "experimental" ? "active" : ""}`}
-                onClick={() => void updateChannel("experimental")}
-                disabled={isSending || isResetting}
-              >
-                Experimental
-              </button>
-            </div>
-
-            <label className="flag-control">
-              <input
-                type="checkbox"
-                checked={configuredDiagnosticsFlag}
-                disabled={!canToggleFlags}
-                onChange={(event) => void updateExperimentalFlag(event.target.checked)}
-              />
-              Show runtime diagnostics (experimental)
-            </label>
-            {settings.channel !== "experimental" && <p className="flag-note">Switch to Experimental to adjust experiment toggles.</p>}
-          </section>
+          <SettingsPanel
+            settings={settings}
+            changelog={changelog}
+            isBusy={isSending || isResetting}
+            canToggleFlags={canToggleFlags}
+            configuredDiagnosticsFlag={configuredDiagnosticsFlag}
+            notice={settingsNotice}
+            error={settingsError}
+            confirmAction={(prompt) => window.confirm(prompt)}
+            onSelectChannel={(channel) => void updateChannel(channel)}
+            onToggleDiagnostics={(enabled) => void updateExperimentalFlag(enabled)}
+            onResetExperiments={() => void resetExperiments()}
+          />
           <button type="button" className="rail-btn" onClick={() => void createConversation()} disabled={isSending || isResetting}>
             + New Conversation
           </button>

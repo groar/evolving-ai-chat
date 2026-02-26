@@ -56,6 +56,12 @@ def update_feature_flag(flag_key: str, payload: FeatureFlagUpdateRequest) -> Run
         raise HTTPException(status_code=status_code, detail=detail) from error
 
 
+@app.post("/settings/experiments/reset", response_model=RuntimeSettingsResponse)
+def reset_experimental_flags() -> RuntimeSettingsResponse:
+    settings = storage.reset_experiments()
+    return RuntimeSettingsResponse(settings=settings)
+
+
 @app.post("/chat", response_model=ChatResponse)
 def chat(payload: ChatRequest) -> ChatResponse:
     request_text = payload.message.strip()

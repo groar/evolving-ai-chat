@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0008
-- Status: ready
+- Status: review
 - Priority: P3
 - Type: feature
 - Area: ui
@@ -66,22 +66,55 @@ Add a user-facing changelog (“what changed and why”) and straightforward rol
 - F-20260226-001
 
 ## Acceptance Criteria
-- [ ] The app shows a basic changelog view listing recent changes (can be local-only).
-- [ ] The user can revert experimental features by:
+- [x] The app shows a basic changelog view listing recent changes (can be local-only).
+- [x] The user can revert experimental features by:
   - switching back to `stable`, and
   - disabling individual experimental flags (if present).
-- [ ] Copy clearly distinguishes “feature toggle rollback” from “code rollback”.
-- [ ] Changelog and rollback controls are discoverable from a single settings surface (one-click from the main UI).
+- [x] Copy clearly distinguishes “feature toggle rollback” from “code rollback”.
+- [x] Changelog and rollback controls are discoverable from a single settings surface (one-click from the main UI).
 
 ## UX Acceptance Criteria (Only If `Area: ui`)
-- [ ] Changelog entries are scannable (title + 1–2 line summary).
-- [ ] Rollback actions are clearly labeled and confirm intent for impactful changes.
+- [x] Changelog entries are scannable (title + 1–2 line summary).
+- [x] Rollback actions are clearly labeled and confirm intent for impactful changes.
 
 ## Subtasks
-- [ ] Define changelog entry storage format.
-- [ ] Implement basic changelog UI.
-- [ ] Implement rollback controls for channel/flags.
+- [x] Define changelog entry storage format.
+- [x] Implement basic changelog UI.
+- [x] Implement rollback controls for channel/flags.
+
+## Evidence (Implementation)
+- Runtime/API updates:
+  - Added local changelog persistence + retrieval in `apps/desktop/runtime/storage.py`.
+  - Extended `/state` payload with changelog entries in `apps/desktop/runtime/models.py`.
+  - Added `POST /settings/experiments/reset` in `apps/desktop/runtime/main.py`.
+  - Updated Node runtime stub parity for settings/changelog endpoints in `apps/desktop/scripts/runtime-stub.mjs`.
+- UI updates:
+  - Added one settings surface for changelog + experiments in `apps/desktop/src/settingsPanel.tsx`.
+  - Wired settings surface into app shell and added rollback confirmations in `apps/desktop/src/App.tsx`.
+  - Added changelog/rollback styles in `apps/desktop/src/styles.css`.
+- Deterministic test coverage:
+  - Added `apps/desktop/src/settingsPanel.test.tsx` covering:
+    - changelog empty + non-empty rendering,
+    - confirmation gating for `Switch to Stable`,
+    - confirmation gating for `Reset Experiments`.
+- Commands run:
+  - `npm test` (apps/desktop) -> PASS.
+  - `npm run build` (apps/desktop) -> PASS.
+  - `npm run smoke:storage` (apps/desktop) -> PASS.
+  - `npm run smoke` with managed Node runtime stub -> PASS.
+
+## QA Evidence Links (Required For `review/`/`done/`)
+- QA checkpoint: `tickets/meta/qa/2026-02-26-qa-checkpoint-t0008.md`
+
+## QA Summary
+- Automatic QA phase completed for this software/behavior ticket.
+- Outcome: PASS with no blocking defects.
+- Checkpoint: `tickets/meta/qa/2026-02-26-qa-checkpoint-t0008.md`
+- Residual risk: full Tauri window-level visual verification was not executed in this sandboxed QA environment.
 
 ## Change Log
 - 2026-02-26: Ticket created.
 - 2026-02-26: Added design spec and moved to `ready/` behind T-0009.
+- 2026-02-26: Moved to `in-progress/` and implemented local changelog storage, rollback controls, and unified settings surface.
+- 2026-02-26: Added deterministic UI regression test for changelog states and rollback confirmations.
+- 2026-02-26: Moved to `review/` with implementation evidence and passed automatic QA phase; checkpoint linked.

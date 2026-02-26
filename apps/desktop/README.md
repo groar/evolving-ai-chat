@@ -66,6 +66,11 @@ Expected behavior:
 - In `experimental`, you can opt into experimental flags (currently: runtime diagnostics card).
 - In `stable`, experimental flags are not toggleable and their UI stays hidden.
 
+## Changelog And Rollback UX (T-0008)
+- The left-rail settings surface includes both changelog visibility and experiment controls.
+- Changelog entries are local-only and list newest first with title, summary, channel, optional ticket ID, and changed flags.
+- `Switch to Stable` and `Reset Experiments` are feature-toggle rollback controls only; they do not roll back code or stored data.
+
 ## Codex Sandbox Note (QA Runs)
 In Codex sandboxed execution, local port binding can fail with `EPERM` for both runtime (`8787`) and Vite (`5173`).  
 If that happens, rerun smoke with escalated permissions and start/stop the stub runtime in one command:

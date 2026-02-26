@@ -97,6 +97,8 @@ body {
   padding: 10px;
   display: grid;
   gap: 8px;
+  max-height: 52vh;
+  overflow: auto;
 }
 
 .settings-title {
@@ -151,6 +153,89 @@ body {
   margin: 0;
   font-size: 0.79rem;
   color: var(--muted);
+}
+
+.rollback-actions {
+  display: grid;
+  gap: 6px;
+}
+
+.settings-notice {
+  margin: 0;
+  border: 1px solid #9ebf97;
+  border-radius: 9px;
+  background: #effbe8;
+  color: #2e5a2b;
+  font-size: 0.79rem;
+  padding: 7px 8px;
+}
+
+.settings-error {
+  margin: 0;
+  border: 1px solid #f4a58b;
+  border-radius: 9px;
+  background: #fff0ea;
+  color: #8d2400;
+  font-size: 0.79rem;
+  padding: 7px 8px;
+}
+
+.changelog-wrap {
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.changelog-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.changelog-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fffdfa;
+  padding: 8px;
+  display: grid;
+  gap: 4px;
+}
+
+.changelog-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.changelog-title {
+  margin: 0;
+  font-size: 0.83rem;
+  font-weight: 700;
+}
+
+.changelog-summary {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+
+.changelog-meta {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.changelog-channel {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: capitalize;
 }
 
 .rail-btn {

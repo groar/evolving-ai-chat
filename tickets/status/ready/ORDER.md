@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Why now |
 | --- | --- | --- | --- |
-| 1 | T-0008 | P3 | Add user-facing changelog + rollback controls so frequent iteration remains trust-preserving now that the harness baseline is decided. |
+| _None_ | _No tickets currently in ready_ | - | Queue is empty pending PM reprioritization. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

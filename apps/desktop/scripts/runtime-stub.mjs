@@ -12,6 +12,29 @@ const conversations = [
   }
 ];
 const messages = [];
+let releaseChannel = "stable";
+const experimentalFlags = { show_runtime_diagnostics: false };
+const changelog = [];
+
+function activeFlags() {
+  return {
+    show_runtime_diagnostics: releaseChannel === "experimental" && experimentalFlags.show_runtime_diagnostics
+  };
+}
+
+function appendChangelog(title, summary, flagsChanged = []) {
+  changelog.unshift({
+    created_at: new Date().toISOString(),
+    title,
+    summary,
+    channel: releaseChannel,
+    ticket_id: "T-0008",
+    flags_changed: flagsChanged
+  });
+  if (changelog.length > 20) {
+    changelog.length = 20;
+  }
+}
 
 const server = createServer((req, res) => {
   if (req.url === "/health" && req.method === "GET") {
@@ -26,7 +49,116 @@ const server = createServer((req, res) => {
       JSON.stringify({
         active_conversation_id: activeConversationId,
         conversations,
-        messages: messages.filter((message) => message.conversation_id === activeConversationId)
+        messages: messages.filter((message) => message.conversation_id === activeConversationId),
+        settings: {
+          channel: releaseChannel,
+          experimental_flags: experimentalFlags,
+          active_flags: activeFlags()
+        },
+        changelog
+      })
+    );
+    return;
+  }
+
+  if (req.url === "/settings/channel" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", () => {
+      try {
+        const payload = JSON.parse(body || "{}");
+        if (payload.channel !== "stable" && payload.channel !== "experimental") {
+          throw new Error("Unsupported release channel.");
+        }
+        releaseChannel = payload.channel;
+        appendChangelog(
+          `Release channel set to ${releaseChannel}`,
+          "Updated feature toggle channel preference. This does not roll back code or data."
+        );
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            settings: {
+              channel: releaseChannel,
+              experimental_flags: experimentalFlags,
+              active_flags: activeFlags()
+            }
+          })
+        );
+      } catch {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ detail: "Unsupported release channel." }));
+      }
+    });
+    return;
+  }
+
+  if (req.url?.startsWith("/settings/flags/") && req.method === "POST") {
+    if (releaseChannel !== "experimental") {
+      res.writeHead(409, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ detail: "Experimental flags can only be changed in experimental channel." }));
+      return;
+    }
+
+    const flagKey = req.url.replace("/settings/flags/", "");
+    if (flagKey !== "show_runtime_diagnostics") {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ detail: "Unknown experimental flag." }));
+      return;
+    }
+
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", () => {
+      let enabled = false;
+      try {
+        const payload = JSON.parse(body || "{}");
+        enabled = payload.enabled === true;
+      } catch {
+        enabled = false;
+      }
+      experimentalFlags[flagKey] = enabled;
+      appendChangelog(
+        `${flagKey} ${enabled ? "enabled" : "disabled"}`,
+        `Feature toggle rollback only: set ${flagKey} to ${enabled ? "on" : "off"}.`,
+        [flagKey]
+      );
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          settings: {
+            channel: releaseChannel,
+            experimental_flags: experimentalFlags,
+            active_flags: activeFlags()
+          }
+        })
+      );
+    });
+    return;
+  }
+
+  if (req.url === "/settings/experiments/reset" && req.method === "POST") {
+    const changedFlags = Object.keys(experimentalFlags).filter((flagKey) => experimentalFlags[flagKey]);
+    for (const flagKey of Object.keys(experimentalFlags)) {
+      experimentalFlags[flagKey] = false;
+    }
+    appendChangelog(
+      "Experiments reset",
+      "Disabled all experimental feature toggles. This does not roll back code or stored data.",
+      changedFlags
+    );
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        settings: {
+          channel: releaseChannel,
+          experimental_flags: experimentalFlags,
+          active_flags: activeFlags()
+        }
       })
     );
     return;
@@ -88,6 +220,9 @@ const server = createServer((req, res) => {
       updated_at: now
     });
     messages.splice(0, messages.length);
+    releaseChannel = "stable";
+    experimentalFlags.show_runtime_diagnostics = false;
+    changelog.splice(0, changelog.length);
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ ok: true, active_conversation_id: activeConversationId }));
     return;
