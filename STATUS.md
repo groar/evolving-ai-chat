@@ -72,6 +72,7 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
 ### Current State (2026-02-26)
 - Shipped / working:
   - This repository scaffold: ticketing board + PM/QA workflow docs.
+  - Desktop app skeleton (Tauri + React) with basic chat UI shell (T-0003).
   - A process path for agentic iteration (tickets → in-progress → review → QA → done).
 - Known gaps:
   - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).

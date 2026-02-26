@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0003
-- Status: review
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -74,3 +74,4 @@ Create the desktop app shell with a basic, keyboard-usable chat UI so we have a 
 - 2026-02-26: Moved to `in-progress/` for implementation.
 - 2026-02-26: Implemented desktop app skeleton and moved to `review/`.
 - 2026-02-26: QA checkpoint completed; evidence added.
+- 2026-02-26: Accepted; moved to `done/`.
