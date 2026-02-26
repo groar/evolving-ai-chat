@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -36,6 +37,13 @@ class RuntimeStateResponse(BaseModel):
     active_conversation_id: str
     conversations: list[ConversationSummary]
     messages: list[MessageRecord]
+    settings: "RuntimeSettings"
+
+
+class RuntimeSettings(BaseModel):
+    channel: Literal["stable", "experimental"]
+    experimental_flags: dict[str, bool]
+    active_flags: dict[str, bool]
 
 
 class NewConversationRequest(BaseModel):
@@ -54,6 +62,18 @@ class HealthResponse(BaseModel):
 class DeleteDataResponse(BaseModel):
     ok: bool
     active_conversation_id: str
+
+
+class RuntimeSettingsResponse(BaseModel):
+    settings: RuntimeSettings
+
+
+class ReleaseChannelUpdateRequest(BaseModel):
+    channel: Literal["stable", "experimental"]
+
+
+class FeatureFlagUpdateRequest(BaseModel):
+    enabled: bool
 
 
 def make_chat_response(conversation_id: str, message: str) -> ChatResponse:

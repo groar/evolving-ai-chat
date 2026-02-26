@@ -14,7 +14,31 @@ type Conversation = {
   updated_at: string;
 };
 
+type RuntimeSettings = {
+  channel: "stable" | "experimental";
+  experimental_flags: Record<string, boolean>;
+  active_flags: Record<string, boolean>;
+};
+
+type RuntimeStatePayload = {
+  active_conversation_id: string;
+  conversations: Conversation[];
+  messages: Array<{
+    message_id: number;
+    role: "user" | "assistant";
+    text: string;
+    meta?: string | null;
+  }>;
+  settings: RuntimeSettings;
+};
+
 const runtimeBase = "http://127.0.0.1:8787";
+const diagnosticsFlagKey = "show_runtime_diagnostics";
+const defaultSettings: RuntimeSettings = {
+  channel: "stable",
+  experimental_flags: {},
+  active_flags: {}
+};
 
 export function App() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -24,6 +48,7 @@ export function App() {
   const [isSending, setIsSending] = useState(false);
   const [isBooting, setIsBooting] = useState(true);
   const [isResetting, setIsResetting] = useState(false);
+  const [settings, setSettings] = useState<RuntimeSettings>(defaultSettings);
   const [runtimeError, setRuntimeError] = useState<string | null>(
     "Runtime unavailable. Start the local runtime to enable responses."
   );
@@ -39,8 +64,29 @@ export function App() {
 
   const hasMessages = messages.length > 0;
   const canSend = composer.trim().length > 0 && !isSending && activeConversationId.length > 0;
-  const channelLabel = useMemo(() => "Stable (default)", []);
+  const channelLabel = useMemo(
+    () => (settings.channel === "experimental" ? "Experimental" : "Stable (default)"),
+    [settings.channel]
+  );
+  const diagnosticsEnabled = Boolean(settings.active_flags[diagnosticsFlagKey]);
   const canRetry = !isSending && !isResetting;
+  const canToggleFlags = settings.channel === "experimental" && !isSending && !isResetting;
+  const configuredDiagnosticsFlag = Boolean(settings.experimental_flags[diagnosticsFlagKey]);
+
+  function applyState(payload: RuntimeStatePayload, preferredConversationId?: string) {
+    setConversations(payload.conversations);
+    setActiveConversationId(preferredConversationId || payload.active_conversation_id);
+    setMessages(
+      payload.messages.map((message) => ({
+        id: message.message_id,
+        role: message.role,
+        text: message.text,
+        meta: message.meta ?? undefined
+      }))
+    );
+    setSettings(payload.settings ?? defaultSettings);
+    setRuntimeError(null);
+  }
 
   async function refreshState(preferredConversationId?: string) {
     try {
@@ -48,28 +94,8 @@ export function App() {
       if (!response.ok) {
         throw new Error("Runtime unavailable");
       }
-      const payload = (await response.json()) as {
-        active_conversation_id: string;
-        conversations: Conversation[];
-        messages: Array<{
-          message_id: number;
-          role: "user" | "assistant";
-          text: string;
-          meta?: string | null;
-        }>;
-      };
-
-      setConversations(payload.conversations);
-      setActiveConversationId(preferredConversationId || payload.active_conversation_id);
-      setMessages(
-        payload.messages.map((message) => ({
-          id: message.message_id,
-          role: message.role,
-          text: message.text,
-          meta: message.meta ?? undefined
-        }))
-      );
-      setRuntimeError(null);
+      const payload = (await response.json()) as RuntimeStatePayload;
+      applyState(payload, preferredConversationId);
     } catch {
       setRuntimeError("Runtime unavailable. Retry once runtime is running.");
     } finally {
@@ -143,6 +169,47 @@ export function App() {
     }
   }
 
+  async function updateChannel(nextChannel: "stable" | "experimental") {
+    if (isSending || isResetting || settings.channel === nextChannel) {
+      return;
+    }
+    try {
+      const response = await fetch(`${runtimeBase}/settings/channel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel: nextChannel })
+      });
+      if (!response.ok) {
+        throw new Error("Channel update failed");
+      }
+      const payload = (await response.json()) as { settings: RuntimeSettings };
+      setSettings(payload.settings);
+      await refreshState(activeConversationId);
+    } catch {
+      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+    }
+  }
+
+  async function updateExperimentalFlag(enabled: boolean) {
+    if (!canToggleFlags) {
+      return;
+    }
+    try {
+      const response = await fetch(`${runtimeBase}/settings/flags/${diagnosticsFlagKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled })
+      });
+      if (!response.ok) {
+        throw new Error("Flag update failed");
+      }
+      const payload = (await response.json()) as { settings: RuntimeSettings };
+      setSettings(payload.settings);
+    } catch {
+      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+    }
+  }
+
   async function sendMessage() {
     if (!canSend) {
       return;
@@ -207,6 +274,39 @@ export function App() {
           ))}
         </ul>
         <div className="left-rail-actions">
+          <section className="settings-panel" aria-label="Release channel settings">
+            <p className="settings-title">Release Channel</p>
+            <p className="settings-copy">Local-only setting. Stable hides experiments; Experimental lets you test opt-in features.</p>
+            <div className="channel-toggle">
+              <button
+                type="button"
+                className={`channel-btn ${settings.channel === "stable" ? "active" : ""}`}
+                onClick={() => void updateChannel("stable")}
+                disabled={isSending || isResetting}
+              >
+                Stable
+              </button>
+              <button
+                type="button"
+                className={`channel-btn ${settings.channel === "experimental" ? "active" : ""}`}
+                onClick={() => void updateChannel("experimental")}
+                disabled={isSending || isResetting}
+              >
+                Experimental
+              </button>
+            </div>
+
+            <label className="flag-control">
+              <input
+                type="checkbox"
+                checked={configuredDiagnosticsFlag}
+                disabled={!canToggleFlags}
+                onChange={(event) => void updateExperimentalFlag(event.target.checked)}
+              />
+              Show runtime diagnostics (experimental)
+            </label>
+            {settings.channel !== "experimental" && <p className="flag-note">Switch to Experimental to adjust experiment toggles.</p>}
+          </section>
           <button type="button" className="rail-btn" onClick={() => void createConversation()} disabled={isSending || isResetting}>
             + New Conversation
           </button>
@@ -226,6 +326,13 @@ export function App() {
         </header>
 
         <div className="transcript" aria-live="polite">
+          {diagnosticsEnabled && (
+            <section className="diagnostics-card" aria-label="Runtime diagnostics">
+              <p>Runtime diagnostics enabled</p>
+              <p>Conversations: {conversations.length}</p>
+              <p>Messages in view: {messages.length}</p>
+            </section>
+          )}
           {isBooting && (
             <div className="empty-state">
               <p>Loading local state...</p>

@@ -49,6 +49,12 @@ Expected behavior:
 - If runtime is not started on `127.0.0.1:8787`, smoke fails and the UI shows "Runtime unavailable".
 - Once runtime is available, smoke should pass and chat requests can receive responses.
 
+## Release Channels (T-0006)
+- The app persists a local-only release channel setting: `stable` (default) or `experimental`.
+- Switch channels from the left-rail Settings card.
+- In `experimental`, you can opt into experimental flags (currently: runtime diagnostics card).
+- In `stable`, experimental flags are not toggleable and their UI stays hidden.
+
 ## Codex Sandbox Note (QA Runs)
 In Codex sandboxed execution, local port binding can fail with `EPERM` for both runtime (`8787`) and Vite (`5173`).  
 If that happens, rerun smoke with escalated permissions and start/stop the stub runtime in one command:

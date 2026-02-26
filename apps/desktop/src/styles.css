@@ -90,6 +90,69 @@ body {
   gap: 8px;
 }
 
+.settings-panel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fffdf6;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.settings-copy {
+  margin: 0;
+  font-size: 0.83rem;
+  color: var(--muted);
+}
+
+.channel-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.channel-btn {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+  padding: 6px 8px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.channel-btn.active {
+  border-color: var(--accent);
+  background: #fff2e6;
+  color: #8d2400;
+  font-weight: 700;
+}
+
+.channel-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.flag-control {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.84rem;
+}
+
+.flag-note {
+  margin: 0;
+  font-size: 0.79rem;
+  color: var(--muted);
+}
+
 .rail-btn {
   border: 1px solid var(--border);
   background: #fffdfa;
@@ -169,6 +232,20 @@ body {
 
 .empty-state p:last-child {
   margin-bottom: 0;
+}
+
+.diagnostics-card {
+  border: 1px solid #9ebf97;
+  background: #effbe8;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 3px;
+}
+
+.diagnostics-card p {
+  margin: 0;
+  font-size: 0.84rem;
 }
 
 .message {

@@ -4,9 +4,12 @@ from .models import (
     ChatRequest,
     ChatResponse,
     DeleteDataResponse,
+    FeatureFlagUpdateRequest,
     HealthResponse,
     NewConversationRequest,
     NewConversationResponse,
+    ReleaseChannelUpdateRequest,
+    RuntimeSettingsResponse,
     RuntimeStateResponse,
     make_chat_response,
 )
@@ -24,6 +27,33 @@ def health() -> HealthResponse:
 @app.get("/state", response_model=RuntimeStateResponse)
 def state() -> RuntimeStateResponse:
     return RuntimeStateResponse(**storage.get_state())
+
+
+@app.get("/settings", response_model=RuntimeSettingsResponse)
+def runtime_settings() -> RuntimeSettingsResponse:
+    return RuntimeSettingsResponse(settings=storage.get_release_settings())
+
+
+@app.post("/settings/channel", response_model=RuntimeSettingsResponse)
+def update_release_channel(payload: ReleaseChannelUpdateRequest) -> RuntimeSettingsResponse:
+    try:
+        settings = storage.set_release_channel(payload.channel)
+        return RuntimeSettingsResponse(settings=settings)
+    except ValueError as error:
+        storage.append_event("runtime_error", {"detail": str(error), "endpoint": "/settings/channel"})
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+@app.post("/settings/flags/{flag_key}", response_model=RuntimeSettingsResponse)
+def update_feature_flag(flag_key: str, payload: FeatureFlagUpdateRequest) -> RuntimeSettingsResponse:
+    try:
+        settings = storage.set_experimental_flag(flag_key, payload.enabled)
+        return RuntimeSettingsResponse(settings=settings)
+    except ValueError as error:
+        detail = str(error)
+        status_code = 409 if "only be changed in experimental channel" in detail else 400
+        storage.append_event("runtime_error", {"detail": detail, "endpoint": "/settings/flags/{flag_key}"})
+        raise HTTPException(status_code=status_code, detail=detail) from error
 
 
 @app.post("/chat", response_model=ChatResponse)
