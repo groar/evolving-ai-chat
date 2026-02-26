@@ -16,6 +16,7 @@ This file is the source of truth for ready-ticket pickup order.
 | Rank | Ticket | Priority | Why now |
 | --- | --- | --- | --- |
 | 1 | T-0010 | P2 | Hardens the “real” FastAPI runtime path behind the existing UI↔runtime contract. |
+| 2 | T-0009 | P3 | Choose and document the harness workflow so future self-evolution stays auditable and reviewable. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

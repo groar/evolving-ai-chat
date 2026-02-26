@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0006
-- Status: review
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: core
@@ -95,3 +95,4 @@ Introduce feature flags and two release channels (stable vs experimental) so the
 - 2026-02-26: Added local-only release channel settings UI and experimental diagnostics card gated by `show_runtime_diagnostics`.
 - 2026-02-26: Recorded implementation evidence (`build`, `smoke:storage`, runtime smoke via Node fallback) and moved to `review/`.
 - 2026-02-26: Completed automatic QA phase; no blocking findings. QA evidence linked in ticket.
+- 2026-02-26: PM accepted; moved to `done/`.

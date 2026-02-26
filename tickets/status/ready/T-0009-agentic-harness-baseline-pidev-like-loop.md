@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0009
-- Status: backlog
+- Status: ready
 - Priority: P3
 - Type: spike
 - Area: core
@@ -43,4 +43,4 @@ If we discover constraints (offline-only, no network, or platform limits), re-sc
 
 ## Change Log
 - 2026-02-26: Ticket created.
-
+- 2026-02-26: Moved to `ready/` for pickup after T-0010.

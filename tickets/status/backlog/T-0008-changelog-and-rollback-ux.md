@@ -19,7 +19,7 @@ Add a user-facing changelog (“what changed and why”) and straightforward rol
 
 ## References
 - `STATUS.md`
-- `tickets/status/backlog/T-0006-feature-flags-and-release-channels.md`
+- `tickets/status/done/T-0006-feature-flags-and-release-channels.md`
 
 ## Feedback References (Optional)
 - F-20260226-001
@@ -42,4 +42,3 @@ Add a user-facing changelog (“what changed and why”) and straightforward rol
 
 ## Change Log
 - 2026-02-26: Ticket created.
-
