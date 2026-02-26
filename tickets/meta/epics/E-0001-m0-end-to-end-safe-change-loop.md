@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: E-0001
-- Status: active
+- Status: complete
 - Owner: pm-agent
 - Created: 2026-02-26
 - Updated: 2026-02-26
@@ -39,9 +39,7 @@ Prove the core promise safely: the desktop app can observe friction/feedback, pr
 
 ## Progress (Ticket Status)
 - Done:
-  - T-0002, T-0003, T-0004, T-0005, T-0006, T-0007, T-0009, T-0010
-- Next up:
-  - T-0008
+  - T-0002, T-0003, T-0004, T-0005, T-0006, T-0007, T-0008, T-0009, T-0010
 - Planned:
   - (none)
 

@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0008
-- Status: review
+- Status: done
 - Priority: P3
 - Type: feature
 - Area: ui
@@ -118,3 +118,4 @@ Add a user-facing changelog (“what changed and why”) and straightforward rol
 - 2026-02-26: Moved to `in-progress/` and implemented local changelog storage, rollback controls, and unified settings surface.
 - 2026-02-26: Added deterministic UI regression test for changelog states and rollback confirmations.
 - 2026-02-26: Moved to `review/` with implementation evidence and passed automatic QA phase; checkpoint linked.
+- 2026-02-26: PM accepted QA evidence and moved ticket to `done/`.

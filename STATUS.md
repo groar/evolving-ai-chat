@@ -73,6 +73,7 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
 - Shipped / working:
   - This repository scaffold: ticketing board + PM/QA workflow docs.
   - Desktop app skeleton (Tauri + React) with basic chat UI shell (T-0003).
+  - Release controls + user trust surfaces: stable/experimental channels, changelog, and rollback UX (T-0006, T-0008).
   - A process path for agentic iteration (tickets → in-progress → review → QA → done).
 - Known gaps:
   - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).
@@ -85,16 +86,16 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- Next milestone: M0 — “End-to-End Safe Change Loop”
+- Next milestone: M1 — “First self-improvement cycle”
   - Definition of done:
-    - A minimal chat UI exists (even crude).
-    - The system can capture a small piece of feedback/friction.
-    - An agent can propose a small, bounded change (e.g., add a shortcut, tweak a panel, improve a command).
-    - The change runs through automated checks (at least smoke tests + basic evals).
-    - The user can accept/reject and rollback, with a short changelog entry.
+    - The user can capture explicit feedback in-app (local-only).
+    - The system can create a small, bounded "change proposal" artifact from that feedback.
+    - Validation gates run and results are attached to the proposal.
+    - The user can accept/reject; acceptance produces a changelog entry; rejection records a rationale.
 - Next tickets to prioritize:
-  - Create initial backlog tickets that cover: platform choice, MVP UI, agent runtime/tooling, data boundary, and eval gating.
-  - Then order them in `tickets/status/ready/ORDER.md`.
+  - T-0011: define the loop spec so implementation does not invent core rules/artifacts.
+  - T-0012: implement in-app feedback capture.
+  - T-0013: implement proposal artifact (format + storage + decision gating).
 
 ## Decisions (Draft; confirm/adjust as we start)
 Record important decisions so future agents do not re-litigate context.
@@ -111,4 +112,4 @@ Record important decisions so future agents do not re-litigate context.
 | 2026-02-26 | Harness baseline: local-first patch workflow (optional PR mirror) | Works in offline/sandboxed environments while preserving auditable diffs, validation artifacts, and ticketed approvals | tickets/status/done/T-0009-agentic-harness-baseline-pidev-like-loop.md |
 
 ## Open Questions (Pick early; unblock architecture)
-- None currently blocking M0 architecture baseline.
+- None currently blocking M1 loop spec.
