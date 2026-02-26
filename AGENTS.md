@@ -45,7 +45,7 @@ If the user explicitly waives a step (for example “skip QA for this ticket”)
 ## Required Work Pattern
 1. Pick a ticket from `tickets/status/ready/` unless the user reprioritizes.
 2. Move the ticket to `tickets/status/in-progress/` before implementation.
-3. Implement in small slices: design/spec -> implementation -> tests -> docs.
+3. Implement in small slices; keep code mostly self-explanatory and document only non-obvious behavior/decisions: design/spec -> implementation -> tests -> docs.
 4. Update ticket checklist and change log as work progresses.
 5. Move to `tickets/status/review/` when implementation/tests/docs are complete.
 6. Automatic QA phase (default): after moving to `review/`, switch roles to QA and validate the ticket using `tests/AGENTS.md` **only when changes affect software/behavior**. Do not continue implementation during this phase; record findings and create bug tickets as needed.

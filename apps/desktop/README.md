@@ -32,7 +32,7 @@ npm run tauri:dev
 ## Smoke Checks
 Start the local FastAPI runtime in terminal A:
 ```bash
-npm run runtime:stub
+npm run runtime:fastapi
 ```
 
 If Python dependencies are not available in your environment, use the Node fallback stub for local smoke checks:
@@ -45,9 +45,20 @@ Then run the health probe in terminal B:
 npm run smoke
 ```
 
+Or run the managed FastAPI smoke (starts runtime, runs checks, writes an artifact log):
+```bash
+npm run smoke:fastapi
+```
+
+Use an already-running runtime:
+```bash
+npm run smoke:fastapi -- --assume-running
+```
+
 Expected behavior:
 - If runtime is not started on `127.0.0.1:8787`, smoke fails and the UI shows "Runtime unavailable".
 - Once runtime is available, smoke should pass and chat requests can receive responses.
+- `smoke:fastapi` writes a timestamped artifact log under `tickets/meta/qa/artifacts/runtime-smoke/`.
 
 ## Release Channels (T-0006)
 - The app persists a local-only release channel setting: `stable` (default) or `experimental`.

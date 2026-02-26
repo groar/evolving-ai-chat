@@ -21,9 +21,19 @@ const checks = [
       }
 
       const payload = await response.json();
+      const hasRequiredKeys =
+        payload &&
+        Object.prototype.hasOwnProperty.call(payload, "reply") &&
+        Object.prototype.hasOwnProperty.call(payload, "model_id") &&
+        Object.prototype.hasOwnProperty.call(payload, "created_at") &&
+        Object.prototype.hasOwnProperty.call(payload, "cost");
+
       return (
-        payload.reply === "stub: hello runtime" &&
-        payload.model_id === "stub" &&
+        hasRequiredKeys &&
+        typeof payload.reply === "string" &&
+        payload.reply.length > 0 &&
+        typeof payload.model_id === "string" &&
+        payload.model_id.length > 0 &&
         typeof payload.created_at === "string" &&
         payload.created_at.length > 0 &&
         typeof payload.cost === "number"
