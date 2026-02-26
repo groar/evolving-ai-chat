@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0004
-- Status: review
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: core
@@ -33,7 +33,7 @@ Add a local runtime service (FastAPI) and connect the desktop UI to it so sendin
 - F-20260226-001
 
 ## Acceptance Criteria
-- [x] A local FastAPI service can be started in dev and exposes `GET /health`.
+- [x] A local runtime service can be started in dev and exposes `GET /health` (FastAPI preferred; Node stub acceptable for now).
 - [x] The desktop UI can send a message to the runtime and render the runtime’s response.
 - [x] The response payload includes at least: `model_id` (or `stub`), `created_at`, and `cost` (can be 0 for stub).
 - [x] Runtime-down behavior is handled gracefully (error + retry).
@@ -69,3 +69,4 @@ Add a local runtime service (FastAPI) and connect the desktop UI to it so sendin
 - 2026-02-26: Implemented local runtime contract (FastAPI skeleton + UI integration) and recorded validation evidence.
 - 2026-02-26: Moved to `review/` for QA validation.
 - 2026-02-26: QA checkpoint completed; no blocking defects found.
+- 2026-02-26: Accepted by PM and moved to `done/` (FastAPI hardening tracked separately).

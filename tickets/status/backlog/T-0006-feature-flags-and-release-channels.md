@@ -28,7 +28,7 @@ Introduce feature flags and two release channels (stable vs experimental) so the
 
 ## References
 - `STATUS.md`
-- `tickets/status/backlog/T-0002-define-autonomy-and-data-boundary-defaults.md`
+- `tickets/status/done/T-0002-define-autonomy-and-data-boundary-defaults.md`
 
 ## Feedback References (Optional)
 - F-20260226-001
@@ -48,4 +48,3 @@ Introduce feature flags and two release channels (stable vs experimental) so the
 
 ## Change Log
 - 2026-02-26: Ticket created.
-

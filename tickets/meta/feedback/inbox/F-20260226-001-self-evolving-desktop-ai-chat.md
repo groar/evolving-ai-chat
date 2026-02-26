@@ -6,7 +6,7 @@
 - Source: user-request
 - Theme: direction
 - Severity: S2
-- Linked Tickets: T-0002, T-0003, T-0004, T-0005, T-0006, T-0007, T-0008, T-0009
+- Linked Tickets: T-0002, T-0003, T-0004, T-0005, T-0006, T-0007, T-0008, T-0009, T-0010
 - Received: 2026-02-26
 - Updated: 2026-02-26
 
@@ -24,4 +24,3 @@ Build a desktop-first AI chat/workbench that can safely and continuously evolve 
 - Decision: convert to initial epic + v1 ticket queue
 - Rationale: foundational direction-setting; enables immediate MVP path with safety gates.
 - Revisit Trigger: after M0 ships (“end-to-end safe change loop”).
-

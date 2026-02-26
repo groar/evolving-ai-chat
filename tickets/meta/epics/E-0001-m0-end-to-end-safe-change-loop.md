@@ -35,7 +35,7 @@ Prove the core promise safely: the desktop app can observe friction/feedback, pr
 - T-0007 Validation gates + sandboxed verification runner
 - T-0008 Changelog + rollback UX
 - T-0009 Agentic harness baseline (pi.dev-like PR/ticket loop)
+- T-0010 FastAPI runtime dev startup + smoke verification
 
 ## Notes
 Keep slices small. Ship something “boring but solid” first, then accelerate iteration once gates are trustworthy.
-
