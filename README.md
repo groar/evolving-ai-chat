@@ -19,3 +19,7 @@ Project-agnostic repository scaffold for AI-assisted delivery workflows.
 2. Fill out `STATUS.md` with the initial project description and constraints.
 3. Create initial tickets in `tickets/status/backlog/`.
 4. Prioritize work in `tickets/status/ready/ORDER.md`.
+
+## Desktop App Setup
+For the local desktop shell bootstrap and environment commands, see:
+- `apps/desktop/README.md`
