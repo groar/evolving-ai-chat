@@ -37,5 +37,13 @@ Prove the core promise safely: the desktop app can observe friction/feedback, pr
 - T-0009 Agentic harness baseline (pi.dev-like PR/ticket loop)
 - T-0010 FastAPI runtime dev startup + smoke verification
 
+## Progress (Ticket Status)
+- Done:
+  - T-0002, T-0003, T-0004, T-0005, T-0007
+- Next up:
+  - T-0006
+- Planned:
+  - T-0010 (ready after T-0006), T-0008, T-0009
+
 ## Notes
 Keep slices small. Ship something “boring but solid” first, then accelerate iteration once gates are trustworthy.

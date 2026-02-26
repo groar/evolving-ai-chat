@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0005
-- Status: review
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: core
@@ -104,3 +104,4 @@ Persist conversations and a minimal event log locally (SQLite) to enable continu
 - 2026-02-26: Moved to `in-progress/` and implemented runtime-first SQLite persistence with conversation restore + event log.
 - 2026-02-26: Added user-facing `Delete Local Data` flow in the desktop UI and recorded smoke/build evidence.
 - 2026-02-26: Moved to `review/` and completed automatic QA checkpoint with no blocking defects.
+- 2026-02-26: Accepted; moved to `done/`.

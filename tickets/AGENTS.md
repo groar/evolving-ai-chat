@@ -29,6 +29,7 @@ This guide defines periodic Product Manager (PM) workflow runs in `tickets/`.
    - Use feedback IDs (`F-YYYYMMDD-NNN`) for traceability.
 2. Review recent delivery:
    - Inspect `tickets/status/done/` and `tickets/status/review/`.
+   - For tickets in `review/` with a passing QA checkpoint (and no blocking findings), accept by moving the ticket to `done/` and recording a `Change Log` entry.
 3. Decide whether to request user testing (qualitative validation):
    - Default: do not ask every PM run. Ask when the product meaningfully changed since the last PM summary.
    - Heuristic for "meaningfully changed":

@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0010
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: feature
 - Area: core
@@ -45,3 +45,4 @@ Non-goal: solving offline dependency installation in restricted sandboxes (that 
 
 ## Change Log
 - 2026-02-26: Ticket created (follow-up to accept T-0004 with Node stub allowed for now).
+- 2026-02-26: Moved to `ready/` (sequenced after T-0006 to harden the real runtime path).

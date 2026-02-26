@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0007
-- Status: review
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: core
@@ -94,3 +94,4 @@ Add a validation gate that runs tests/smoke checks in an isolated environment be
 - 2026-02-26: Moved to `in-progress/` and implemented root `npm run validate` orchestrator with timestamped artifact output and explicit sandbox skip handling.
 - 2026-02-26: Moved to `review/` after recording validation artifacts and documentation updates.
 - 2026-02-26: Automatic QA phase completed with no blocking findings (`tickets/meta/qa/2026-02-26-qa-checkpoint-t0007.md`).
+- 2026-02-26: Accepted; moved to `done/`.
