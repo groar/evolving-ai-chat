@@ -21,6 +21,14 @@ cargo --version
 ```bash
 npm install
 npm i -D @tauri-apps/cli
+uv venv .venv
+uv pip sync --python .venv/bin/python runtime/requirements.txt
+```
+
+If `uv` is unavailable, fallback to a local venv:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 python3 -m pip install -r runtime/requirements.txt
 ```
 
@@ -59,6 +67,11 @@ Expected behavior:
 - If runtime is not started on `127.0.0.1:8787`, smoke fails and the UI shows "Runtime unavailable".
 - Once runtime is available, smoke should pass and chat requests can receive responses.
 - `smoke:fastapi` writes a timestamped artifact log under `tickets/meta/qa/artifacts/runtime-smoke/`.
+
+Run runtime unit tests in the same declared dependency environment:
+```bash
+uv run --with-requirements runtime/requirements.txt python3 -m unittest runtime/test_proposals.py
+```
 
 ## Release Channels (T-0006)
 - The app persists a local-only release channel setting: `stable` (default) or `experimental`.

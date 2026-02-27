@@ -3,7 +3,20 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const base = "http://127.0.0.1:8787";
-const runtimeCommand = ["python3", "-m", "uvicorn", "runtime.main:app", "--host", "127.0.0.1", "--port", "8787"];
+const runtimeCommand = [
+  "uv",
+  "run",
+  "--with-requirements",
+  "runtime/requirements.txt",
+  "python3",
+  "-m",
+  "uvicorn",
+  "runtime.main:app",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8787",
+];
 const assumeRunning = process.argv.includes("--assume-running");
 
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");

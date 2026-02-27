@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0014
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: chore
 - Area: core
@@ -48,11 +48,11 @@ Multiple tickets have recorded blocked verification because Python deps are miss
 - F-20260226-001
 
 ## Acceptance Criteria
-- [ ] Python dependencies required by `apps/desktop/runtime/` are declared in this repo (single canonical place).
-- [ ] `cd apps/desktop && npm run runtime:fastapi` starts successfully in a clean environment (no missing imports).
-- [ ] `cd apps/desktop && npm run smoke:fastapi` passes.
-- [ ] `cd apps/desktop && python3 -m unittest runtime/test_proposals.py` passes when run in the declared environment.
-- [ ] `apps/desktop/README.md` documents the canonical commands to install/sync Python deps and run the above checks.
+- [x] Python dependencies required by `apps/desktop/runtime/` are declared in this repo (single canonical place).
+- [x] `cd apps/desktop && npm run runtime:fastapi` starts successfully in a clean environment (no missing imports).
+- [x] `cd apps/desktop && npm run smoke:fastapi` passes.
+- [x] `cd apps/desktop && python3 -m unittest runtime/test_proposals.py` passes when run in the declared environment.
+- [x] `apps/desktop/README.md` documents the canonical commands to install/sync Python deps and run the above checks.
 
 ## Dependencies / Sequencing (Optional)
 - Blocks:
@@ -60,22 +60,30 @@ Multiple tickets have recorded blocked verification because Python deps are miss
   - T-0016 (proposals UI panel) by restoring end-to-end fastapi smoke confidence.
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
-- QA checkpoint:
+- QA checkpoint: `tickets/meta/qa/2026-02-27-qa-checkpoint-t0014.md`
 - Screenshots/artifacts:
+  - `tickets/meta/qa/artifacts/runtime-smoke/2026-02-27T17-15-39-984Z/smoke-fastapi.log`
+  - `tickets/meta/qa/artifacts/runtime-smoke/2026-02-27T17-21-55-811Z/smoke-fastapi.log`
 
 ## Evidence (Verification)
 - Tests run:
+  - `cd apps/desktop && uv run --with-requirements runtime/requirements.txt python3 -m unittest runtime/test_proposals.py` -> PASS (`Ran 2 tests in 0.009s`).
+  - `cd apps/desktop && npm run smoke:fastapi` -> PASS.
 - Manual checks performed:
+  - `cd apps/desktop && npm run runtime:fastapi` (launched in background), then `curl http://127.0.0.1:8787/health` -> `{"ok":true}`.
 - Screenshots/logs/notes:
+  - `/tmp/t0014-runtime.log` (uvicorn startup/health/shutdown log for direct runtime command check).
+  - `/tmp/t0014-health.json` (health probe response).
 
 ## Subtasks
-- [ ] Design updates
-- [ ] Implementation
-- [ ] Tests
-- [ ] Documentation updates
+- [x] Design updates
+- [x] Implementation
+- [x] Tests
+- [x] Documentation updates
 
 ## Notes
 - Keep dependency scope minimal: likely `fastapi`, `uvicorn`, `pydantic` (plus any transitive needs).
 
 ## Change Log
 - 2026-02-27: Ticket created.
+- 2026-02-27: Added `pydantic` to runtime dependencies, switched runtime/smoke scripts to `uv run --with-requirements`, and updated desktop README with canonical dependency sync + verification commands.
