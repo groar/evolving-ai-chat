@@ -13,7 +13,9 @@ This file is the source of truth for ready-ticket pickup order.
 - If a listed ticket becomes blocked or moves out of `ready/`, update this file in the same change.
 
 ## Current Order
-No tickets currently in `ready/`.
+| Rank | Ticket | Priority | Notes |
+| --- | --- | --- | --- |
+| 1 | T-0014 | P1 | Unblock Python runtime smoke + unit tests (required for reliable QA) |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

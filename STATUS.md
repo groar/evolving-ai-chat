@@ -76,10 +76,12 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Release controls + user trust surfaces: stable/experimental channels, changelog, and rollback UX (T-0006, T-0008).
   - A process path for agentic iteration (tickets → in-progress → review → QA → done).
   - In-app feedback capture (local-only) with deterministic UI test coverage (T-0012).
+  - Change proposal artifact persistence + decision gating (local-only) (T-0013).
 - Known gaps:
   - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).
   - The MVP chat experience and the “observe → propose → validate → release” loop.
   - An evaluation harness (tests/evals) that can gate changes automatically.
+  - Python runtime dependency management for FastAPI and runtime unit tests (recurring verification blockers).
 - Known risks:
   - UX churn: frequent changes can annoy more than help without stability controls.
   - Regressions: agent-written changes can break core flows without strong tests/evals.
@@ -94,7 +96,9 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
     - Validation gates run and results are attached to the proposal.
     - The user can accept/reject; acceptance produces a changelog entry; rejection records a rationale.
 - Next tickets to prioritize:
-  - T-0013: implement proposal artifact (format + storage + decision gating).
+  - T-0014: Python runtime deps and test bootstrap (FastAPI + pydantic).
+  - T-0015: Proposal accept creates changelog entry.
+  - T-0016: Settings proposals panel (draft + validate + decide).
 
 ## Decisions (Draft; confirm/adjust as we start)
 Record important decisions so future agents do not re-litigate context.

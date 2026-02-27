@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0013
-- Status: review
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: core
@@ -84,3 +84,4 @@ Without a durable proposal artifact, the loop cannot be audited or repeated safe
 - 2026-02-27: Moved to `in-progress/` for implementation pickup.
 - 2026-02-27: Implemented proposal persistence, API endpoints, acceptance guardrail, and smoke coverage.
 - 2026-02-27: Moved to `review/` with implementation evidence and QA checkpoint link.
+- 2026-02-27: Accepted to `done/` after QA pass; noted unit-test execution gap due to missing Python dependencies in this environment.

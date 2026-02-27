@@ -38,15 +38,20 @@ Ship the first full "observe -> propose -> validate -> release" improvement cycl
 - T-0011 M1 spec: define the first improvement loop (doc)
 - T-0012 In-app feedback capture (explicit)
 - T-0013 Change proposal artifact (format + storage)
+- T-0014 Python runtime deps and test bootstrap (FastAPI + pydantic)
+- T-0015 Proposal accept creates changelog entry
+- T-0016 Settings proposals panel (draft + validate + decide)
 
 ## Progress (Ticket Status)
 - Done:
   - T-0011 M1 spec: define the first improvement loop (doc)
   - T-0012 In-app feedback capture (explicit)
+  - T-0013 Change proposal artifact (format + storage)
 - Next up:
-  - T-0013
+  - T-0014 Python runtime deps and test bootstrap (FastAPI + pydantic)
 - Planned:
-  - T-0013
+  - T-0015 Proposal accept creates changelog entry
+  - T-0016 Settings proposals panel (draft + validate + decide)
 
 ## Notes
 Keep this milestone constrained: aim for one narrow class of improvements (for example, UI microcopy or one settings tweak) so the loop can be proven quickly.
