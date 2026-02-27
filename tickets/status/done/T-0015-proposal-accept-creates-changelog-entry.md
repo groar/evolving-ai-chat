@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0015
-- Status: review
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: core
@@ -96,3 +96,4 @@ When a change proposal is accepted, persist exactly one changelog entry linked t
 - 2026-02-27: Added deterministic coverage for accept/reject/idempotency/fallback plus settings render coverage for `proposal_id`.
 - 2026-02-27: Completed QA checkpoint `tickets/meta/qa/2026-02-27-qa-checkpoint-t0015.md` (pass).
 - 2026-02-27: Moved to `review/` for PM acceptance.
+- 2026-02-27: Accepted by PM and moved to `done/`.

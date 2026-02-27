@@ -83,6 +83,7 @@ The loop is not user-operable until the user can see and decide on proposals fro
 
 ## Dependencies / Sequencing (Optional)
 - Depends on:
+  - T-0015 (Proposal accept creates changelog entry)
   - T-0014 (Python runtime deps and test bootstrap)
 - Blocks:
   - E-0002 milestone DoD (user can accept/reject and observe outcomes)
