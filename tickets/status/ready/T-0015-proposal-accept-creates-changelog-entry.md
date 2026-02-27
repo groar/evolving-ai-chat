@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0015
-- Status: backlog
+- Status: ready
 - Priority: P1
 - Type: feature
 - Area: core
@@ -85,3 +85,4 @@ When a change proposal is accepted, persist exactly one changelog entry linked t
 
 ## Change Log
 - 2026-02-27: Ticket created.
+- 2026-02-27: Moved to `ready/` and queued as next pickup.

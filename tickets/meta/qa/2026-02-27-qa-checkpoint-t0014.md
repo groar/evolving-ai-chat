@@ -1,7 +1,7 @@
 # QA Checkpoint - 2026-02-27 (T-0014)
 
 ## Scope Tested
-- Ticket: T-0014 (`tickets/status/review/T-0014-python-runtime-deps-and-test-bootstrap.md`)
+- Ticket: T-0014 (`tickets/status/done/T-0014-python-runtime-deps-and-test-bootstrap.md`)
 - Area: Python runtime dependency bootstrap for FastAPI runtime + runtime tests
 
 ## Automated Test Outcomes

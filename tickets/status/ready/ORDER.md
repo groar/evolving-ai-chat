@@ -15,7 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| - | - | - | Queue currently empty. |
+| 1 | T-0015 | P1 | Accepting a proposal must create exactly one changelog entry (no duplicates). |
+| 2 | T-0016 | P1 | Settings UI: propose/validate/decide; requires T-0015 for user-visible "release" outcome. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

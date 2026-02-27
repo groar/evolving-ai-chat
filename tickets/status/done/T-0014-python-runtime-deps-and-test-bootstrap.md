@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0014
-- Status: review
+- Status: done
 - Priority: P1
 - Type: chore
 - Area: core
@@ -87,3 +87,4 @@ Multiple tickets have recorded blocked verification because Python deps are miss
 ## Change Log
 - 2026-02-27: Ticket created.
 - 2026-02-27: Added `pydantic` to runtime dependencies, switched runtime/smoke scripts to `uv run --with-requirements`, and updated desktop README with canonical dependency sync + verification commands.
+- 2026-02-27: Accepted to `done/` after QA pass (QA: `tickets/meta/qa/2026-02-27-qa-checkpoint-t0014.md`).

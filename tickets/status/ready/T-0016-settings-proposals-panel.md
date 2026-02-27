@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0016
-- Status: backlog
+- Status: ready
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -104,3 +104,4 @@ The loop is not user-operable until the user can see and decide on proposals fro
 
 ## Change Log
 - 2026-02-27: Ticket created.
+- 2026-02-27: Moved to `ready/` (depends on T-0015 for changelog linkage).
