@@ -18,6 +18,14 @@ Ship the first full "observe -> propose -> validate -> release" improvement cycl
   - the settings "Changelog + Experiments" surface, and
   - the ticket/board history (traceability).
 
+## Validation Plan
+- Default: tier 2 targeted micro-validation (internal, project sponsor) once there is at least one concrete proposal to evaluate.
+- Probes (answer in 1-2 sentences each):
+  - In Settings, what do you think "Switch to Stable" does? What do you think it does not do?
+  - What do you think "Reset Experiments" does? Would you expect it to affect your conversations/data?
+  - After using the changelog once, do you feel you can understand "what changed + why" in under 10 seconds?
+- Evidence: record results in the implementing ticket's Evidence section or link to a dated PM checkpoint entry.
+
 ## Non-goals
 - Fully autonomous shipping without review.
 - Broad "AI plans your roadmap" behavior.

@@ -71,6 +71,11 @@ If blocked, move the ticket to `tickets/status/blocked/` and capture the blocker
 - Do not mark work complete without corresponding verification evidence.
 - Update docs in the same change set when behavior or process changes.
 
+## Validation Documentation (Don’t Bury It In Checkpoints)
+When a PM run proposes tier-2 micro-validation or tier-3 external user testing:
+- Record the plan in the owning epic (add/update a `Validation Plan` section).
+- Ensure at least one linked ticket has acceptance criteria that require capturing the validation results and where they’ll be recorded (ticket `Evidence` section and/or a dated checkpoint).
+
 ## Workflow Outputs
 - PM checkpoint outputs belong in `tickets/meta/feedback/`.
 - QA checkpoint outputs belong in `tickets/meta/qa/`.

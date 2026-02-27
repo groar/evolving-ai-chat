@@ -69,6 +69,7 @@ Write a concrete, implementation-ready spec for the first "observe -> propose ->
   - a proposal,
   - a validation result summary.
 - [ ] The spec includes a short "how to QA this milestone" checklist that maps to the loop phases.
+- [ ] The spec includes a tier-2 micro-validation plan (internal/project sponsor) and specifies where results must be recorded (ticket Evidence or dated PM checkpoint).
 
 ## Evidence (Verification)
 - Doc review (for docs-only changes):

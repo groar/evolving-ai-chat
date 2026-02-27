@@ -43,6 +43,9 @@ This guide defines periodic Product Manager (PM) workflow runs in `tickets/`.
    - Keep asks small and decision-oriented:
      - Micro probes: 1-3 questions max (for example "What do you think this does?", "What would you do next?", "What feels confusing?").
      - External test plan: 5-10 minutes, 3-7 prompts, clear "what decision this informs".
+   - Recording rule (do not bury plans in PM checkpoints):
+     - If tier 2 or tier 3 is requested and it gates an epic/milestone outcome, record the plan in the epic file under a `Validation Plan` section.
+     - Add/verify at least one linked ticket includes an acceptance criterion to capture results and where they will be recorded.
 4. Sanitize and structure feedback:
    - Consolidate duplicates.
    - Remove personal/sensitive details unless explicitly required.
@@ -118,6 +121,7 @@ Escalate to tier 2 or 3 when at least one is true:
   - Feedback themes
   - Interview topics and key answers (if run)
   - User testing ask/plan (if requested) or a one-line "skipped + why" note (if not)
+  - If tier 2/3 testing is planned: link the epic `Validation Plan` section (or add one if missing) and note where results will be recorded
   - Decisions and rationale
   - Feedback IDs touched and resulting status changes
   - Ticket/epic updates
