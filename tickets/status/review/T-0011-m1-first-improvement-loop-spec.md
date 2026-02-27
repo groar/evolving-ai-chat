@@ -2,14 +2,14 @@
 
 ## Metadata
 - ID: T-0011
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: docs
 - Area: core
 - Epic: E-0002
-- Owner: pm-agent
+- Owner: ai-agent
 - Created: 2026-02-26
-- Updated: 2026-02-26
+- Updated: 2026-02-27
 
 ## Summary
 Write a concrete, implementation-ready spec for the first "observe -> propose -> validate -> release" improvement loop, including artifacts, state transitions, and acceptance evidence.
@@ -58,26 +58,34 @@ Write a concrete, implementation-ready spec for the first "observe -> propose ->
 - F-20260226-001
 
 ## Acceptance Criteria
-- [ ] A new doc exists at `docs/m1-first-improvement-loop.md` describing:
+- [x] A new doc exists at `docs/m1-first-improvement-loop.md` describing:
   - the minimal loop phases and state transitions,
   - required artifacts with required fields,
   - which UI surfaces are involved,
   - the first chosen "improvement class" in-scope and explicit non-goals,
   - validation evidence requirements.
-- [ ] The spec includes at least 3 concrete "example artifacts" (JSON-ish blocks are fine) for:
+- [x] The spec includes at least 3 concrete "example artifacts" (JSON-ish blocks are fine) for:
   - a feedback item,
   - a proposal,
   - a validation result summary.
-- [ ] The spec includes a short "how to QA this milestone" checklist that maps to the loop phases.
-- [ ] The spec includes a tier-2 micro-validation plan (internal/project sponsor) and specifies where results must be recorded (ticket Evidence or dated PM checkpoint).
+- [x] The spec includes a short "how to QA this milestone" checklist that maps to the loop phases.
+- [x] The spec includes a tier-2 micro-validation plan (internal/project sponsor) and specifies where results must be recorded (ticket Evidence or dated PM checkpoint).
 
 ## Evidence (Verification)
 - Doc review (for docs-only changes):
+  - Verified `docs/m1-first-improvement-loop.md` includes required phases, transitions, artifact fields, UI surfaces, in-scope improvement class, and non-goals.
+  - Verified three concrete example artifacts are present (`feedback_item`, `proposal`, `validation_run`).
+  - Verified "How To QA This Milestone" checklist maps to Observe/Propose/Validate/Release phases.
+  - Verified tier-2 micro-validation prompts and required recording locations are specified.
+  - QA run waived (docs-only ticket; no software/behavior impact).
 
 ## Subtasks
-- [ ] Draft the loop spec doc.
-- [ ] Add example artifacts and state transitions.
-- [ ] Add QA checklist + evidence expectations.
+- [x] Draft the loop spec doc.
+- [x] Add example artifacts and state transitions.
+- [x] Add QA checklist + evidence expectations.
 
 ## Change Log
 - 2026-02-26: Ticket created and moved to `ready/`.
+- 2026-02-27: Moved to `in-progress/` for implementation.
+- 2026-02-27: Added `docs/m1-first-improvement-loop.md` with phase/state model, required artifacts, examples, QA checklist, and tier-2 micro-validation plan.
+- 2026-02-27: Moved to `review/`; QA execution waived because changes are docs-only and do not affect software behavior.

@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Why now |
 | --- | --- | --- | --- |
-| 1 | T-0011 | P1 | Define the first minimal "observe -> propose -> validate -> release" loop so implementation can proceed without inventing core rules/artifacts. |
+| (empty) | (none) | (n/a) | Ready queue is empty; wait for PM reprioritization. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
