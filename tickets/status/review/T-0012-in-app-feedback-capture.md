@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0012
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -52,30 +52,38 @@ Explicit feedback capture is the minimal "observe" leg of the self-improvement l
 - F-20260226-001
 
 ## Acceptance Criteria
-- [ ] User can capture a feedback item from the main UI (discoverable entry point).
-- [ ] Captured feedback is persisted locally and appears in a simple list view.
-- [ ] Copy clearly states feedback stays local and does not imply external reporting.
-- [ ] Basic empty/error states are clear.
+- [x] User can capture a feedback item from the main UI (discoverable entry point).
+- [x] Captured feedback is persisted locally and appears in a simple list view.
+- [x] Copy clearly states feedback stays local and does not imply external reporting.
+- [x] Basic empty/error states are clear.
 
 ## UX Acceptance Criteria (Only If `Area: ui`)
-- [ ] Capture flow is keyboard-usable.
-- [ ] Success confirmation is visible and unambiguous.
+- [x] Capture flow is keyboard-usable.
+- [x] Success confirmation is visible and unambiguous.
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
-- QA checkpoint:
+- QA checkpoint: `tickets/meta/qa/2026-02-27-qa-checkpoint-t0012.md`
 - Screenshots/artifacts:
 
 ## Evidence (Verification)
 - Tests run:
+  - `npm test` (apps/desktop) -> PASS
+  - `npm run build` (apps/desktop) -> PASS
 - Manual checks performed:
+  - Verified capture entry point is available on main UI rail as `Capture Feedback` toggle.
+  - Verified keyboard-usable controls in capture form (textarea, checkboxes, submit button) and status/empty-state messaging paths.
 - Screenshots/logs/notes:
+  - Deterministic submit flow covered by `apps/desktop/src/feedbackPanel.test.tsx`.
 
 ## Subtasks
-- [ ] Design updates
-- [ ] Implementation
-- [ ] Tests
-- [ ] Documentation updates
+- [x] Design updates
+- [x] Implementation
+- [x] Tests
+- [x] Documentation updates
 
 ## Change Log
 - 2026-02-26: Ticket created.
 - 2026-02-27: Moved to `ready/` after M1 loop spec completed.
+- 2026-02-27: Moved to `in-progress/` for implementation.
+- 2026-02-27: Added local feedback capture panel, local persistence, list view, and deterministic submit test.
+- 2026-02-27: Moved to `review/` after implementation and verification evidence updates.

@@ -1,4 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { FeedbackPanel } from "./feedbackPanel";
+import {
+  appendFeedbackItem,
+  clearFeedbackItems,
+  createFeedbackItem,
+  readFeedbackItems,
+  type FeedbackItem,
+  type FeedbackTag
+} from "./feedbackStore";
 import { SettingsPanel, type ChangelogEntry, type RuntimeSettings } from "./settingsPanel";
 
 type ChatMessage = {
@@ -48,6 +57,12 @@ export function App() {
   const [changelog, setChangelog] = useState<ChangelogEntry[]>([]);
   const [settingsNotice, setSettingsNotice] = useState<string | null>(null);
   const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [feedbackDraftText, setFeedbackDraftText] = useState("");
+  const [feedbackTags, setFeedbackTags] = useState<FeedbackTag[]>([]);
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
+  const [feedbackNotice, setFeedbackNotice] = useState<string | null>(null);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [runtimeError, setRuntimeError] = useState<string | null>(
     "Runtime unavailable. Start the local runtime to enable responses."
   );
@@ -61,6 +76,15 @@ export function App() {
     void refreshState();
   }, []);
 
+  useEffect(() => {
+    try {
+      setFeedbackItems(readFeedbackItems(window.localStorage));
+      setFeedbackError(null);
+    } catch {
+      setFeedbackError("Could not load local feedback. You can still use chat.");
+    }
+  }, []);
+
   const hasMessages = messages.length > 0;
   const canSend = composer.trim().length > 0 && !isSending && activeConversationId.length > 0;
   const channelLabel = useMemo(
@@ -71,6 +95,7 @@ export function App() {
   const canRetry = !isSending && !isResetting;
   const canToggleFlags = settings.channel === "experimental" && !isSending && !isResetting;
   const configuredDiagnosticsFlag = Boolean(settings.experimental_flags[diagnosticsFlagKey]);
+  const isFeedbackBusy = isSending || isResetting;
 
   function applyState(payload: RuntimeStatePayload, preferredConversationId?: string) {
     setConversations(payload.conversations);
@@ -162,6 +187,12 @@ export function App() {
         throw new Error("Delete local data failed");
       }
       setComposer("");
+      clearFeedbackItems(window.localStorage);
+      setFeedbackItems([]);
+      setFeedbackDraftText("");
+      setFeedbackTags([]);
+      setFeedbackNotice(null);
+      setFeedbackError(null);
       await refreshState();
     } catch {
       setRuntimeError("Runtime unavailable. Retry once runtime is running.");
@@ -276,6 +307,38 @@ export function App() {
     }
   }
 
+  function toggleFeedbackTag(tag: FeedbackTag) {
+    setFeedbackTags((currentTags) =>
+      currentTags.includes(tag) ? currentTags.filter((value) => value !== tag) : [...currentTags, tag]
+    );
+  }
+
+  function submitFeedback() {
+    const nextText = feedbackDraftText.trim();
+    if (nextText.length === 0 || isFeedbackBusy) {
+      return;
+    }
+
+    const nextItem = createFeedbackItem({
+      text: nextText,
+      tags: feedbackTags,
+      contextPointer: activeConversationId || undefined
+    });
+
+    try {
+      const nextItems = appendFeedbackItem(window.localStorage, nextItem);
+      setFeedbackItems(nextItems);
+      setFeedbackDraftText("");
+      setFeedbackTags([]);
+      setFeedbackNotice("Saved locally. You can review captured items below.");
+      setFeedbackError(null);
+      setIsFeedbackOpen(true);
+    } catch {
+      setFeedbackNotice(null);
+      setFeedbackError("Could not save feedback locally. Core chat is unaffected.");
+    }
+  }
+
   function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
@@ -304,6 +367,20 @@ export function App() {
           ))}
         </ul>
         <div className="left-rail-actions">
+          <FeedbackPanel
+            isOpen={isFeedbackOpen}
+            isBusy={isFeedbackBusy}
+            draftText={feedbackDraftText}
+            selectedTags={feedbackTags}
+            contextPointer={activeConversationId || null}
+            items={feedbackItems}
+            notice={feedbackNotice}
+            error={feedbackError}
+            onToggleOpen={() => setIsFeedbackOpen((isOpen) => !isOpen)}
+            onChangeDraftText={setFeedbackDraftText}
+            onToggleTag={toggleFeedbackTag}
+            onSubmitFeedback={submitFeedback}
+          />
           <SettingsPanel
             settings={settings}
             changelog={changelog}
