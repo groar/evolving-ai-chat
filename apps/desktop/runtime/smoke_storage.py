@@ -63,6 +63,29 @@ def main() -> None:
         except ValueError:
             print("PASS: Stable channel blocks experimental flag writes")
 
+        created_proposal = second.create_proposal(
+            title="Persist proposal artifacts locally",
+            rationale="Need an auditable proposal object per feedback batch.",
+            source_feedback_ids=["F-20260226-001"],
+            diff_summary="Define proposal model and runtime persistence.",
+            risk_notes="SQLite schema migration and local API updates.",
+        )
+        expect(
+            created_proposal["source_feedback_ids"] == ["F-20260226-001"],
+            "Proposal stores feedback references",
+        )
+        proposal_with_validation = second.add_proposal_validation_run(
+            created_proposal["proposal_id"],
+            status="passing",
+            summary="Storage smoke and model serialization checks passed.",
+            artifact_refs=["tickets/meta/qa/artifacts/runtime-smoke/sample.log"],
+            validation_run_id="validation-smoke-1",
+        )
+        expect(
+            proposal_with_validation["validation_runs"][-1]["status"] == "passing",
+            "Proposal stores validation summary runs",
+        )
+
         new_id = second.reset_all()
         reset_state = second.get_state()
         expect(reset_state["active_conversation_id"] == new_id, "Delete local data resets active conversation")

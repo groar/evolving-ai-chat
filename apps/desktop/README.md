@@ -71,6 +71,17 @@ Expected behavior:
 - Changelog entries are local-only and list newest first with title, summary, channel, optional ticket ID, and changed flags.
 - `Switch to Stable` and `Reset Experiments` are feature-toggle rollback controls only; they do not roll back code or stored data.
 
+## Change Proposal Artifact (T-0013)
+- The runtime persists local change proposals in SQLite (`change_proposals` table).
+- Proposal fields include: `proposal_id`, `created_at`, `title`, `rationale`, `source_feedback_ids`, `diff_summary`, `risk_notes`, `validation_runs`, and `decision`.
+- Decision states: `pending`, `accepted`, `rejected`.
+- Acceptance guardrail: a proposal can only move to `accepted` when the most recent validation run is `passing`.
+- Runtime endpoints:
+  - `GET /proposals` lists all proposals (newest first).
+  - `POST /proposals` creates a proposal.
+  - `POST /proposals/{proposal_id}/validation-runs` appends a validation summary.
+  - `POST /proposals/{proposal_id}/decision` updates decision state with optional notes.
+
 ## Codex Sandbox Note (QA Runs)
 In Codex sandboxed execution, local port binding can fail with `EPERM` for both runtime (`8787`) and Vite (`5173`).  
 If that happens, rerun smoke with escalated permissions and start/stop the stub runtime in one command:

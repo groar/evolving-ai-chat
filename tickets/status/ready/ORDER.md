@@ -13,9 +13,7 @@ This file is the source of truth for ready-ticket pickup order.
 - If a listed ticket becomes blocked or moves out of `ready/`, update this file in the same change.
 
 ## Current Order
-| Rank | Ticket | Priority | Why now |
-| --- | --- | --- | --- |
-| 1 | T-0013 | P2 | Defines proposal artifact + decision record now that feedback capture exists. |
+No tickets currently in `ready/`.
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

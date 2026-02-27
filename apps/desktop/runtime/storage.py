@@ -14,6 +14,8 @@ ALLOWED_RELEASE_CHANNELS = {"stable", "experimental"}
 EXPERIMENTAL_FLAG_KEYS = {"show_runtime_diagnostics"}
 CHANGELOG_MAX_ITEMS = 20
 CURRENT_TICKET_ID = "T-0008"
+ALLOWED_DECISION_STATUS = {"pending", "accepted", "rejected"}
+ALLOWED_VALIDATION_STATUS = {"passing", "failing"}
 
 
 def utc_now_iso() -> str:
@@ -78,6 +80,20 @@ class RuntimeStorage:
                   channel TEXT NOT NULL,
                   ticket_id TEXT,
                   flags_changed_json TEXT
+                );
+
+                CREATE TABLE IF NOT EXISTS change_proposals (
+                  proposal_id TEXT PRIMARY KEY,
+                  created_at TEXT NOT NULL,
+                  title TEXT NOT NULL,
+                  rationale TEXT NOT NULL,
+                  source_feedback_ids_json TEXT NOT NULL,
+                  diff_summary TEXT NOT NULL,
+                  risk_notes TEXT NOT NULL,
+                  validation_runs_json TEXT NOT NULL,
+                  decision_status TEXT NOT NULL,
+                  decision_timestamp TEXT,
+                  decision_notes TEXT
                 );
                 """
             )
@@ -253,6 +269,278 @@ class RuntimeStorage:
         )
         return conversation_id
 
+    def _normalize_string_list(self, values: list[Any]) -> list[str]:
+        normalized: list[str] = []
+        for value in values:
+            if not isinstance(value, str):
+                continue
+            trimmed = value.strip()
+            if not trimmed:
+                continue
+            normalized.append(trimmed)
+        return normalized
+
+    def _normalize_validation_runs(self, raw_value: Any) -> list[dict[str, Any]]:
+        if not isinstance(raw_value, list):
+            return []
+
+        normalized: list[dict[str, Any]] = []
+        for item in raw_value:
+            if not isinstance(item, dict):
+                continue
+            status = item.get("status")
+            if status not in ALLOWED_VALIDATION_STATUS:
+                continue
+
+            created_at = item.get("created_at")
+            validation_run_id = item.get("validation_run_id")
+            if not isinstance(created_at, str) or not created_at:
+                continue
+            if not isinstance(validation_run_id, str) or not validation_run_id:
+                continue
+
+            summary = item.get("summary")
+            artifact_refs = item.get("artifact_refs")
+            normalized.append(
+                {
+                    "validation_run_id": validation_run_id,
+                    "status": status,
+                    "summary": summary if isinstance(summary, str) else "",
+                    "artifact_refs": self._normalize_string_list(artifact_refs if isinstance(artifact_refs, list) else []),
+                    "created_at": created_at,
+                }
+            )
+        return normalized
+
+    def _normalize_decision(self, status: Any, timestamp: Any, notes: Any) -> dict[str, Any]:
+        normalized_status = status if status in ALLOWED_DECISION_STATUS else "pending"
+        normalized_timestamp = timestamp if isinstance(timestamp, str) and timestamp else None
+        normalized_notes = notes if isinstance(notes, str) and notes.strip() else None
+        if normalized_status == "pending":
+            normalized_timestamp = None
+        return {
+            "status": normalized_status,
+            "decided_at": normalized_timestamp,
+            "notes": normalized_notes,
+        }
+
+    def _deserialize_proposal_row(self, row: sqlite3.Row) -> dict[str, Any]:
+        raw_feedback_ids = row["source_feedback_ids_json"] or "[]"
+        raw_validation_runs = row["validation_runs_json"] or "[]"
+        try:
+            parsed_feedback_ids = json.loads(raw_feedback_ids)
+        except json.JSONDecodeError:
+            parsed_feedback_ids = []
+        try:
+            parsed_validation_runs = json.loads(raw_validation_runs)
+        except json.JSONDecodeError:
+            parsed_validation_runs = []
+
+        return {
+            "proposal_id": str(row["proposal_id"]),
+            "created_at": str(row["created_at"]),
+            "title": str(row["title"]),
+            "rationale": str(row["rationale"]),
+            "source_feedback_ids": self._normalize_string_list(
+                parsed_feedback_ids if isinstance(parsed_feedback_ids, list) else []
+            ),
+            "diff_summary": str(row["diff_summary"]),
+            "risk_notes": str(row["risk_notes"]),
+            "validation_runs": self._normalize_validation_runs(parsed_validation_runs),
+            "decision": self._normalize_decision(
+                row["decision_status"],
+                row["decision_timestamp"],
+                row["decision_notes"],
+            ),
+        }
+
+    def _list_proposals_locked(self, connection: sqlite3.Connection) -> list[dict[str, Any]]:
+        rows = connection.execute(
+            """
+            SELECT proposal_id, created_at, title, rationale, source_feedback_ids_json, diff_summary, risk_notes,
+                   validation_runs_json, decision_status, decision_timestamp, decision_notes
+            FROM change_proposals
+            ORDER BY created_at DESC, proposal_id DESC
+            """
+        ).fetchall()
+        return [self._deserialize_proposal_row(row) for row in rows]
+
+    def list_proposals(self) -> list[dict[str, Any]]:
+        with self._lock, self._connect() as connection:
+            return self._list_proposals_locked(connection)
+
+    def create_proposal(
+        self,
+        *,
+        title: str,
+        rationale: str = "",
+        source_feedback_ids: list[str] | None = None,
+        diff_summary: str = "",
+        risk_notes: str = "",
+    ) -> dict[str, Any]:
+        proposal_id = str(uuid.uuid4())
+        created_at = utc_now_iso()
+        normalized_feedback_ids = self._normalize_string_list(source_feedback_ids or [])
+        with self._lock, self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO change_proposals(
+                  proposal_id, created_at, title, rationale, source_feedback_ids_json,
+                  diff_summary, risk_notes, validation_runs_json, decision_status, decision_timestamp, decision_notes
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NULL, NULL)
+                """,
+                (
+                    proposal_id,
+                    created_at,
+                    title.strip(),
+                    rationale.strip(),
+                    json.dumps(normalized_feedback_ids, separators=(",", ":")),
+                    diff_summary.strip(),
+                    risk_notes.strip(),
+                    "[]",
+                ),
+            )
+            self.append_event_locked(
+                connection,
+                event_type="change_proposal_created",
+                payload={"proposal_id": proposal_id, "source_feedback_count": len(normalized_feedback_ids)},
+            )
+            row = connection.execute(
+                """
+                SELECT proposal_id, created_at, title, rationale, source_feedback_ids_json, diff_summary, risk_notes,
+                       validation_runs_json, decision_status, decision_timestamp, decision_notes
+                FROM change_proposals
+                WHERE proposal_id = ?
+                LIMIT 1
+                """,
+                (proposal_id,),
+            ).fetchone()
+            if row is None:
+                raise RuntimeError("Proposal insert failed.")
+            return self._deserialize_proposal_row(row)
+
+    def add_proposal_validation_run(
+        self,
+        proposal_id: str,
+        *,
+        status: str,
+        summary: str = "",
+        artifact_refs: list[str] | None = None,
+        validation_run_id: str | None = None,
+    ) -> dict[str, Any]:
+        if status not in ALLOWED_VALIDATION_STATUS:
+            raise ValueError("Unsupported validation status.")
+
+        with self._lock, self._connect() as connection:
+            row = connection.execute(
+                "SELECT validation_runs_json FROM change_proposals WHERE proposal_id = ? LIMIT 1",
+                (proposal_id,),
+            ).fetchone()
+            if row is None:
+                raise ValueError("Proposal does not exist.")
+
+            try:
+                parsed_runs = json.loads(row["validation_runs_json"] or "[]")
+            except json.JSONDecodeError:
+                parsed_runs = []
+            normalized_runs = self._normalize_validation_runs(parsed_runs)
+            next_run_id = validation_run_id.strip() if isinstance(validation_run_id, str) and validation_run_id.strip() else str(uuid.uuid4())
+            normalized_runs.append(
+                {
+                    "validation_run_id": next_run_id,
+                    "status": status,
+                    "summary": summary.strip(),
+                    "artifact_refs": self._normalize_string_list(artifact_refs or []),
+                    "created_at": utc_now_iso(),
+                }
+            )
+
+            connection.execute(
+                """
+                UPDATE change_proposals
+                SET validation_runs_json = ?
+                WHERE proposal_id = ?
+                """,
+                (json.dumps(normalized_runs, separators=(",", ":")), proposal_id),
+            )
+            self.append_event_locked(
+                connection,
+                event_type="change_proposal_validation_added",
+                payload={"proposal_id": proposal_id, "status": status, "validation_run_id": next_run_id},
+            )
+            updated = connection.execute(
+                """
+                SELECT proposal_id, created_at, title, rationale, source_feedback_ids_json, diff_summary, risk_notes,
+                       validation_runs_json, decision_status, decision_timestamp, decision_notes
+                FROM change_proposals
+                WHERE proposal_id = ?
+                LIMIT 1
+                """,
+                (proposal_id,),
+            ).fetchone()
+            if updated is None:
+                raise RuntimeError("Proposal update failed.")
+            return self._deserialize_proposal_row(updated)
+
+    def update_proposal_decision(self, proposal_id: str, *, status: str, notes: str | None = None) -> dict[str, Any]:
+        if status not in ALLOWED_DECISION_STATUS:
+            raise ValueError("Unsupported decision status.")
+
+        normalized_notes = notes.strip() if isinstance(notes, str) and notes.strip() else None
+
+        with self._lock, self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT validation_runs_json
+                FROM change_proposals
+                WHERE proposal_id = ?
+                LIMIT 1
+                """,
+                (proposal_id,),
+            ).fetchone()
+            if row is None:
+                raise ValueError("Proposal does not exist.")
+
+            try:
+                parsed_runs = json.loads(row["validation_runs_json"] or "[]")
+            except json.JSONDecodeError:
+                parsed_runs = []
+            normalized_runs = self._normalize_validation_runs(parsed_runs)
+
+            if status == "accepted":
+                latest_run = normalized_runs[-1] if normalized_runs else None
+                if latest_run is None or latest_run.get("status") != "passing":
+                    raise ValueError("Acceptance requires a passing latest validation run.")
+
+            decision_timestamp = utc_now_iso() if status != "pending" else None
+            connection.execute(
+                """
+                UPDATE change_proposals
+                SET decision_status = ?, decision_timestamp = ?, decision_notes = ?
+                WHERE proposal_id = ?
+                """,
+                (status, decision_timestamp, normalized_notes, proposal_id),
+            )
+            self.append_event_locked(
+                connection,
+                event_type="change_proposal_decision_updated",
+                payload={"proposal_id": proposal_id, "status": status},
+            )
+            updated = connection.execute(
+                """
+                SELECT proposal_id, created_at, title, rationale, source_feedback_ids_json, diff_summary, risk_notes,
+                       validation_runs_json, decision_status, decision_timestamp, decision_notes
+                FROM change_proposals
+                WHERE proposal_id = ?
+                LIMIT 1
+                """,
+                (proposal_id,),
+            ).fetchone()
+            if updated is None:
+                raise RuntimeError("Proposal update failed.")
+            return self._deserialize_proposal_row(updated)
+
     def list_conversations(self) -> list[dict[str, Any]]:
         with self._lock, self._connect() as connection:
             rows = connection.execute(
@@ -307,6 +595,7 @@ class RuntimeStorage:
                 "messages": [dict(row) for row in messages],
                 "settings": self._read_release_settings_locked(connection),
                 "changelog": self._list_changelog_locked(connection),
+                "proposals": self._list_proposals_locked(connection),
             }
 
     def get_release_settings(self) -> dict[str, Any]:

@@ -1,8 +1,11 @@
 from fastapi import FastAPI, HTTPException
 
 from .models import (
+    AddValidationRunRequest,
+    ChangeProposal,
     ChatRequest,
     ChatResponse,
+    CreateProposalRequest,
     DeleteDataResponse,
     FeatureFlagUpdateRequest,
     HealthResponse,
@@ -11,6 +14,7 @@ from .models import (
     ReleaseChannelUpdateRequest,
     RuntimeSettingsResponse,
     RuntimeStateResponse,
+    UpdateProposalDecisionRequest,
     make_chat_response,
 )
 from .storage import RuntimeStorage
@@ -60,6 +64,62 @@ def update_feature_flag(flag_key: str, payload: FeatureFlagUpdateRequest) -> Run
 def reset_experimental_flags() -> RuntimeSettingsResponse:
     settings = storage.reset_experiments()
     return RuntimeSettingsResponse(settings=settings)
+
+
+@app.get("/proposals", response_model=list[ChangeProposal])
+def list_change_proposals() -> list[ChangeProposal]:
+    return [ChangeProposal(**proposal) for proposal in storage.list_proposals()]
+
+
+@app.post("/proposals", response_model=ChangeProposal)
+def create_change_proposal(payload: CreateProposalRequest) -> ChangeProposal:
+    proposal = storage.create_proposal(
+        title=payload.title,
+        rationale=payload.rationale,
+        source_feedback_ids=payload.source_feedback_ids,
+        diff_summary=payload.diff_summary,
+        risk_notes=payload.risk_notes,
+    )
+    return ChangeProposal(**proposal)
+
+
+@app.post("/proposals/{proposal_id}/validation-runs", response_model=ChangeProposal)
+def add_proposal_validation_run(proposal_id: str, payload: AddValidationRunRequest) -> ChangeProposal:
+    try:
+        proposal = storage.add_proposal_validation_run(
+            proposal_id,
+            status=payload.status,
+            summary=payload.summary,
+            artifact_refs=payload.artifact_refs,
+            validation_run_id=payload.validation_run_id,
+        )
+        return ChangeProposal(**proposal)
+    except ValueError as error:
+        storage.append_event(
+            "runtime_error",
+            {"detail": str(error), "endpoint": "/proposals/{proposal_id}/validation-runs"},
+        )
+        status_code = 404 if "does not exist" in str(error) else 400
+        raise HTTPException(status_code=status_code, detail=str(error)) from error
+
+
+@app.post("/proposals/{proposal_id}/decision", response_model=ChangeProposal)
+def update_proposal_decision(proposal_id: str, payload: UpdateProposalDecisionRequest) -> ChangeProposal:
+    try:
+        proposal = storage.update_proposal_decision(
+            proposal_id,
+            status=payload.status,
+            notes=payload.notes,
+        )
+        return ChangeProposal(**proposal)
+    except ValueError as error:
+        detail = str(error)
+        storage.append_event("runtime_error", {"detail": detail, "endpoint": "/proposals/{proposal_id}/decision"})
+        if "does not exist" in detail:
+            raise HTTPException(status_code=404, detail=detail) from error
+        if "requires a passing latest validation run" in detail:
+            raise HTTPException(status_code=409, detail=detail) from error
+        raise HTTPException(status_code=400, detail=detail) from error
 
 
 @app.post("/chat", response_model=ChatResponse)

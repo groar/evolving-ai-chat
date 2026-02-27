@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0013
-- Status: ready
+- Status: review
 - Priority: P2
 - Type: feature
 - Area: core
@@ -53,26 +53,34 @@ Without a durable proposal artifact, the loop cannot be audited or repeated safe
 - F-20260226-001
 
 ## Acceptance Criteria
-- [ ] Proposal format is documented and implemented (model + persistence).
-- [ ] A proposal can reference 1+ feedback items and store a validation summary.
-- [ ] Accept/reject decisions are persisted with timestamps and notes.
-- [ ] Acceptance is blocked when validation is failing.
+- [x] Proposal format is documented and implemented (model + persistence).
+- [x] A proposal can reference 1+ feedback items and store a validation summary.
+- [x] Accept/reject decisions are persisted with timestamps and notes.
+- [x] Acceptance is blocked when validation is failing.
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
-- QA checkpoint:
-- Screenshots/artifacts:
+- QA checkpoint: `tickets/meta/qa/2026-02-27-qa-checkpoint-t0013.md`
+- Screenshots/artifacts: `tickets/meta/qa/artifacts/runtime-smoke/` (storage smoke output in terminal log)
 
 ## Evidence (Verification)
 - Tests run:
+  - `npm run smoke:storage` (pass; includes proposal create + validation summary flow checks).
+  - `python3 -m unittest runtime.test_proposals` (blocked in this environment: `ModuleNotFoundError: No module named 'pydantic'`).
 - Manual checks performed:
+  - Reviewed new API decision guard logic to confirm `accepted` is rejected unless the most recent validation run is `passing`.
+  - Verified proposal records include feedback IDs, validation runs, and decision metadata in runtime state payload.
 - Screenshots/logs/notes:
+  - Console output confirms proposal smoke assertions pass (feedback linkage + validation run persistence).
 
 ## Subtasks
-- [ ] Design updates
-- [ ] Implementation
-- [ ] Tests
-- [ ] Documentation updates
+- [x] Design updates
+- [x] Implementation
+- [x] Tests
+- [x] Documentation updates
 
 ## Change Log
 - 2026-02-26: Ticket created.
 - 2026-02-27: Moved to `ready/` after M1 loop spec completed.
+- 2026-02-27: Moved to `in-progress/` for implementation pickup.
+- 2026-02-27: Implemented proposal persistence, API endpoints, acceptance guardrail, and smoke coverage.
+- 2026-02-27: Moved to `review/` with implementation evidence and QA checkpoint link.

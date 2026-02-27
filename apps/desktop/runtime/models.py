@@ -39,6 +39,7 @@ class RuntimeStateResponse(BaseModel):
     messages: list[MessageRecord]
     settings: "RuntimeSettings"
     changelog: list["ChangelogEntry"] = Field(default_factory=list)
+    proposals: list["ChangeProposal"] = Field(default_factory=list)
 
 
 class RuntimeSettings(BaseModel):
@@ -54,6 +55,32 @@ class ChangelogEntry(BaseModel):
     channel: Literal["stable", "experimental"]
     ticket_id: str | None = None
     flags_changed: list[str] = Field(default_factory=list)
+
+
+class ValidationRunSummary(BaseModel):
+    validation_run_id: str
+    status: Literal["passing", "failing"]
+    summary: str = Field(default="", max_length=4000)
+    artifact_refs: list[str] = Field(default_factory=list)
+    created_at: str
+
+
+class ProposalDecision(BaseModel):
+    status: Literal["pending", "accepted", "rejected"]
+    decided_at: str | None = None
+    notes: str | None = Field(default=None, max_length=4000)
+
+
+class ChangeProposal(BaseModel):
+    proposal_id: str
+    created_at: str
+    title: str = Field(max_length=240)
+    rationale: str = Field(default="", max_length=4000)
+    source_feedback_ids: list[str] = Field(default_factory=list)
+    diff_summary: str = Field(default="", max_length=8000)
+    risk_notes: str = Field(default="", max_length=4000)
+    validation_runs: list[ValidationRunSummary] = Field(default_factory=list)
+    decision: ProposalDecision
 
 
 class NewConversationRequest(BaseModel):
@@ -84,6 +111,26 @@ class ReleaseChannelUpdateRequest(BaseModel):
 
 class FeatureFlagUpdateRequest(BaseModel):
     enabled: bool
+
+
+class CreateProposalRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=240)
+    rationale: str = Field(default="", max_length=4000)
+    source_feedback_ids: list[str] = Field(default_factory=list)
+    diff_summary: str = Field(default="", max_length=8000)
+    risk_notes: str = Field(default="", max_length=4000)
+
+
+class AddValidationRunRequest(BaseModel):
+    validation_run_id: str | None = Field(default=None, max_length=120)
+    status: Literal["passing", "failing"]
+    summary: str = Field(default="", max_length=4000)
+    artifact_refs: list[str] = Field(default_factory=list)
+
+
+class UpdateProposalDecisionRequest(BaseModel):
+    status: Literal["pending", "accepted", "rejected"]
+    notes: str | None = Field(default=None, max_length=4000)
 
 
 def make_chat_response(conversation_id: str, message: str) -> ChatResponse:
