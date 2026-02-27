@@ -81,7 +81,7 @@ uv run --with-requirements runtime/requirements.txt python3 -m unittest runtime/
 
 ## Changelog And Rollback UX (T-0008)
 - The left-rail settings surface includes both changelog visibility and experiment controls.
-- Changelog entries are local-only and list newest first with title, summary, channel, optional ticket ID, and changed flags.
+- Changelog entries are local-only and list newest first with title, summary, channel, optional ticket/proposal linkage IDs, and changed flags.
 - `Switch to Stable` and `Reset Experiments` are feature-toggle rollback controls only; they do not roll back code or stored data.
 
 ## Change Proposal Artifact (T-0013)
@@ -89,6 +89,7 @@ uv run --with-requirements runtime/requirements.txt python3 -m unittest runtime/
 - Proposal fields include: `proposal_id`, `created_at`, `title`, `rationale`, `source_feedback_ids`, `diff_summary`, `risk_notes`, `validation_runs`, and `decision`.
 - Decision states: `pending`, `accepted`, `rejected`.
 - Acceptance guardrail: a proposal can only move to `accepted` when the most recent validation run is `passing`.
+- Accepting a proposal creates exactly one changelog entry linked by `proposal_id`; rejecting creates none.
 - Runtime endpoints:
   - `GET /proposals` lists all proposals (newest first).
   - `POST /proposals` creates a proposal.

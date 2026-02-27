@@ -90,12 +90,14 @@ describe("SettingsPanel", () => {
         summary: "Disabled all experimental feature toggles.",
         channel: "experimental",
         ticket_id: "T-0008",
+        proposal_id: "proposal-123",
         flags_changed: ["show_runtime_diagnostics"]
       }
     ];
     const filledMarkup = renderToStaticMarkup(renderPanel({ changelog }));
     expect(filledMarkup).toContain("Experiments reset");
     expect(filledMarkup).toContain("Disabled all experimental feature toggles.");
+    expect(filledMarkup).toContain("proposal-123");
   });
 
   it("requires confirmation for switching to stable", () => {

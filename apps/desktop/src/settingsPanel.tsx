@@ -10,6 +10,7 @@ type ChangelogEntry = {
   summary: string;
   channel: "stable" | "experimental";
   ticket_id?: string | null;
+  proposal_id?: string | null;
   flags_changed?: string[];
 };
 
@@ -141,6 +142,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 <p className="changelog-meta">
                   {formatTimestamp(entry.created_at)}
                   {entry.ticket_id ? ` · ${entry.ticket_id}` : ""}
+                  {entry.proposal_id ? ` · ${entry.proposal_id}` : ""}
                   {entry.flags_changed && entry.flags_changed.length > 0 ? ` · ${entry.flags_changed.join(", ")}` : ""}
                 </p>
               </li>

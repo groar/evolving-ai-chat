@@ -54,6 +54,7 @@ class ChangelogEntry(BaseModel):
     summary: str
     channel: Literal["stable", "experimental"]
     ticket_id: str | None = None
+    proposal_id: str | None = None
     flags_changed: list[str] = Field(default_factory=list)
 
 

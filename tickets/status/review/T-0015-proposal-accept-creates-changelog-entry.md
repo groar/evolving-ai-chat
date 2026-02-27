@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0015
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: feature
 - Area: core
@@ -50,39 +50,49 @@ When a change proposal is accepted, persist exactly one changelog entry linked t
 - F-20260226-001
 
 ## Acceptance Criteria
-- [ ] Accepting a proposal creates a changelog entry linked to `proposal_id`.
-- [ ] Rejecting a proposal creates no changelog entry.
-- [ ] Accepting an already accepted proposal does not create duplicates.
-- [ ] The new changelog entry is visible via the existing `GET /state` payload and renders in `Changelog + Experiments`.
-- [ ] Deterministic coverage exists for the three rule cases above (unit test and/or storage smoke).
+- [x] Accepting a proposal creates a changelog entry linked to `proposal_id`.
+- [x] Rejecting a proposal creates no changelog entry.
+- [x] Accepting an already accepted proposal does not create duplicates.
+- [x] The new changelog entry is visible via the existing `GET /state` payload and renders in `Changelog + Experiments`.
+- [x] Deterministic coverage exists for the three rule cases above (unit test and/or storage smoke).
 
 ## Release Note (Optional; Recommended For User-Facing Changes)
 - Title: Proposal acceptance shows up in changelog
 - Summary (1–2 lines, user-facing; avoid over-promising): Accepted change proposals now create a local changelog entry so you can quickly see what was approved and why.
 
 ## User-Facing Acceptance Criteria (Only If End-User Behavior Changes)
-- [ ] A user can observe the changelog entry after accepting a proposal (no developer tools required).
-- [ ] Copy does not imply code rollback or autonomous shipping.
+- [x] A user can observe the changelog entry after accepting a proposal (no developer tools required).
+- [x] Copy does not imply code rollback or autonomous shipping.
 
 ## Dependencies / Sequencing (Optional)
 - Depends on:
   - T-0014 (Python runtime deps and test bootstrap)
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
-- QA checkpoint:
-- Screenshots/artifacts:
+- QA checkpoint: `tickets/meta/qa/2026-02-27-qa-checkpoint-t0015.md`
+- Screenshots/artifacts: n/a (runtime/state evidence + unit tests)
 
 ## Evidence (Verification)
 - Tests run:
+  - `cd apps/desktop && UV_CACHE_DIR=/tmp/uv-cache uv run --with-requirements runtime/requirements.txt python3 -m unittest runtime/test_proposals.py` (PASS, 4 tests)
+  - `cd apps/desktop && npm test -- src/settingsPanel.test.tsx` (PASS, 3 tests)
 - Manual checks performed:
+  - Created proposal -> passing validation -> accepted; confirmed exactly one changelog entry linked by `proposal_id` and `ticket_id=T-0015`.
+  - Created proposal -> rejected; confirmed no changelog entry linked by `proposal_id`.
 - Screenshots/logs/notes:
+  - Runtime manual check output: `accept_entries 1 T-0015` and `reject_entries 0`.
 
 ## Subtasks
-- [ ] Design updates
-- [ ] Implementation
-- [ ] Tests
-- [ ] Documentation updates
+- [x] Design updates
+- [x] Implementation
+- [x] Tests
+- [x] Documentation updates
 
 ## Change Log
 - 2026-02-27: Ticket created.
 - 2026-02-27: Moved to `ready/` and queued as next pickup.
+- 2026-02-27: Moved to `in-progress/` and started implementation.
+- 2026-02-27: Implemented proposal-linked changelog creation on accept with idempotent re-accept behavior.
+- 2026-02-27: Added deterministic coverage for accept/reject/idempotency/fallback plus settings render coverage for `proposal_id`.
+- 2026-02-27: Completed QA checkpoint `tickets/meta/qa/2026-02-27-qa-checkpoint-t0015.md` (pass).
+- 2026-02-27: Moved to `review/` for PM acceptance.

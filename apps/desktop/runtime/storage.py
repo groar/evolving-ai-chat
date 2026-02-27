@@ -79,7 +79,8 @@ class RuntimeStorage:
                   summary TEXT NOT NULL,
                   channel TEXT NOT NULL,
                   ticket_id TEXT,
-                  flags_changed_json TEXT
+                  flags_changed_json TEXT,
+                  proposal_id TEXT
                 );
 
                 CREATE TABLE IF NOT EXISTS change_proposals (
@@ -101,6 +102,7 @@ class RuntimeStorage:
             version_row = connection.execute("SELECT version FROM schema_version LIMIT 1").fetchone()
             if version_row is None:
                 connection.execute("INSERT INTO schema_version(version) VALUES (?)", (1,))
+            self._ensure_changelog_schema(connection)
 
             active_id = self._get_active_conversation_id(connection)
             if not active_id:
@@ -202,13 +204,14 @@ class RuntimeStorage:
         channel: str,
         ticket_id: str | None = CURRENT_TICKET_ID,
         flags_changed: list[str] | None = None,
+        proposal_id: str | None = None,
     ) -> None:
         normalized_channel = channel if channel in ALLOWED_RELEASE_CHANNELS else DEFAULT_RELEASE_CHANNEL
         normalized_flags = [flag_key for flag_key in (flags_changed or []) if flag_key in EXPERIMENTAL_FLAG_KEYS]
         connection.execute(
             """
-            INSERT INTO changelog_entries(created_at, title, summary, channel, ticket_id, flags_changed_json)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO changelog_entries(created_at, title, summary, channel, ticket_id, flags_changed_json, proposal_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 utc_now_iso(),
@@ -217,13 +220,14 @@ class RuntimeStorage:
                 normalized_channel,
                 ticket_id,
                 json.dumps(normalized_flags, separators=(",", ":")),
+                proposal_id,
             ),
         )
 
     def _list_changelog_locked(self, connection: sqlite3.Connection, limit: int = CHANGELOG_MAX_ITEMS) -> list[dict[str, Any]]:
         rows = connection.execute(
             """
-            SELECT created_at, title, summary, channel, ticket_id, flags_changed_json
+            SELECT created_at, title, summary, channel, ticket_id, flags_changed_json, proposal_id
             FROM changelog_entries
             ORDER BY created_at DESC, changelog_id DESC
             LIMIT ?
@@ -247,10 +251,36 @@ class RuntimeStorage:
                     "summary": str(row["summary"]),
                     "channel": channel,
                     "ticket_id": str(row["ticket_id"]) if row["ticket_id"] is not None else None,
+                    "proposal_id": str(row["proposal_id"]) if row["proposal_id"] is not None else None,
                     "flags_changed": flags_changed,
                 }
             )
         return entries
+
+    def _ensure_changelog_schema(self, connection: sqlite3.Connection) -> None:
+        columns = connection.execute("PRAGMA table_info(changelog_entries)").fetchall()
+        column_names = {str(column["name"]) for column in columns}
+        if "proposal_id" not in column_names:
+            connection.execute("ALTER TABLE changelog_entries ADD COLUMN proposal_id TEXT")
+
+    def _proposal_changelog_fields(self, row: sqlite3.Row) -> tuple[str, str]:
+        title = str(row["title"]).strip()
+        if not title:
+            title = "Proposal accepted"
+
+        summary_candidates = [row["diff_summary"], row["rationale"]]
+        summary = ""
+        for candidate in summary_candidates:
+            if not isinstance(candidate, str):
+                continue
+            trimmed = candidate.strip()
+            if trimmed:
+                summary = trimmed
+                break
+        if not summary:
+            summary = "Accepted proposal recorded in local changelog."
+
+        return title, summary
 
     def _create_conversation_locked(self, connection: sqlite3.Connection, title: str) -> str:
         conversation_id = str(uuid.uuid4())
@@ -492,7 +522,7 @@ class RuntimeStorage:
         with self._lock, self._connect() as connection:
             row = connection.execute(
                 """
-                SELECT validation_runs_json
+                SELECT title, rationale, diff_summary, validation_runs_json, decision_status, decision_timestamp, decision_notes
                 FROM change_proposals
                 WHERE proposal_id = ?
                 LIMIT 1
@@ -512,6 +542,20 @@ class RuntimeStorage:
                 latest_run = normalized_runs[-1] if normalized_runs else None
                 if latest_run is None or latest_run.get("status") != "passing":
                     raise ValueError("Acceptance requires a passing latest validation run.")
+                if row["decision_status"] == "accepted":
+                    accepted_row = connection.execute(
+                        """
+                        SELECT proposal_id, created_at, title, rationale, source_feedback_ids_json, diff_summary, risk_notes,
+                               validation_runs_json, decision_status, decision_timestamp, decision_notes
+                        FROM change_proposals
+                        WHERE proposal_id = ?
+                        LIMIT 1
+                        """,
+                        (proposal_id,),
+                    ).fetchone()
+                    if accepted_row is None:
+                        raise RuntimeError("Proposal read failed.")
+                    return self._deserialize_proposal_row(accepted_row)
 
             decision_timestamp = utc_now_iso() if status != "pending" else None
             connection.execute(
@@ -527,6 +571,27 @@ class RuntimeStorage:
                 event_type="change_proposal_decision_updated",
                 payload={"proposal_id": proposal_id, "status": status},
             )
+            if status == "accepted":
+                existing_entry = connection.execute(
+                    """
+                    SELECT changelog_id
+                    FROM changelog_entries
+                    WHERE proposal_id = ?
+                    LIMIT 1
+                    """,
+                    (proposal_id,),
+                ).fetchone()
+                if existing_entry is None:
+                    title, summary = self._proposal_changelog_fields(row)
+                    release_channel = self._read_release_settings_locked(connection)["channel"]
+                    self._append_changelog_entry_locked(
+                        connection,
+                        title=title,
+                        summary=summary,
+                        channel=release_channel,
+                        ticket_id="T-0015",
+                        proposal_id=proposal_id,
+                    )
             updated = connection.execute(
                 """
                 SELECT proposal_id, created_at, title, rationale, source_feedback_ids_json, diff_summary, risk_notes,
