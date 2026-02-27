@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0012
-- Status: review
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -87,3 +87,4 @@ Explicit feedback capture is the minimal "observe" leg of the self-improvement l
 - 2026-02-27: Moved to `in-progress/` for implementation.
 - 2026-02-27: Added local feedback capture panel, local persistence, list view, and deterministic submit test.
 - 2026-02-27: Moved to `review/` after implementation and verification evidence updates.
+- 2026-02-27: Accepted to `done/` after QA pass (`tickets/meta/qa/2026-02-27-qa-checkpoint-t0012.md`).

@@ -69,12 +69,13 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
 - Safe execution: run agent-proposed changes and tests in an isolated sandbox (e.g., Docker) before applying patches to the working copy.
 - Model adapters: thin provider wrappers per vendor (OpenAI/Anthropic/Google), with a later option to unify via LiteLLM if needed.
 
-### Current State (2026-02-26)
+### Current State (2026-02-27)
 - Shipped / working:
   - This repository scaffold: ticketing board + PM/QA workflow docs.
   - Desktop app skeleton (Tauri + React) with basic chat UI shell (T-0003).
   - Release controls + user trust surfaces: stable/experimental channels, changelog, and rollback UX (T-0006, T-0008).
   - A process path for agentic iteration (tickets → in-progress → review → QA → done).
+  - In-app feedback capture (local-only) with deterministic UI test coverage (T-0012).
 - Known gaps:
   - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).
   - The MVP chat experience and the “observe → propose → validate → release” loop.
@@ -93,8 +94,6 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
     - Validation gates run and results are attached to the proposal.
     - The user can accept/reject; acceptance produces a changelog entry; rejection records a rationale.
 - Next tickets to prioritize:
-  - T-0011: define the loop spec so implementation does not invent core rules/artifacts.
-  - T-0012: implement in-app feedback capture.
   - T-0013: implement proposal artifact (format + storage + decision gating).
 
 ## Decisions (Draft; confirm/adjust as we start)

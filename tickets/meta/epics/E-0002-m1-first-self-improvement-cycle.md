@@ -5,7 +5,7 @@
 - Status: active
 - Owner: pm-agent
 - Created: 2026-02-26
-- Updated: 2026-02-26
+- Updated: 2026-02-27
 
 ## Goal
 Ship the first full "observe -> propose -> validate -> release" improvement cycle in a way that is boring, safe, and repeatable.
@@ -42,10 +42,11 @@ Ship the first full "observe -> propose -> validate -> release" improvement cycl
 ## Progress (Ticket Status)
 - Done:
   - T-0011 M1 spec: define the first improvement loop (doc)
+  - T-0012 In-app feedback capture (explicit)
 - Next up:
-  - T-0012
+  - T-0013
 - Planned:
-  - T-0012, T-0013
+  - T-0013
 
 ## Notes
 Keep this milestone constrained: aim for one narrow class of improvements (for example, UI microcopy or one settings tweak) so the loop can be proven quickly.

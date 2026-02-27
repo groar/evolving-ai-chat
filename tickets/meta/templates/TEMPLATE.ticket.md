@@ -49,6 +49,18 @@ Use when the ticket introduces new rules/state/transitions or would otherwise fo
 
 If the ticket depends on external user-report validation, add at least one deterministic guardrail criterion so iteration can verify known mismatches before the next external check.
 
+## Micro-Validation Probes (Optional; Tier 2/3)
+Use when a ticket (or owning epic) requires a small, decision-oriented user perception check.
+
+- Probes (1–3 prompts):
+  - <prompt 1>
+  - <prompt 2>
+  - <prompt 3>
+- Timing:
+  - <when to run the probes>
+- Where results will be recorded:
+  - Ticket Evidence section OR a dated PM checkpoint file in `tickets/meta/feedback/`.
+
 ## Release Note (Optional; Recommended For User-Facing Changes)
 - Title:
 - Summary (1–2 lines, user-facing; avoid over-promising):
