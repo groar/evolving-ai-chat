@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: E-0002
-- Status: active
+- Status: done
 - Owner: pm-agent
 - Created: 2026-02-26
 - Updated: 2026-02-27
@@ -49,7 +49,6 @@ Ship the first full "observe -> propose -> validate -> release" improvement cycl
   - T-0013 Change proposal artifact (format + storage)
   - T-0014 Python runtime deps and test bootstrap (FastAPI + pydantic)
   - T-0015 Proposal accept creates changelog entry
-- Next up:
   - T-0016 Settings proposals panel (draft + validate + decide)
 
 ## Notes

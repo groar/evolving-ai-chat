@@ -1,7 +1,7 @@
 # QA Checkpoint - 2026-02-27 (T-0016)
 
 ## Scope Tested
-- Ticket: T-0016 (`tickets/status/review/T-0016-settings-proposals-panel.md`)
+- Ticket: T-0016 (`tickets/status/done/T-0016-settings-proposals-panel.md`)
 - Area: settings proposals panel flows (create, validate, accept/reject guardrails) + copy and empty/error states
 
 ## Automated Test Outcomes
@@ -41,4 +41,4 @@
 
 Suggested commit message: `T-0016: add settings proposals panel with validation and decision guardrails`
 
-Next-step suggestion: PM should review `T-0016` in `review/` and move it to `done/` if this QA evidence is acceptable.
+Next-step suggestion: PM should review `T-0016` and accept it to `done/` if not already accepted.

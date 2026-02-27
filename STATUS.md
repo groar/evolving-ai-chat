@@ -77,6 +77,7 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - A process path for agentic iteration (tickets → in-progress → review → QA → done).
   - In-app feedback capture (local-only) with deterministic UI test coverage (T-0012).
   - Change proposal artifact persistence + decision gating (local-only) (T-0013).
+  - Settings proposals panel (draft + validate + decide) (T-0016).
 - Known gaps:
   - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).
   - The MVP chat experience and the “observe → propose → validate → release” loop.
@@ -89,16 +90,13 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- Next milestone: M1 — “First self-improvement cycle”
-  - Definition of done:
-    - The user can capture explicit feedback in-app (local-only).
-    - The system can create a small, bounded "change proposal" artifact from that feedback.
-    - Validation gates run and results are attached to the proposal.
-    - The user can accept/reject; acceptance produces a changelog entry; rejection records a rationale.
-- Next tickets to prioritize:
-  - T-0014: Python runtime deps and test bootstrap (FastAPI + pydantic).
-  - T-0015: Proposal accept creates changelog entry.
-  - T-0016: Settings proposals panel (draft + validate + decide).
+- Most recent milestone: M1 — “First self-improvement cycle” (completed 2026-02-27)
+  - Completed scope:
+    - In-app feedback capture (T-0012).
+    - Proposal artifacts + validation results (T-0013).
+    - Proposal accept creates changelog entry (T-0015).
+    - Settings proposals panel (T-0016).
+- Next milestone: TBD (define next after running the M1 micro-validation probes in E-0002).
 
 ## Decisions (Draft; confirm/adjust as we start)
 Record important decisions so future agents do not re-litigate context.

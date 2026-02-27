@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| _none_ | _none_ | _none_ | Queue empty after moving T-0016 to in-progress on 2026-02-27. |
+| _none_ | _none_ | _none_ | Queue empty after accepting T-0016 to done on 2026-02-27. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

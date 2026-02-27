@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0016
-- Status: review
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -118,3 +118,4 @@ The loop is not user-operable until the user can see and decide on proposals fro
 - 2026-02-27: Picked up for implementation and moved to `in-progress/`.
 - 2026-02-27: Implemented Settings proposals panel, added tests/docs, and moved to `review/`.
 - 2026-02-27: Automatic QA phase completed; no bugs found.
+- 2026-02-27: PM accepted; moved to `done/`.
