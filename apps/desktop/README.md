@@ -96,6 +96,18 @@ uv run --with-requirements runtime/requirements.txt python3 -m unittest runtime/
   - `POST /proposals/{proposal_id}/validation-runs` appends a validation summary.
   - `POST /proposals/{proposal_id}/decision` updates decision state with optional notes.
 
+## Settings Proposals Panel (T-0016)
+- Settings now includes a `Proposals` section for in-app proposal lifecycle actions.
+- The panel supports:
+  - creating proposals with title, rationale, and optional linked feedback IDs,
+  - attaching validation run summaries (`passing` or `failing`) and optional artifact refs,
+  - accepting only when the latest validation run is passing,
+  - rejecting with required rationale notes.
+- Proposal copy guardrails:
+  - no self-shipping implication,
+  - no claim that decisions roll back code/data.
+- Runtime-unavailable behavior remains non-blocking for core chat; retry is available from Settings via refresh.
+
 ## Codex Sandbox Note (QA Runs)
 In Codex sandboxed execution, local port binding can fail with `EPERM` for both runtime (`8787`) and Vite (`5173`).  
 If that happens, rerun smoke with escalated permissions and start/stop the stub runtime in one command:

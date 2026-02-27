@@ -8,7 +8,14 @@ import {
   type FeedbackItem,
   type FeedbackTag
 } from "./feedbackStore";
-import { SettingsPanel, type ChangelogEntry, type RuntimeSettings } from "./settingsPanel";
+import {
+  SettingsPanel,
+  type AddValidationRunInput,
+  type ChangeProposal,
+  type ChangelogEntry,
+  type CreateProposalInput,
+  type RuntimeSettings
+} from "./settingsPanel";
 
 type ChatMessage = {
   id: string | number;
@@ -35,6 +42,7 @@ type RuntimeStatePayload = {
   }>;
   settings: RuntimeSettings;
   changelog: ChangelogEntry[];
+  proposals: ChangeProposal[];
 };
 
 const runtimeBase = "http://127.0.0.1:8787";
@@ -44,6 +52,18 @@ const defaultSettings: RuntimeSettings = {
   experimental_flags: {},
   active_flags: {}
 };
+
+async function readErrorDetail(response: Response): Promise<string> {
+  try {
+    const payload = (await response.json()) as { detail?: string };
+    if (typeof payload.detail === "string" && payload.detail.trim().length > 0) {
+      return payload.detail;
+    }
+  } catch {
+    // no-op fallback
+  }
+  return `Runtime returned ${response.status}.`;
+}
 
 export function App() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -55,8 +75,10 @@ export function App() {
   const [isResetting, setIsResetting] = useState(false);
   const [settings, setSettings] = useState<RuntimeSettings>(defaultSettings);
   const [changelog, setChangelog] = useState<ChangelogEntry[]>([]);
+  const [proposals, setProposals] = useState<ChangeProposal[]>([]);
   const [settingsNotice, setSettingsNotice] = useState<string | null>(null);
   const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [isProposalBusy, setIsProposalBusy] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [feedbackDraftText, setFeedbackDraftText] = useState("");
   const [feedbackTags, setFeedbackTags] = useState<FeedbackTag[]>([]);
@@ -110,6 +132,7 @@ export function App() {
     );
     setSettings(payload.settings ?? defaultSettings);
     setChangelog(payload.changelog ?? []);
+    setProposals(payload.proposals ?? []);
     setRuntimeError(null);
   }
 
@@ -124,7 +147,7 @@ export function App() {
       setSettingsError(null);
     } catch {
       setRuntimeError("Runtime unavailable. Retry once runtime is running.");
-      setSettingsError("Could not load changelog and settings.");
+      setSettingsError("Could not load changelog, proposals, and settings.");
     } finally {
       setIsBooting(false);
     }
@@ -271,6 +294,91 @@ export function App() {
     }
   }
 
+  async function createProposal(input: CreateProposalInput) {
+    if (isSending || isResetting || isProposalBusy) {
+      return;
+    }
+    setIsProposalBusy(true);
+    try {
+      const response = await fetch(`${runtimeBase}/proposals`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: input.title,
+          rationale: input.rationale,
+          source_feedback_ids: input.source_feedback_ids,
+          diff_summary: "",
+          risk_notes: ""
+        })
+      });
+      if (!response.ok) {
+        throw new Error(await readErrorDetail(response));
+      }
+      setSettingsNotice("Proposal created. Run validation before accepting.");
+      setSettingsError(null);
+      await refreshState(activeConversationId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not create proposal.";
+      setSettingsError(message);
+    } finally {
+      setIsProposalBusy(false);
+    }
+  }
+
+  async function addProposalValidationRun(proposalId: string, input: AddValidationRunInput) {
+    if (isSending || isResetting || isProposalBusy) {
+      return;
+    }
+    setIsProposalBusy(true);
+    try {
+      const response = await fetch(`${runtimeBase}/proposals/${proposalId}/validation-runs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input)
+      });
+      if (!response.ok) {
+        throw new Error(await readErrorDetail(response));
+      }
+      setSettingsNotice(`Validation run added (${input.status}).`);
+      setSettingsError(null);
+      await refreshState(activeConversationId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not add validation run.";
+      setSettingsError(message);
+    } finally {
+      setIsProposalBusy(false);
+    }
+  }
+
+  async function updateProposalDecision(proposalId: string, status: "accepted" | "rejected", notes: string) {
+    if (isSending || isResetting || isProposalBusy) {
+      return;
+    }
+    setIsProposalBusy(true);
+    try {
+      const response = await fetch(`${runtimeBase}/proposals/${proposalId}/decision`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, notes })
+      });
+      if (!response.ok) {
+        throw new Error(await readErrorDetail(response));
+      }
+      setSettingsNotice(
+        status === "accepted"
+          ? "Proposal accepted. Changelog entry should now appear in Recent Changes."
+          : "Proposal rejected with rationale."
+      );
+      setSettingsError(null);
+      await refreshState(activeConversationId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not update proposal decision.";
+      setSettingsError(message);
+    } finally {
+      setIsProposalBusy(false);
+    }
+  }
+
   async function sendMessage() {
     if (!canSend) {
       return;
@@ -384,15 +492,21 @@ export function App() {
           <SettingsPanel
             settings={settings}
             changelog={changelog}
-            isBusy={isSending || isResetting}
+            proposals={proposals}
+            feedbackIds={feedbackItems.map((item) => item.id)}
+            isBusy={isSending || isResetting || isProposalBusy}
             canToggleFlags={canToggleFlags}
             configuredDiagnosticsFlag={configuredDiagnosticsFlag}
             notice={settingsNotice}
             error={settingsError}
             confirmAction={(prompt) => window.confirm(prompt)}
+            onRefresh={() => void refreshState(activeConversationId)}
             onSelectChannel={(channel) => void updateChannel(channel)}
             onToggleDiagnostics={(enabled) => void updateExperimentalFlag(enabled)}
             onResetExperiments={() => void resetExperiments()}
+            onCreateProposal={(input) => void createProposal(input)}
+            onAddValidationRun={(proposalId, input) => void addProposalValidationRun(proposalId, input)}
+            onUpdateProposalDecision={(proposalId, status, notes) => void updateProposalDecision(proposalId, status, notes)}
           />
           <button type="button" className="rail-btn" onClick={() => void createConversation()} disabled={isSending || isResetting}>
             + New Conversation

@@ -292,6 +292,92 @@ body {
   padding: 7px 8px;
 }
 
+.settings-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-input,
+.settings-textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  font: inherit;
+  background: #fff;
+}
+
+.settings-textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.settings-input:focus,
+.settings-textarea:focus {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+.proposals-wrap {
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.proposal-create-form {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fffdfa;
+  padding: 8px;
+  display: grid;
+  gap: 7px;
+}
+
+.proposals-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.proposal-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fffdfa;
+  padding: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.proposal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.proposal-subsection {
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.proposal-actions-grid {
+  display: grid;
+  gap: 6px;
+}
+
+.proposal-actions-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
 .changelog-wrap {
   border-top: 1px dashed var(--border);
   padding-top: 8px;

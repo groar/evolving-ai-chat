@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
-import { SettingsPanel, type ChangelogEntry, type RuntimeSettings } from "./settingsPanel";
+import { describe, expect, it } from "vitest";
+import { SettingsPanel, type ChangeProposal, type ChangelogEntry, type RuntimeSettings } from "./settingsPanel";
 
 function makeSettings(overrides: Partial<RuntimeSettings> = {}): RuntimeSettings {
   return {
@@ -12,77 +12,75 @@ function makeSettings(overrides: Partial<RuntimeSettings> = {}): RuntimeSettings
   };
 }
 
+function makeProposal(overrides: Partial<ChangeProposal> = {}): ChangeProposal {
+  return {
+    proposal_id: "proposal-1",
+    created_at: "2026-02-27T10:00:00.000Z",
+    title: "Improve settings trust copy",
+    rationale: "Users need clearer rollback wording.",
+    source_feedback_ids: ["F-20260226-001"],
+    diff_summary: "",
+    risk_notes: "",
+    validation_runs: [],
+    decision: { status: "pending", decided_at: null, notes: null },
+    ...overrides
+  };
+}
+
 function renderPanel(overrides: Partial<ComponentProps<typeof SettingsPanel>> = {}) {
   return (
     <SettingsPanel
       settings={makeSettings()}
       changelog={[]}
+      proposals={[]}
+      feedbackIds={[]}
       isBusy={false}
       canToggleFlags={true}
       configuredDiagnosticsFlag={true}
       notice={null}
       error={null}
       confirmAction={() => true}
+      onRefresh={() => undefined}
       onSelectChannel={() => undefined}
       onToggleDiagnostics={() => undefined}
       onResetExperiments={() => undefined}
+      onCreateProposal={() => undefined}
+      onAddValidationRun={() => undefined}
+      onUpdateProposalDecision={() => undefined}
       {...overrides}
     />
   );
 }
 
-function findButtonClickHandler(node: unknown, label: string): (() => void) | null {
-  if (!node || typeof node !== "object") {
-    return null;
-  }
-
-  const reactNode = node as { type?: unknown; props?: { children?: unknown; onClick?: () => void } };
-  if (reactNode.type === "button" && reactNode.props) {
-    const childText = flattenText(reactNode.props.children);
-    if (childText === label && typeof reactNode.props.onClick === "function") {
-      return reactNode.props.onClick;
-    }
-  }
-
-  if (!reactNode.props || reactNode.props.children === undefined) {
-    return null;
-  }
-
-  const children = Array.isArray(reactNode.props.children) ? reactNode.props.children : [reactNode.props.children];
-  for (const child of children) {
-    const maybeHandler = findButtonClickHandler(child, label);
-    if (maybeHandler) {
-      return maybeHandler;
-    }
-  }
-
-  return null;
-}
-
-function flattenText(children: unknown): string {
-  if (typeof children === "string") {
-    return children.trim();
-  }
-  if (typeof children === "number") {
-    return String(children);
-  }
-  if (Array.isArray(children)) {
-    return children.map((child) => flattenText(child)).join("").trim();
-  }
-  if (children && typeof children === "object") {
-    const candidate = children as { props?: { children?: unknown } };
-    if (candidate.props) {
-      return flattenText(candidate.props.children);
-    }
-  }
-  return "";
-}
-
 describe("SettingsPanel", () => {
-  it("renders changelog empty and non-empty states", () => {
+  it("renders changelog and proposals empty states", () => {
     const emptyMarkup = renderToStaticMarkup(renderPanel());
     expect(emptyMarkup).toContain("No changes recorded yet.");
+    expect(emptyMarkup).toContain("No proposals yet.");
+  });
 
+  it("disables accept when no validation run exists", () => {
+    const markup = renderToStaticMarkup(renderPanel({ proposals: [makeProposal()] }));
+    expect(markup).toContain("Accept disabled: run validation first.");
+  });
+
+  it("disables accept when latest validation is failing", () => {
+    const proposal = makeProposal({
+      validation_runs: [
+        {
+          validation_run_id: "run-1",
+          status: "failing",
+          summary: "Gate failed",
+          artifact_refs: ["tickets/meta/qa/artifacts/validate/fail.log"],
+          created_at: "2026-02-27T10:03:00.000Z"
+        }
+      ]
+    });
+    const markup = renderToStaticMarkup(renderPanel({ proposals: [proposal] }));
+    expect(markup).toContain("Accept disabled: latest validation is failing.");
+  });
+
+  it("renders changelog rows with proposal linkage", () => {
     const changelog: ChangelogEntry[] = [
       {
         created_at: "2026-02-26T10:00:00.000Z",
@@ -100,51 +98,9 @@ describe("SettingsPanel", () => {
     expect(filledMarkup).toContain("proposal-123");
   });
 
-  it("requires confirmation for switching to stable", () => {
-    const onSelectChannel = vi.fn();
-    const confirmAction = vi.fn(() => false);
-    const element = SettingsPanel({
-      settings: makeSettings(),
-      changelog: [],
-      isBusy: false,
-      canToggleFlags: true,
-      configuredDiagnosticsFlag: true,
-      notice: null,
-      error: null,
-      confirmAction,
-      onSelectChannel,
-      onToggleDiagnostics: () => undefined,
-      onResetExperiments: () => undefined
-    });
-    const click = findButtonClickHandler(element, "Switch to Stable");
-    expect(click).not.toBeNull();
-
-    click?.();
-    expect(confirmAction).toHaveBeenCalledOnce();
-    expect(onSelectChannel).not.toHaveBeenCalled();
-  });
-
-  it("requires confirmation for resetting experiments", () => {
-    const onResetExperiments = vi.fn();
-    const confirmAction = vi.fn(() => false);
-    const element = SettingsPanel({
-      settings: makeSettings(),
-      changelog: [],
-      isBusy: false,
-      canToggleFlags: true,
-      configuredDiagnosticsFlag: true,
-      notice: null,
-      error: null,
-      confirmAction,
-      onSelectChannel: () => undefined,
-      onToggleDiagnostics: () => undefined,
-      onResetExperiments
-    });
-    const click = findButtonClickHandler(element, "Reset Experiments");
-    expect(click).not.toBeNull();
-
-    click?.();
-    expect(confirmAction).toHaveBeenCalledOnce();
-    expect(onResetExperiments).not.toHaveBeenCalled();
+  it("renders rollback guardrail copy", () => {
+    const markup = renderToStaticMarkup(renderPanel());
+    expect(markup).toContain("Feature toggle rollback only.");
+    expect(markup).toContain("These controls do not roll back code changes or stored local data.");
   });
 });

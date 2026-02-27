@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0016
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -56,11 +56,11 @@ The loop is not user-operable until the user can see and decide on proposals fro
 - F-20260226-001
 
 ## Acceptance Criteria
-- [ ] Settings includes a "Proposals" section that lists existing proposals (most recent first).
-- [ ] User can create a proposal from within the app and link 1+ feedback IDs (or explicitly create without linkage with required title + rationale).
-- [ ] User can attach a validation run summary and see pass/fail status reflected immediately.
-- [ ] User can accept a proposal only when latest validation is passing; accept writes an "accepted" decision with timestamp and optional notes.
-- [ ] User can reject a proposal with a required rationale note; reject writes a "rejected" decision and creates no changelog entry.
+- [x] Settings includes a "Proposals" section that lists existing proposals (most recent first).
+- [x] User can create a proposal from within the app and link 1+ feedback IDs (or explicitly create without linkage with required title + rationale).
+- [x] User can attach a validation run summary and see pass/fail status reflected immediately.
+- [x] User can accept a proposal only when latest validation is passing; accept writes an "accepted" decision with timestamp and optional notes.
+- [x] User can reject a proposal with a required rationale note; reject writes a "rejected" decision and creates no changelog entry.
 
 ## Micro-Validation Probes (Optional; Tier 2/3)
 - Probes (1–3 prompts):
@@ -77,9 +77,9 @@ The loop is not user-operable until the user can see and decide on proposals fro
 - Summary (1–2 lines, user-facing; avoid over-promising): Settings now shows change proposals and lets you validate and accept/reject them with clear guardrails.
 
 ## UX Acceptance Criteria (Only If `Area: ui`)
-- [ ] Primary flow is keyboard-usable (no mouse required for core actions).
-- [ ] Empty/error states are clear and actionable.
-- [ ] Copy/microcopy is consistent and unambiguous.
+- [x] Primary flow is keyboard-usable (no mouse required for core actions).
+- [x] Empty/error states are clear and actionable.
+- [x] Copy/microcopy is consistent and unambiguous.
 
 ## Dependencies / Sequencing (Optional)
 - Depends on:
@@ -90,19 +90,31 @@ The loop is not user-operable until the user can see and decide on proposals fro
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
 - QA checkpoint:
+  - `tickets/meta/qa/2026-02-27-qa-checkpoint-t0016.md`
 - Screenshots/artifacts:
+  - `tickets/meta/qa/artifacts/runtime-smoke/2026-02-27T20-09-12-633Z/smoke-fastapi.log`
 
 ## Evidence (Verification)
 - Tests run:
+  - `npm test` (apps/desktop) -> pass.
+  - `npm run build` (apps/desktop) -> pass.
+  - `uv run --with-requirements runtime/requirements.txt python3 -m unittest runtime/test_proposals.py` -> pass.
+  - `npm run smoke:storage` (apps/desktop) -> pass, includes proposal create + validation persistence checks.
 - Manual checks performed:
+  - Verified proposals panel copy states for empty list and validation/decision guardrails via deterministic component tests.
+  - Verified acceptance guardrail and reject/no-changelog behavior remain enforced in runtime proposal unit tests.
 - Screenshots/logs/notes:
+  - Runtime smoke console output confirms proposal storage + validation-run persistence.
 
 ## Subtasks
-- [ ] Design updates
-- [ ] Implementation
-- [ ] Tests
-- [ ] Documentation updates
+- [x] Design updates
+- [x] Implementation
+- [x] Tests
+- [x] Documentation updates
 
 ## Change Log
 - 2026-02-27: Ticket created.
 - 2026-02-27: Moved to `ready/` (depends on T-0015 for changelog linkage).
+- 2026-02-27: Picked up for implementation and moved to `in-progress/`.
+- 2026-02-27: Implemented Settings proposals panel, added tests/docs, and moved to `review/`.
+- 2026-02-27: Automatic QA phase completed; no bugs found.
