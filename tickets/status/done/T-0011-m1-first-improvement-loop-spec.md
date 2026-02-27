@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0011
-- Status: review
+- Status: done
 - Priority: P1
 - Type: docs
 - Area: core
@@ -89,3 +89,4 @@ Write a concrete, implementation-ready spec for the first "observe -> propose ->
 - 2026-02-27: Moved to `in-progress/` for implementation.
 - 2026-02-27: Added `docs/m1-first-improvement-loop.md` with phase/state model, required artifacts, examples, QA checklist, and tier-2 micro-validation plan.
 - 2026-02-27: Moved to `review/`; QA execution waived because changes are docs-only and do not affect software behavior.
+- 2026-02-27: Accepted to `done/` after doc review; no QA run required for docs-only changes.

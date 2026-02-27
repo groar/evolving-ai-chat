@@ -2,14 +2,14 @@
 
 ## Metadata
 - ID: T-0012
-- Status: backlog
+- Status: ready
 - Priority: P1
 - Type: feature
 - Area: ui
 - Epic: E-0002
-- Owner: pm-agent
+- Owner: ai-agent
 - Created: 2026-02-26
-- Updated: 2026-02-26
+- Updated: 2026-02-27
 
 ## Summary
 Add a minimal in-app way to capture explicit user feedback (friction/suggestion) and persist it locally for later conversion into proposals/tickets.
@@ -78,3 +78,4 @@ Explicit feedback capture is the minimal "observe" leg of the self-improvement l
 
 ## Change Log
 - 2026-02-26: Ticket created.
+- 2026-02-27: Moved to `ready/` after M1 loop spec completed.

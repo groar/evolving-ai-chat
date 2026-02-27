@@ -15,7 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Why now |
 | --- | --- | --- | --- |
-| (empty) | (none) | (n/a) | Ready queue is empty; wait for PM reprioritization. |
+| 1 | T-0012 | P1 | First "observe" leg of the loop; unblocks proposal generation. |
+| 2 | T-0013 | P2 | Defines proposal artifact + decision record once feedback capture exists. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

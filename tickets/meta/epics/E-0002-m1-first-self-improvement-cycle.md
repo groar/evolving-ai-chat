@@ -41,9 +41,9 @@ Ship the first full "observe -> propose -> validate -> release" improvement cycl
 
 ## Progress (Ticket Status)
 - Done:
-  - (none)
+  - T-0011 M1 spec: define the first improvement loop (doc)
 - Next up:
-  - T-0011
+  - T-0012
 - Planned:
   - T-0012, T-0013
 

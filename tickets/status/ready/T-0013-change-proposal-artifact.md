@@ -2,14 +2,14 @@
 
 ## Metadata
 - ID: T-0013
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: feature
 - Area: core
 - Epic: E-0002
-- Owner: pm-agent
+- Owner: ai-agent
 - Created: 2026-02-26
-- Updated: 2026-02-26
+- Updated: 2026-02-27
 
 ## Summary
 Define and persist a local "change proposal" artifact that links feedback to a bounded proposed change, with validation results and an accept/reject decision record.
@@ -75,3 +75,4 @@ Without a durable proposal artifact, the loop cannot be audited or repeated safe
 
 ## Change Log
 - 2026-02-26: Ticket created.
+- 2026-02-27: Moved to `ready/` after M1 loop spec completed.
