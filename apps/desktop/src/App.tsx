@@ -45,6 +45,8 @@ type RuntimeStatePayload = {
   proposals: ChangeProposal[];
 };
 
+type LeftRailSurface = "conversations" | "settings" | "feedback" | "advanced";
+
 const runtimeBase = "http://127.0.0.1:8787";
 const diagnosticsFlagKey = "show_runtime_diagnostics";
 const defaultSettings: RuntimeSettings = {
@@ -85,6 +87,7 @@ export function App() {
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
   const [feedbackNotice, setFeedbackNotice] = useState<string | null>(null);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [activeLeftRailSurface, setActiveLeftRailSurface] = useState<LeftRailSurface>("conversations");
   const [runtimeError, setRuntimeError] = useState<string | null>(
     "Runtime unavailable. Start the local runtime to enable responses."
   );
@@ -109,10 +112,7 @@ export function App() {
 
   const hasMessages = messages.length > 0;
   const canSend = composer.trim().length > 0 && !isSending && activeConversationId.length > 0;
-  const channelLabel = useMemo(
-    () => (settings.channel === "experimental" ? "Experimental" : "Stable (default)"),
-    [settings.channel]
-  );
+  const channelLabel = useMemo(() => (settings.channel === "experimental" ? "Experimental" : "Stable"), [settings.channel]);
   const diagnosticsEnabled = Boolean(settings.active_flags[diagnosticsFlagKey]);
   const canRetry = !isSending && !isResetting;
   const canToggleFlags = settings.channel === "experimental" && !isSending && !isResetting;
@@ -458,72 +458,153 @@ export function App() {
     <main className="app-shell">
       <aside className="left-rail">
         <header className="left-rail-header">
-          <h1>Evolving Chat</h1>
-          <p>Conversation List (SQLite)</p>
+          <h1>Conversations</h1>
+          <p>Start here, then open other surfaces when needed.</p>
         </header>
-        <ul className="conversation-list">
-          {conversations.map((conversation) => (
-            <li key={conversation.conversation_id}>
-              <button
-                type="button"
-                className={`conversation-item ${conversation.conversation_id === activeConversationId ? "active" : ""}`}
-                onClick={() => void activateConversation(conversation.conversation_id)}
-              >
-                {conversation.title}
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className="left-rail-actions">
-          <FeedbackPanel
-            isOpen={isFeedbackOpen}
-            isBusy={isFeedbackBusy}
-            draftText={feedbackDraftText}
-            selectedTags={feedbackTags}
-            contextPointer={activeConversationId || null}
-            items={feedbackItems}
-            notice={feedbackNotice}
-            error={feedbackError}
-            onToggleOpen={() => setIsFeedbackOpen((isOpen) => !isOpen)}
-            onChangeDraftText={setFeedbackDraftText}
-            onToggleTag={toggleFeedbackTag}
-            onSubmitFeedback={submitFeedback}
-          />
-          <SettingsPanel
-            settings={settings}
-            changelog={changelog}
-            proposals={proposals}
-            feedbackIds={feedbackItems.map((item) => item.id)}
-            isBusy={isSending || isResetting || isProposalBusy}
-            canToggleFlags={canToggleFlags}
-            configuredDiagnosticsFlag={configuredDiagnosticsFlag}
-            notice={settingsNotice}
-            error={settingsError}
-            confirmAction={(prompt) => window.confirm(prompt)}
-            onRefresh={() => void refreshState(activeConversationId)}
-            onSelectChannel={(channel) => void updateChannel(channel)}
-            onToggleDiagnostics={(enabled) => void updateExperimentalFlag(enabled)}
-            onResetExperiments={() => void resetExperiments()}
-            onCreateProposal={(input) => void createProposal(input)}
-            onAddValidationRun={(proposalId, input) => void addProposalValidationRun(proposalId, input)}
-            onUpdateProposalDecision={(proposalId, status, notes) => void updateProposalDecision(proposalId, status, notes)}
-          />
-          <button type="button" className="rail-btn" onClick={() => void createConversation()} disabled={isSending || isResetting}>
-            + New Conversation
+        <nav className="left-rail-nav" aria-label="Left rail surfaces">
+          <button
+            type="button"
+            className={`surface-nav-btn ${activeLeftRailSurface === "conversations" ? "active" : ""}`}
+            onClick={() => setActiveLeftRailSurface("conversations")}
+          >
+            Conversations
           </button>
-          <button type="button" className="rail-btn danger" onClick={() => void deleteLocalData()} disabled={isSending || isResetting}>
-            {isResetting ? "Resetting..." : "Delete Local Data"}
+          <button
+            type="button"
+            className={`surface-nav-btn ${activeLeftRailSurface === "settings" ? "active" : ""}`}
+            onClick={() => setActiveLeftRailSurface("settings")}
+          >
+            Settings
           </button>
-        </div>
+          <button
+            type="button"
+            className={`surface-nav-btn ${activeLeftRailSurface === "feedback" ? "active" : ""}`}
+            onClick={() => setActiveLeftRailSurface("feedback")}
+          >
+            Feedback
+          </button>
+          <button
+            type="button"
+            className={`surface-nav-btn ${activeLeftRailSurface === "advanced" ? "active" : ""}`}
+            onClick={() => setActiveLeftRailSurface("advanced")}
+          >
+            Advanced
+          </button>
+        </nav>
+        <section className="left-rail-surface" aria-live="polite">
+          {activeLeftRailSurface === "conversations" && (
+            <>
+              <ul className="conversation-list">
+                {conversations.map((conversation) => (
+                  <li key={conversation.conversation_id}>
+                    <button
+                      type="button"
+                      className={`conversation-item ${conversation.conversation_id === activeConversationId ? "active" : ""}`}
+                      onClick={() => void activateConversation(conversation.conversation_id)}
+                    >
+                      {conversation.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="left-rail-actions">
+                <button
+                  type="button"
+                  className="rail-btn"
+                  onClick={() => void createConversation()}
+                  disabled={isSending || isResetting}
+                >
+                  + New Conversation
+                </button>
+              </div>
+            </>
+          )}
+          {activeLeftRailSurface === "settings" && (
+            <div className="surface-panel">
+              <div className="surface-panel-header">
+                <p className="surface-panel-title">Settings</p>
+                <button type="button" className="rail-btn" onClick={() => setActiveLeftRailSurface("conversations")}>
+                  Back to Conversations
+                </button>
+              </div>
+              <SettingsPanel
+                settings={settings}
+                changelog={changelog}
+                proposals={proposals}
+                feedbackIds={feedbackItems.map((item) => item.id)}
+                isBusy={isSending || isResetting || isProposalBusy}
+                canToggleFlags={canToggleFlags}
+                configuredDiagnosticsFlag={configuredDiagnosticsFlag}
+                notice={settingsNotice}
+                error={settingsError}
+                confirmAction={(prompt) => window.confirm(prompt)}
+                onRefresh={() => void refreshState(activeConversationId)}
+                onSelectChannel={(channel) => void updateChannel(channel)}
+                onToggleDiagnostics={(enabled) => void updateExperimentalFlag(enabled)}
+                onResetExperiments={() => void resetExperiments()}
+                onCreateProposal={(input) => void createProposal(input)}
+                onAddValidationRun={(proposalId, input) => void addProposalValidationRun(proposalId, input)}
+                onUpdateProposalDecision={(proposalId, status, notes) => void updateProposalDecision(proposalId, status, notes)}
+              />
+            </div>
+          )}
+          {activeLeftRailSurface === "feedback" && (
+            <div className="surface-panel">
+              <div className="surface-panel-header">
+                <p className="surface-panel-title">Feedback</p>
+                <button type="button" className="rail-btn" onClick={() => setActiveLeftRailSurface("conversations")}>
+                  Back to Conversations
+                </button>
+              </div>
+              <FeedbackPanel
+                isOpen={isFeedbackOpen}
+                isBusy={isFeedbackBusy}
+                draftText={feedbackDraftText}
+                selectedTags={feedbackTags}
+                contextPointer={activeConversationId || null}
+                items={feedbackItems}
+                notice={feedbackNotice}
+                error={feedbackError}
+                onToggleOpen={() => setIsFeedbackOpen((isOpen) => !isOpen)}
+                onChangeDraftText={setFeedbackDraftText}
+                onToggleTag={toggleFeedbackTag}
+                onSubmitFeedback={submitFeedback}
+              />
+            </div>
+          )}
+          {activeLeftRailSurface === "advanced" && (
+            <div className="surface-panel">
+              <div className="surface-panel-header">
+                <p className="surface-panel-title">Advanced</p>
+                <button type="button" className="rail-btn" onClick={() => setActiveLeftRailSurface("conversations")}>
+                  Back to Conversations
+                </button>
+              </div>
+              <div className="advanced-panel">
+                <p className="settings-copy">Current release channel: {channelLabel}.</p>
+                <p className="flag-note">
+                  Stable/Experimental controls live in Settings to keep one canonical control surface.
+                </p>
+                <button
+                  type="button"
+                  className="rail-btn danger"
+                  onClick={() => void deleteLocalData()}
+                  disabled={isSending || isResetting}
+                >
+                  {isResetting ? "Resetting..." : "Delete Local Data"}
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
       </aside>
 
       <section className="chat-pane">
         <header className="top-bar">
           <div>
             <p className="top-bar-title">Local Desktop Chat</p>
-            <p className="top-bar-subtitle">Self-evolving workbench baseline</p>
+            <p className="top-bar-subtitle">Self-evolving workbench baseline · Channel: {channelLabel}</p>
           </div>
-          <span className="channel-pill">{channelLabel}</span>
         </header>
 
         <div className="transcript" aria-live="polite">

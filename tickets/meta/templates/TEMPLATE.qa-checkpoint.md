@@ -18,6 +18,9 @@
 - Result: PASS / WARN / FAIL
 - Notes:
 - Evidence (screenshots/paths or detailed notes):
+- Follow-ups created (required if FAIL; optional if WARN):
+  - Bug tickets:
+  - UI follow-up tickets:
 
 ## Copy Regression Sweep (Only If User-Facing Text Changed)
 - Lines/strings reviewed:
@@ -33,4 +36,3 @@
 Suggested commit message: `QA: checkpoint for T-XXXX`
 
 Next-step suggestion: (usually "PM accept ticket" or "Implement fixes for bug tickets")
-

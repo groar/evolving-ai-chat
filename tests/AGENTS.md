@@ -51,6 +51,11 @@ If QA is invoked as the automatic QA phase immediately after implementation move
      - Prefer at least 1 screenshot of the primary view/state affected.
      - If the ticket touches empty/error/runtime-offline states, capture those states too.
      - If screenshots are not feasible, record why and provide detailed notes.
+   - Enforcement rule:
+     - If the checklist result is **FAIL**, QA must create at least one ticket:
+       - Create a **bug ticket** if it breaks a core flow, makes the UI meaningfully misleading, or violates the ticket’s acceptance criteria (typical severity S1/S2).
+       - Otherwise create a **scoped follow-up UI ticket** (Type: feature, Area: ui) and link it in the QA checkpoint.
+     - If the checklist result is **WARN**, record the risk and either (a) create a follow-up ticket or (b) explicitly justify why it is acceptable to ship.
 5. Copy regression sweep (only if user-facing text changed):
    - Check term/format consistency against product docs.
    - Check "promise control": text does not imply unavailable behaviors/events.

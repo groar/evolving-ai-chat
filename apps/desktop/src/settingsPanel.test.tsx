@@ -111,6 +111,13 @@ describe("SettingsPanel", () => {
     expect(markup).toContain("These controls do not roll back code changes or stored local data.");
   });
 
+  it("renders a single stable-experimental channel control surface", () => {
+    const markup = renderToStaticMarkup(renderPanel());
+    expect(markup).toContain('class="channel-toggle"');
+    expect(markup).toContain(">Stable<");
+    expect(markup).toContain(">Experimental<");
+  });
+
   it("shows runtime-offline error copy without implying settings are unavailable", () => {
     const markup = renderToStaticMarkup(renderPanel({ error: "Could not load changelog and proposals (runtime offline)." }));
     expect(markup).toContain("Could not load changelog and proposals (runtime offline).");

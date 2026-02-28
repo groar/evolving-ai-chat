@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0019
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -55,35 +55,48 @@ Designer review (F-20260228-002) indicates the app reads like a debug console an
 - F-20260228-002
 
 ## Acceptance Criteria
-- [ ] Default left-rail surface is clearly labeled `Conversations` and does not mention implementation details (for example `SQLite`).
-- [ ] Settings, Feedback, and Advanced/Developer are reachable via clear entry points without being stacked as peer-level default "cards".
-- [ ] Selecting a secondary surface swaps the left-rail content (or otherwise clearly indicates you are in that surface) and provides an obvious way back to Conversations.
-- [ ] Only one canonical Stable/Experimental control surface exists; the other becomes purely informational (or is removed).
-- [ ] UI regression coverage exists for:
+- [x] Default left-rail surface is clearly labeled `Conversations` and does not mention implementation details (for example `SQLite`).
+- [x] Settings, Feedback, and Advanced/Developer are reachable via clear entry points without being stacked as peer-level default "cards".
+- [x] Selecting a secondary surface swaps the left-rail content (or otherwise clearly indicates you are in that surface) and provides an obvious way back to Conversations.
+- [x] Only one canonical Stable/Experimental control surface exists; the other becomes purely informational (or is removed).
+- [x] UI regression coverage exists for:
   - default Conversations label and entry points, and
   - Stable/Experimental control presence (no duplicate toggles).
 
 ## UX Acceptance Criteria (Only If `Area: ui`)
-- [ ] Primary flow is keyboard-usable (no mouse required for core actions).
-- [ ] Empty/error states are clear and actionable.
-- [ ] Copy/microcopy is consistent and unambiguous.
-- [ ] Layout works at common desktop window sizes (narrow and wide).
+- [x] Primary flow is keyboard-usable (no mouse required for core actions).
+- [x] Empty/error states are clear and actionable.
+- [x] Copy/microcopy is consistent and unambiguous.
+- [x] Layout works at common desktop window sizes (narrow and wide).
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
 - QA checkpoint:
+  - `tickets/meta/qa/2026-02-28-qa-checkpoint-t0019.md`
 - Screenshots/artifacts:
+  - `tickets/meta/qa/artifacts/runtime-smoke/2026-02-28T17-45-11-899Z/smoke-fastapi.log`
 
 ## Evidence (Verification)
 - Tests run:
+  - `npm test` (apps/desktop) -> pass (`3 files, 12 tests`).
+  - `npm run build` (apps/desktop) -> pass.
+  - `npm run smoke:fastapi` (apps/desktop) -> pass.
 - Manual checks performed:
+  - Confirmed default left rail copy and structure now center `Conversations` with clear progressive-disclosure entry points (`Settings`, `Feedback`, `Advanced`).
+  - Confirmed secondary surfaces render with an explicit `Back to Conversations` control and no stacked peer cards in the default rail.
+  - Confirmed stable/experimental controls are kept in `Settings` while header/advanced surfaces are informational only.
 - Screenshots/logs/notes:
+  - Runtime smoke artifact log captured at the path above.
+  - UI evidence captured via deterministic render assertions in `apps/desktop/src/appShell.test.tsx` and `apps/desktop/src/settingsPanel.test.tsx`.
 
 ## Subtasks
-- [ ] Design updates
-- [ ] Implementation
-- [ ] Tests
-- [ ] Documentation updates (if any)
+- [x] Design updates
+- [x] Implementation
+- [x] Tests
+- [x] Documentation updates (if any)
 
 ## Change Log
 - 2026-02-28: Ticket created from external designer review (F-20260228-002) and moved to `ready/`.
-
+- 2026-02-28: Picked up for implementation and moved to `in-progress/`.
+- 2026-02-28: Reworked left-rail IA into Conversations-first surfaces with progressive disclosure and canonical channel controls.
+- 2026-02-28: Added UI regression coverage for conversations-first IA and stable/experimental control surface presence.
+- 2026-02-28: Moved to `review/` and completed automatic QA phase (no bugs found).
