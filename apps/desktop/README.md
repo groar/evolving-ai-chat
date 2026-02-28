@@ -107,6 +107,7 @@ uv run --with-requirements runtime/requirements.txt python3 -m unittest runtime/
   - no self-shipping implication,
   - no claim that decisions roll back code/data.
 - Runtime-unavailable behavior remains non-blocking for core chat; retry is available from Settings via refresh.
+- Runtime-offline settings messaging is scoped to runtime-backed surfaces (`changelog` and `proposals`) and does not claim local settings are unavailable.
 
 ## Codex Sandbox Note (QA Runs)
 In Codex sandboxed execution, local port binding can fail with `EPERM` for both runtime (`8787`) and Vite (`5173`).  

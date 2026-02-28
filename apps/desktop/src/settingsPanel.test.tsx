@@ -53,6 +53,13 @@ function renderPanel(overrides: Partial<ComponentProps<typeof SettingsPanel>> = 
 }
 
 describe("SettingsPanel", () => {
+  it("renders a clearly labeled settings section", () => {
+    const markup = renderToStaticMarkup(renderPanel());
+    expect(markup).toContain("Settings");
+    expect(markup).toContain("Changelog + Experiments");
+    expect(markup).toContain("Proposals");
+  });
+
   it("renders changelog and proposals empty states", () => {
     const emptyMarkup = renderToStaticMarkup(renderPanel());
     expect(emptyMarkup).toContain("No changes recorded yet.");
@@ -102,5 +109,11 @@ describe("SettingsPanel", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Feature toggle rollback only.");
     expect(markup).toContain("These controls do not roll back code changes or stored local data.");
+  });
+
+  it("shows runtime-offline error copy without implying settings are unavailable", () => {
+    const markup = renderToStaticMarkup(renderPanel({ error: "Could not load changelog and proposals (runtime offline)." }));
+    expect(markup).toContain("Could not load changelog and proposals (runtime offline).");
+    expect(markup).not.toContain("Could not load changelog, proposals, and settings.");
   });
 });

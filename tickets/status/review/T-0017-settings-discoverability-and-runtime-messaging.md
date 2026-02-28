@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0017
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: bug
 - Area: ui
@@ -41,6 +41,15 @@ First-time users cannot find "Settings" (there is no clearly labeled Settings su
 ## Evidence
 - Screenshot: captured during the 2026-02-28 internal micro-validation attempt (available in chat transcript).
 - Notes: `tickets/meta/feedback/2026-02-28-pm-checkpoint.md`
+- Implementation (2026-02-28):
+  - Added explicit `Settings` section heading in the left rail settings panel, with `Changelog + Experiments` and `Proposals` grouped beneath it.
+  - Scoped runtime-offline error copy to runtime-backed surfaces: `Could not load changelog and proposals (runtime offline).`
+  - Added regression coverage for discoverability and runtime-offline copy in `apps/desktop/src/settingsPanel.test.tsx`.
+  - Validation commands:
+    - `npm --prefix apps/desktop test -- src/settingsPanel.test.tsx` (pass)
+    - `npm --prefix apps/desktop test` (pass)
+    - `npm --prefix apps/desktop run build` (pass)
+- QA checkpoint: `tickets/meta/qa/2026-02-28-qa-checkpoint-t0017.md` (PASS, no bugs found).
 
 ## References
 - `tickets/meta/epics/E-0002-m1-first-self-improvement-cycle.md` (Validation Plan)
@@ -49,10 +58,10 @@ First-time users cannot find "Settings" (there is no clearly labeled Settings su
 - Feedback: `tickets/meta/feedback/inbox/F-20260228-001-settings-navigation-confusing.md`
 
 ## Acceptance Criteria (Fix + Verify)
-- [ ] Settings surface is clearly labeled/discoverable (no-training, first-run).
-- [ ] Runtime-unavailable messaging no longer claims settings cannot be loaded.
+- [x] Settings surface is clearly labeled/discoverable (no-training, first-run).
+- [x] Runtime-unavailable messaging no longer claims settings cannot be loaded.
 - [ ] Reproduction steps no longer fail with a first-time user.
-- [ ] Regression test added/updated for the runtime-unavailable UI state and copy.
+- [x] Regression test added/updated for the runtime-unavailable UI state and copy.
 
 ## Design Spec (PM DoR)
 ### Goal
@@ -79,14 +88,17 @@ Make it obvious where "Settings" lives, and ensure runtime-offline messaging is 
 - Micro: rerun the 3 probes in E-0002 after fix (see Evidence plan in PM checkpoint).
 
 ## Subtasks
-- [ ] Reproduce locally
-- [ ] Implement fix
-- [ ] Add/adjust tests
+- [x] Reproduce locally
+- [x] Implement fix
+- [x] Add/adjust tests
 - [ ] Validate fix via rerunning the 3 E-0002 micro-validation probes
-- [ ] Update docs/changelog if behavior changed
+- [x] Update docs/changelog if behavior changed
 
 ## Notes
 This is a first-run UX issue: treat discoverability and copy as part of correctness.
 
 ## Change Log
 - 2026-02-28: Bug ticket created from PM micro-validation checkpoint.
+- 2026-02-28: Implementation started; moved ticket from `ready/` to `in-progress/`.
+- 2026-02-28: Added Settings discoverability label, scoped runtime-offline settings copy, added regression coverage, and moved ticket to `review/` for QA.
+- 2026-02-28: QA validation completed (pass, no bugs). E-0002 micro-validation probe rerun remains the final open verification item.

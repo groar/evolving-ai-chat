@@ -256,8 +256,12 @@ export function SettingsPanel(props: SettingsPanelProps) {
   }
 
   return (
-    <section className="settings-panel" aria-label="Changelog and experiment settings">
-      <p className="settings-title">Changelog + Experiments</p>
+    <section className="settings-panel" aria-label="Settings">
+      <p className="settings-title">Settings</p>
+      <p className="settings-copy">Changelog and experiment controls live in this section.</p>
+      <div className="settings-section-header">
+        <p className="settings-title">Changelog + Experiments</p>
+      </div>
       <p className="settings-copy">
         Feature toggle rollback only. These controls do not roll back code changes or stored local data.
       </p>

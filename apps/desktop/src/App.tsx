@@ -147,7 +147,7 @@ export function App() {
       setSettingsError(null);
     } catch {
       setRuntimeError("Runtime unavailable. Retry once runtime is running.");
-      setSettingsError("Could not load changelog, proposals, and settings.");
+      setSettingsError("Could not load changelog and proposals (runtime offline).");
     } finally {
       setIsBooting(false);
     }
