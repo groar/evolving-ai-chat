@@ -274,7 +274,7 @@ export function App() {
       const payload = (await response.json()) as { settings: RuntimeSettings };
       setSettings(payload.settings);
       if (nextChannel === "stable") {
-        setSettingsNotice("Switched to Stable. Feature toggle rollback applied.");
+        setSettingsNotice("Switched to Stable. This changes feature preferences only and does not delete conversations/history.");
       }
       await refreshState(activeConversationId);
     } catch {
@@ -300,11 +300,11 @@ export function App() {
       }
       const payload = (await response.json()) as { settings: RuntimeSettings };
       setSettings(payload.settings);
-      setSettingsNotice(`Updated diagnostics experiment: ${enabled ? "enabled" : "disabled"}.`);
+      setSettingsNotice(`Updated diagnostics early-access feature: ${enabled ? "enabled" : "disabled"}.`);
       await refreshState(activeConversationId);
     } catch {
       setRuntimeIssue({ kind: "offline" });
-      setSettingsError("Could not update experimental flag.");
+      setSettingsError("Could not update early-access feature.");
     }
   }
 
@@ -323,11 +323,11 @@ export function App() {
       }
       const payload = (await response.json()) as { settings: RuntimeSettings };
       setSettings(payload.settings);
-      setSettingsNotice("All experimental toggles reset. This does not roll back code or data.");
+      setSettingsNotice("All early-access toggles reset. This does not delete conversations/history or roll back code.");
       await refreshState(activeConversationId);
     } catch {
       setRuntimeIssue({ kind: "offline" });
-      setSettingsError("Could not reset experiments.");
+      setSettingsError("Could not reset early-access features.");
     }
   }
 

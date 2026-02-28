@@ -56,14 +56,14 @@ describe("SettingsPanel", () => {
   it("renders a clearly labeled settings section", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Settings");
-    expect(markup).toContain("Changelog + Experiments");
-    expect(markup).toContain("Proposals");
+    expect(markup).toContain("Release Channel");
+    expect(markup).toContain("Improvements (advanced)");
   });
 
   it("renders changelog and proposals empty states", () => {
     const emptyMarkup = renderToStaticMarkup(renderPanel());
     expect(emptyMarkup).toContain("No changes recorded yet.");
-    expect(emptyMarkup).toContain("No proposals yet.");
+    expect(emptyMarkup).toContain("No change drafts yet.");
   });
 
   it("disables accept when no validation run exists", () => {
@@ -107,15 +107,23 @@ describe("SettingsPanel", () => {
 
   it("renders rollback guardrail copy", () => {
     const markup = renderToStaticMarkup(renderPanel());
-    expect(markup).toContain("Feature toggle rollback only.");
-    expect(markup).toContain("These controls do not roll back code changes or stored local data.");
+    expect(markup).toContain("does not delete conversations/history");
+    expect(markup).toContain("does not roll back code");
   });
 
   it("renders a single stable-experimental channel control surface", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain('class="channel-toggle"');
-    expect(markup).toContain(">Stable<");
-    expect(markup).toContain(">Experimental<");
+    expect(markup).toContain(">Stable (recommended)<");
+    expect(markup).toContain(">Beta (early access)<");
+    expect(markup).not.toContain(">Switch to Stable<");
+  });
+
+  it("uses progressive disclosure for advanced concepts", () => {
+    const markup = renderToStaticMarkup(renderPanel());
+    expect(markup).toContain("Early-Access Features (advanced)");
+    expect(markup).toContain("Improvements (advanced)");
+    expect(markup).toContain("A change draft is a suggested improvement you review locally.");
   });
 
   it("shows runtime-offline error copy without implying settings are unavailable", () => {

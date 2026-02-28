@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0024 | P1 | Make Settings (channel/early-access/improvements) understandable to a fresh user. |
+| _none_ | _none_ | _none_ | Ready queue currently empty. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

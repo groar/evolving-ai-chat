@@ -163,6 +163,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
   const [proposalFeedbackIdsCsv, setProposalFeedbackIdsCsv] = useState("");
   const [proposalFormError, setProposalFormError] = useState<string | null>(null);
   const [proposalEditors, setProposalEditors] = useState<Record<string, ProposalEditorState>>({});
+  const [isCreateDraftOpen, setIsCreateDraftOpen] = useState(false);
 
   const sortedFeedbackIds = useMemo(() => [...feedbackIds].sort((a, b) => b.localeCompare(a)), [feedbackIds]);
 
@@ -184,7 +185,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
   }
 
   function requestSwitchToStable() {
-    const confirmed = confirmAction("Switch to Stable and roll back active experimental toggles?");
+    const confirmed = confirmAction(
+      "Switch to Stable? This changes feature preferences only and does not delete conversations/history."
+    );
     if (!confirmed) {
       return;
     }
@@ -193,7 +196,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
   function requestResetExperiments() {
     const confirmed = confirmAction(
-      "Reset all experiments? This is feature toggle rollback only and does not roll back code or stored data."
+      "Reset all early-access toggles? This does not delete conversations/history."
     );
     if (!confirmed) {
       return;
@@ -206,7 +209,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     const rationale = proposalRationale.trim();
     const sourceFeedbackIds = parseCsvIds(proposalFeedbackIdsCsv);
     if (title.length === 0) {
-      setProposalFormError("Proposal title is required.");
+      setProposalFormError("Draft title is required.");
       return;
     }
 
@@ -224,6 +227,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     setProposalRationale("");
     setProposalFeedbackIdsCsv("");
     setProposalFormError(null);
+    setIsCreateDraftOpen(false);
   }
 
   function submitValidationRun(proposal: ChangeProposal) {
@@ -258,12 +262,13 @@ export function SettingsPanel(props: SettingsPanelProps) {
   return (
     <section className="settings-panel" aria-label="Settings">
       <p className="settings-title">Settings</p>
-      <p className="settings-copy">Changelog and experiment controls live in this section.</p>
+      <p className="settings-copy">Updates &amp; Safety explains what changes and what stays safe.</p>
       <div className="settings-section-header">
-        <p className="settings-title">Changelog + Experiments</p>
+        <p className="settings-title">Release Channel</p>
       </div>
       <p className="settings-copy">
-        Feature toggle rollback only. These controls do not roll back code changes or stored local data.
+        Switching channels changes feature behavior only. It does not delete conversations/history and does not roll back
+        code.
       </p>
 
       <div className="channel-toggle">
@@ -273,7 +278,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
           onClick={requestSwitchToStable}
           disabled={isBusy}
         >
-          Stable
+          Stable (recommended)
         </button>
         <button
           type="button"
@@ -281,29 +286,35 @@ export function SettingsPanel(props: SettingsPanelProps) {
           onClick={() => onSelectChannel("experimental")}
           disabled={isBusy}
         >
-          Experimental
+          Beta (early access)
         </button>
       </div>
 
-      <label className="flag-control">
-        <input
-          type="checkbox"
-          checked={configuredDiagnosticsFlag}
-          disabled={!canToggleFlags}
-          onChange={(event) => onToggleDiagnostics(event.target.checked)}
-        />
-        Show runtime diagnostics (experimental)
-      </label>
-      {settings.channel !== "experimental" && <p className="flag-note">Switch to Experimental to adjust experiment toggles.</p>}
-
-      <div className="rollback-actions">
-        <button type="button" className="rail-btn" disabled={isBusy} onClick={requestSwitchToStable}>
-          Switch to Stable
-        </button>
-        <button type="button" className="rail-btn" disabled={isBusy} onClick={requestResetExperiments}>
-          Reset Experiments
-        </button>
-      </div>
+      <details className="settings-disclosure">
+        <summary className="settings-disclosure-summary">Early-Access Features (advanced)</summary>
+        <p className="settings-copy">
+          An early-access feature is an optional beta toggle. Turning these on/off changes feature behavior only and does
+          not delete conversations/history.
+        </p>
+        <label className="flag-control">
+          <input
+            type="checkbox"
+            checked={configuredDiagnosticsFlag}
+            disabled={!canToggleFlags}
+            onChange={(event) => onToggleDiagnostics(event.target.checked)}
+          />
+          Show local service diagnostics (early-access feature)
+        </label>
+        {settings.channel !== "experimental" && (
+          <p className="flag-note">Switch to Beta (early access) to adjust early-access feature toggles.</p>
+        )}
+        <div className="rollback-actions">
+          <button type="button" className="rail-btn" disabled={isBusy} onClick={requestResetExperiments}>
+            Reset Early-Access Features
+          </button>
+        </div>
+        <p className="flag-note">Resetting toggles sets early-access features to defaults and does not delete conversations/history.</p>
+      </details>
 
       {notice && (
         <p role="status" className="settings-notice">
@@ -316,60 +327,67 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </p>
       )}
 
-      <div className="proposals-wrap">
+      <details className="proposals-wrap" name="settings-advanced">
+        <summary className="settings-disclosure-summary">Improvements (advanced)</summary>
+        <p className="settings-copy">
+          A change draft is a suggested improvement you review locally. Nothing ships automatically.
+        </p>
+        <p className="flag-note">Feedback → Draft → Run checks → Decide</p>
         <div className="settings-section-header">
-          <p className="settings-title">Proposals</p>
+          <p className="settings-title">Change Drafts</p>
           <button type="button" className="rail-btn" onClick={onRefresh} disabled={isBusy}>
             Refresh
           </button>
         </div>
-        <p className="settings-copy">
-          Proposals are reviewed locally and require your explicit decision. Accepting does not self-ship code changes.
-        </p>
+        <button type="button" className="rail-btn" onClick={() => setIsCreateDraftOpen((current) => !current)} disabled={isBusy}>
+          {isCreateDraftOpen ? "Hide Draft Form" : "Draft an Improvement"}
+        </button>
 
-        <div className="proposal-create-form">
-          <label className="settings-title" htmlFor="proposal-title-input">
-            Create proposal
-          </label>
-          <input
-            id="proposal-title-input"
-            className="settings-input"
-            type="text"
-            placeholder="Title"
-            value={proposalTitle}
-            onChange={(event) => setProposalTitle(event.target.value)}
-            disabled={isBusy}
-          />
-          <textarea
-            className="settings-textarea"
-            placeholder="Rationale (required if no feedback IDs linked)"
-            rows={3}
-            value={proposalRationale}
-            onChange={(event) => setProposalRationale(event.target.value)}
-            disabled={isBusy}
-          />
-          <input
-            className="settings-input"
-            type="text"
-            list="feedback-id-options"
-            placeholder="Feedback IDs (comma-separated, optional)"
-            value={proposalFeedbackIdsCsv}
-            onChange={(event) => setProposalFeedbackIdsCsv(event.target.value)}
-            disabled={isBusy}
-          />
-          <datalist id="feedback-id-options">
-            {sortedFeedbackIds.map((feedbackId) => (
-              <option key={feedbackId} value={feedbackId} />
-            ))}
-          </datalist>
-          {proposalFormError && <p className="settings-error">{proposalFormError}</p>}
-          <button type="button" className="rail-btn" onClick={submitCreateProposal} disabled={isBusy}>
-            Create proposal
-          </button>
-        </div>
+        {isCreateDraftOpen && (
+          <div className="proposal-create-form">
+            <label className="settings-title" htmlFor="proposal-title-input">
+              Draft an Improvement
+            </label>
+            <input
+              id="proposal-title-input"
+              className="settings-input"
+              type="text"
+              placeholder="Draft title"
+              value={proposalTitle}
+              onChange={(event) => setProposalTitle(event.target.value)}
+              disabled={isBusy}
+            />
+            <textarea
+              className="settings-textarea"
+              placeholder="Rationale (required if no feedback IDs linked)"
+              rows={3}
+              value={proposalRationale}
+              onChange={(event) => setProposalRationale(event.target.value)}
+              disabled={isBusy}
+            />
+            <input
+              className="settings-input"
+              type="text"
+              list="feedback-id-options"
+              placeholder="Feedback IDs (comma-separated, optional)"
+              value={proposalFeedbackIdsCsv}
+              onChange={(event) => setProposalFeedbackIdsCsv(event.target.value)}
+              disabled={isBusy}
+            />
+            <datalist id="feedback-id-options">
+              {sortedFeedbackIds.map((feedbackId) => (
+                <option key={feedbackId} value={feedbackId} />
+              ))}
+            </datalist>
+            {proposalFormError && <p className="settings-error">{proposalFormError}</p>}
+            <button type="button" className="rail-btn" onClick={submitCreateProposal} disabled={isBusy}>
+              Save Draft
+            </button>
+          </div>
+        )}
 
         {proposals.length === 0 ? (
-          <p className="flag-note">No proposals yet.</p>
+          <p className="flag-note">No change drafts yet.</p>
         ) : (
           <ul className="proposals-list">
             {proposals.map((proposal) => {
@@ -392,11 +410,11 @@ export function SettingsPanel(props: SettingsPanelProps) {
                   </p>
 
                   <div className="proposal-subsection">
-                    <p className="settings-title">Validation</p>
+                    <p className="settings-title">Checks</p>
                     <p className="flag-note">
                       {latestValidation
                         ? `Latest: ${latestValidation.status} (${formatTimestamp(latestValidation.created_at)})`
-                        : "Validation has not run."}
+                        : "Checks have not run."}
                     </p>
                     <div className="proposal-actions-grid">
                       <select
@@ -442,7 +460,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                         onClick={() => submitValidationRun(proposal)}
                         disabled={isBusy || editor.validationSummary.trim().length === 0}
                       >
-                        Add validation run
+                        Add check run
                       </button>
                     </div>
                   </div>
@@ -492,7 +510,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             })}
           </ul>
         )}
-      </div>
+      </details>
 
       <div className="changelog-wrap">
         <p className="settings-title">Recent Changes</p>

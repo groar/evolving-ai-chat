@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0024
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -118,13 +118,13 @@ E-0002’s tier-2 probes (fresh observer) produced “No idea” answers for bot
 - F-20260228-003
 
 ## Acceptance Criteria
-- [ ] Release channel selection is a single canonical control (no separate “Switch to Stable” action that duplicates the same intent).
-- [ ] Channel helper copy explicitly states what it does *and* what it does not do (including: “does not delete conversations/history” and “does not roll back code”).
-- [ ] “Reset Experiments” (or renamed equivalent) helper copy explicitly states it resets only early-access toggles and **does not delete conversations/history**.
-- [ ] Default Settings scan is not “super crowded” because advanced concepts are behind progressive disclosure (collapsed Advanced section or separate surface).
-- [ ] The UI defines “early-access feature” and “change draft/proposal” in user terms at point of need (1 line each or equivalent “What’s this?”).
-- [ ] “proposal/experiment” jargon is avoided in default copy, or defined inline if present.
-- [ ] Regression coverage exists for the above rules.
+- [x] Release channel selection is a single canonical control (no separate “Switch to Stable” action that duplicates the same intent).
+- [x] Channel helper copy explicitly states what it does *and* what it does not do (including: “does not delete conversations/history” and “does not roll back code”).
+- [x] “Reset Experiments” (or renamed equivalent) helper copy explicitly states it resets only early-access toggles and **does not delete conversations/history**.
+- [x] Default Settings scan is not “super crowded” because advanced concepts are behind progressive disclosure (collapsed Advanced section or separate surface).
+- [x] The UI defines “early-access feature” and “change draft/proposal” in user terms at point of need (1 line each or equivalent “What’s this?”).
+- [x] “proposal/experiment” jargon is avoided in default copy, or defined inline if present.
+- [x] Regression coverage exists for the above rules.
 
 ## Micro-Validation Probes (Optional; Tier 2/3)
 - Probes (answer in 1-2 sentences each):
@@ -137,10 +137,27 @@ E-0002’s tier-2 probes (fresh observer) produced “No idea” answers for bot
   - Ticket Evidence section OR a dated PM checkpoint file in `tickets/meta/feedback/`.
 
 ## Subtasks
-- [ ] Design/copy pass for Settings/Changelog/Proposals concepts
-- [ ] Implement small UI adjustments (progressive disclosure)
-- [ ] Add/adjust tests
+- [x] Design/copy pass for Settings/Changelog/Proposals concepts
+- [x] Implement small UI adjustments (progressive disclosure)
+- [x] Add/adjust tests
 - [ ] Rerun E-0002 probes and record results
+
+## Evidence
+- Automated checks:
+  - `npm --prefix apps/desktop test` (PASS)
+  - `npm --prefix apps/desktop run build` (PASS)
+  - `npm --prefix apps/desktop run smoke:fastapi` (PASS)
+    - Artifact: `tickets/meta/qa/artifacts/runtime-smoke/2026-02-28T20-36-20-072Z/smoke-fastapi.log`
+- Implementation notes:
+  - Reframed Settings copy to “Updates & Safety” language and removed duplicate stable action so release channel is controlled in one canonical location.
+  - Added explicit guardrail copy that channel switching and early-access resets do not delete conversations/history and do not roll back code.
+  - Moved early-access toggles and change-draft tooling behind progressive disclosure, with in-place definitions for “early-access feature” and “change draft”.
+  - Added regression assertions in `apps/desktop/src/settingsPanel.test.tsx` for canonical channel control, progressive disclosure labels, and safety copy.
+- QA notes:
+  - QA checkpoint: `tickets/meta/qa/2026-02-28-qa-checkpoint-t0024.md` (PASS, no bugs filed).
 
 ## Change Log
 - 2026-02-28: Ticket created from E-0002 micro-validation probe results (T-0018).
+- 2026-02-28: Implemented copy/hierarchy update in Settings to clarify channel/reset safety, renamed jargon to user-facing language, and collapsed advanced surfaces behind progressive disclosure.
+- 2026-02-28: Updated settings regression coverage in `apps/desktop/src/settingsPanel.test.tsx`; all desktop unit tests passing via `npm --prefix apps/desktop test`.
+- 2026-02-28: Moved ticket to `review/` and completed QA checkpoint with passing automated checks and UX heuristic pass (`tickets/meta/qa/2026-02-28-qa-checkpoint-t0024.md`).
