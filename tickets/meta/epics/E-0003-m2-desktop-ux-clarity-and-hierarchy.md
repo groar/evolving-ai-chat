@@ -42,6 +42,8 @@ Make the desktop app read and behave like a chat product first (clear primary fl
 - T-0020 Runtime offline UX and actionable guidance
 - T-0021 Empty state + copy cleanup (reduce implementation leakage)
 - T-0022 Rerun E-0003 micro-validation probes and record results
+- T-0023 Runtime-offline banner persists when runtime is running
+- T-0024 Settings controls not understandable to a fresh observer (stable/experiments/proposals)
 
 ## Progress (Ticket Status)
 - Done:
@@ -49,7 +51,11 @@ Make the desktop app read and behave like a chat product first (clear primary fl
   - T-0020 Runtime offline UX and actionable guidance
   - T-0021 Empty state + copy cleanup (reduce implementation leakage)
 - Ready:
+  - T-0023 Runtime-offline banner persists when runtime is running
+  - T-0024 Settings controls not understandable to a fresh observer (stable/experiments/proposals)
+- Blocked:
   - T-0022 Rerun E-0003 micro-validation probes and record results
 
 ## Notes
 The current UI is a useful engineering workbench, but it cannot be the default surface if the product claim is "chat". This milestone is about hierarchy and comprehension, not "pretty".
+Fresh-observer probes for E-0002 on 2026-02-28 indicate Settings terminology and runtime reachability states still undermine trust; T-0023 and T-0024 are prioritized as follow-ups before re-running E-0003 probes (T-0022).

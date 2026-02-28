@@ -10,8 +10,8 @@
 ## User Testing Ask / Plan
 - Tier 2 targeted micro-validation is requested (internal, sponsor + 1 fresh observer).
 - Plan:
-  - Run E-0002 probes via T-0018 and record results in `tickets/status/ready/T-0018-rerun-e0002-micro-validation-probes.md`.
-  - Run E-0003 probes via T-0022 and record results in `tickets/status/ready/T-0022-rerun-e0003-micro-validation-probes.md`.
+  - Run E-0002 probes via T-0018 and record results in `tickets/status/done/T-0018-rerun-e0002-micro-validation-probes.md`.
+  - Run E-0003 probes via T-0022 and record results in `tickets/status/blocked/T-0022-rerun-e0003-micro-validation-probes.md`.
 - Where results will be recorded:
   - Ticket Evidence sections (preferred), or a dated PM checkpoint entry in `tickets/meta/feedback/`.
 
@@ -39,4 +39,4 @@
 
 Suggested commit message: `PM: accept T-0021 and queue validation probes for E-0002/E-0003`
 
-Next-step suggestion: Run and record the E-0002 micro-validation probes in `tickets/status/ready/T-0018-rerun-e0002-micro-validation-probes.md` (use at least 1 fresh observer).
+Next-step suggestion: Review the recorded E-0002 probe results in `tickets/status/done/T-0018-rerun-e0002-micro-validation-probes.md` and decide next follow-ups.

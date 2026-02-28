@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0023
-- Status: backlog
+- Status: ready
 - Priority: P1
 - Type: bug
 - Epic: E-0003

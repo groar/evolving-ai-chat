@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0022
-- Status: ready
+- Status: blocked
 - Priority: P2
 - Type: chore
 - Area: ui
@@ -16,6 +16,13 @@ After T-0019..T-0021, rerun the E-0003 tier-2 micro-validation probes with at le
 
 ## Context
 The external designer review (F-20260228-002) identified trust and hierarchy issues (debug-console feel, unclear next action, duplicated runtime-offline messaging, and implementation-leaking copy). The underlying UI fixes shipped in T-0019..T-0021; this ticket captures the follow-up human validation that the updated UI now reads as a chat product first.
+
+## Blocker
+This micro-validation run is currently blocked because runtime reachability and Settings comprehension are known-bad signals:
+- T-0023: runtime-offline detection may be false even when the runtime is running.
+- T-0024: Settings terminology/hierarchy around channel/early-access/improvements is still failing fresh-observer probes.
+
+Rationale: rerunning probes before the above are fixed risks wasting the “fresh observer” sample and producing non-actionable results.
 
 ## References
 - `tickets/meta/epics/E-0003-m2-desktop-ux-clarity-and-hierarchy.md` (Validation Plan)
