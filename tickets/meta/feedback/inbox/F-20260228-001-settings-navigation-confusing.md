@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: F-20260228-001
-- Status: ticketed
+- Status: closed
 - Source: user-playtest
 - Theme: ux
 - Severity: S2
@@ -25,7 +25,6 @@ Settings are not discoverable to first-time users, and runtime-unavailable messa
   - why it read as inconsistent: the left rail includes settings-like controls, but they are not labeled as such and errors imply broader failure
 
 ## Triage Decision
-- Decision: ticketed
-- Rationale: Blocks tier-2 micro-validation and is a major first-run UX issue.
-- Revisit Trigger: after T-0017 is fixed, rerun micro-validation probes.
-
+- Decision: closed
+- Rationale: Fix shipped via T-0017; follow-up human probe rerun tracked in T-0018.
+- Revisit Trigger: if the follow-up probes still report confusion, reopen with concrete mismatch notes.

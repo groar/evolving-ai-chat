@@ -43,6 +43,7 @@ Ship the first full "observe -> propose -> validate -> release" improvement cycl
 - T-0015 Proposal accept creates changelog entry
 - T-0016 Settings proposals panel (draft + validate + decide)
 - T-0017 Settings discoverability + runtime messaging confusion (follow-up bug)
+- T-0018 Rerun tier-2 micro-validation probes and record results (follow-up validation)
 
 ## Progress (Ticket Status)
 - Done:
@@ -56,3 +57,4 @@ Ship the first full "observe -> propose -> validate -> release" improvement cycl
 ## Notes
 Keep this milestone constrained: aim for one narrow class of improvements (for example, UI microcopy or one settings tweak) so the loop can be proven quickly.
 Micro-validation attempt on 2026-02-28 failed immediately because the user could not find "Settings" and interpreted runtime-offline messaging as a broad app failure; tracked in T-0017.
+T-0017 is now accepted; probe rerun is tracked in T-0018.

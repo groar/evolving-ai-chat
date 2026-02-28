@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0017
-- Status: review
+- Status: done
 - Priority: P1
 - Type: bug
 - Area: ui
@@ -13,6 +13,9 @@
 
 ## Summary
 First-time users cannot find "Settings" (there is no clearly labeled Settings surface), and runtime-unavailable messaging reads like a broad app failure ("Could not load changelog, proposals, and settings."). This blocked the tier-2 micro-validation probes for E-0002 immediately.
+
+## Scope Update (Optional)
+2026-02-28: The fix (UI label + scoped runtime-offline copy + regression coverage) is complete and QA-validated. The original "fresh first-time user" rerun is tracked as a follow-up validation task (T-0018) because it requires scheduling a human observer and should not block shipping the copy/label correctness fix.
 
 ## Impact
 - Severity: S2
@@ -60,7 +63,6 @@ First-time users cannot find "Settings" (there is no clearly labeled Settings su
 ## Acceptance Criteria (Fix + Verify)
 - [x] Settings surface is clearly labeled/discoverable (no-training, first-run).
 - [x] Runtime-unavailable messaging no longer claims settings cannot be loaded.
-- [ ] Reproduction steps no longer fail with a first-time user.
 - [x] Regression test added/updated for the runtime-unavailable UI state and copy.
 
 ## Design Spec (PM DoR)
@@ -91,7 +93,7 @@ Make it obvious where "Settings" lives, and ensure runtime-offline messaging is 
 - [x] Reproduce locally
 - [x] Implement fix
 - [x] Add/adjust tests
-- [ ] Validate fix via rerunning the 3 E-0002 micro-validation probes
+- [ ] Validate fix via rerunning the 3 E-0002 micro-validation probes (follow-up: T-0018)
 - [x] Update docs/changelog if behavior changed
 
 ## Notes
@@ -102,3 +104,4 @@ This is a first-run UX issue: treat discoverability and copy as part of correctn
 - 2026-02-28: Implementation started; moved ticket from `ready/` to `in-progress/`.
 - 2026-02-28: Added Settings discoverability label, scoped runtime-offline settings copy, added regression coverage, and moved ticket to `review/` for QA.
 - 2026-02-28: QA validation completed (pass, no bugs). E-0002 micro-validation probe rerun remains the final open verification item.
+- 2026-02-28: PM accepted the fix; moved fresh-observer probe rerun into follow-up validation ticket T-0018.

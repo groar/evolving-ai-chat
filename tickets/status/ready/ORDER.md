@@ -15,7 +15,9 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| - | - | - | No tickets currently in `ready/`. |
+| 1 | T-0019 | P1 | Establish conversations-first IA and progressive disclosure for advanced surfaces. |
+| 2 | T-0020 | P1 | Consolidate runtime-offline UX into a single actionable state. |
+| 3 | T-0021 | P2 | Improve empty state and remove implementation-leaking copy. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

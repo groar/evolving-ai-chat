@@ -2,11 +2,11 @@
 
 ## Metadata
 - ID: F-20260228-002
-- Status: new
+- Status: ticketed
 - Source: external-designer-review
 - Theme: ux
 - Severity: S2
-- Linked Tickets: none
+- Linked Tickets: T-0019, T-0020, T-0021
 - Received: 2026-02-28
 - Updated: 2026-02-28
 
@@ -85,7 +85,6 @@ The current UI does not establish a clear user mental model or hierarchy: primar
    - Avoid duplicated instruction text in both empty state and placeholder.
 
 ## Triage Decision
-- Decision: pending
-- Rationale: pending
-- Revisit Trigger: next PM checkpoint
-
+- Decision: ticketed
+- Rationale: The issues are systemic (IA, hierarchy, state messaging) and are blocking basic trust/usability; split into three scoped, testable UI tickets under a dedicated UX epic.
+- Revisit Trigger: after T-0019..T-0021 are accepted, rerun the E-0003 micro-probes and close the item.
