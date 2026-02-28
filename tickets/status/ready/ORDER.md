@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0018 | P2 | Tier-2 micro-validation for E-0002; requires a fresh human observer and evidence capture. |
-| 2 | T-0022 | P2 | Tier-2 micro-validation for E-0003; requires a fresh human observer and evidence capture. |
+| 1 | T-0022 | P2 | Tier-2 micro-validation for E-0003; requires a fresh human observer and evidence capture. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

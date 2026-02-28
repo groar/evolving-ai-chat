@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0018
-- Status: ready
+- Status: done
 - Priority: P2
 - Type: chore
 - Area: ui
@@ -23,10 +23,10 @@ E-0002 was marked done as an engineering milestone, but its Validation Plan was 
 - Feedback: `tickets/meta/feedback/inbox/F-20260228-001-settings-navigation-confusing.md`
 
 ## Acceptance Criteria
-- [ ] Run the 3 E-0002 probes with at least 1 fresh observer (no prior exposure to the UI).
-- [ ] Record verbatim answers + short interpretation in the Evidence section below (or link to a dated PM checkpoint entry).
-- [ ] If any probe indicates confusion or false beliefs about data safety/rollback, create a new feedback item and at least one scoped ticket linked to it.
-- [ ] If probes are clean, mark this ticket as complete with a one-line rationale.
+- [x] Run the 3 E-0002 probes with at least 1 fresh observer (no prior exposure to the UI).
+- [x] Record verbatim answers + short interpretation in the Evidence section below (or link to a dated PM checkpoint entry).
+- [x] If any probe indicates confusion or false beliefs about data safety/rollback, create a new feedback item and at least one scoped ticket linked to it.
+- [x] If probes are clean, mark this ticket as complete with a one-line rationale.
 
 ## Micro-Validation Probes (Optional; Tier 2/3)
 - Probes (answer in 1-2 sentences each):
@@ -52,15 +52,28 @@ E-0002 was marked done as an engineering milestone, but its Validation Plan was 
   - “Reset Experiments” must not imply conversations/history are deleted.
 
 ## Evidence (Verification)
+- Run context:
+  - Date/time: 2026-02-28 19:42:47
+  - Observer (fresh?): yes
+  - App build/version (if known): unknown
+  - Runtime state during probe (online/offline/unknown): offline (banner showed “start the runtime, then retry”)
+  - Time-to-find Settings (seconds, rough): 2
 - Notes:
-- Observer(s):
-- Probe answers:
-  - Probe 1:
-  - Probe 2:
-  - Probe 3:
-- Interpretation:
+  - Observer stated the runtime was running, but the app UI remained in the runtime-offline state.
+- Probe answers (verbatim where possible):
+  - Probe 1 ("Switch to Stable" does / does not): "No idea"
+  - Probe 2 ("Reset Experiments" does / data impact expectations): "No idea"
+  - Probe 3 (Changelog comprehension in <10s?): "I have no idea what all those things are, it's super crowded, what's a proposal ? Why do we have several 'stable' buttons? What is experiment ? What is proposal? I'm lost.."
+- Interpretation (1–3 bullets):
+  - E-0002 micro-validation failed: the Settings release-channel and experiments controls are not self-explanatory to a fresh observer, and the changelog/proposals surfaces read as conceptually overloaded.
+  - A likely defect exists in runtime availability detection (false “offline” state even when the runtime is reportedly running), which blocks the intended chat experience and undermines trust.
 - Follow-ups created (if any):
+  - Feedback: F-20260228-003
+  - Tickets: T-0023, T-0024
 
 ## Change Log
 - 2026-02-28: Ticket created as follow-up validation for E-0002.
 - 2026-02-28: Groomed to `ready/` (added UI spec addendum and clarified evidence capture expectations).
+- 2026-02-28: Started probe rerun; moved to `in-progress/`.
+- 2026-02-28: Recorded probe results (fresh observer) and created follow-up feedback/tickets for runtime detection and settings comprehension.
+- 2026-02-28: Completed; moved to `done/`.

@@ -58,3 +58,4 @@ Ship the first full "observe -> propose -> validate -> release" improvement cycl
 Keep this milestone constrained: aim for one narrow class of improvements (for example, UI microcopy or one settings tweak) so the loop can be proven quickly.
 Micro-validation attempt on 2026-02-28 failed immediately because the user could not find "Settings" and interpreted runtime-offline messaging as a broad app failure; tracked in T-0017.
 T-0017 is now accepted; probe rerun is tracked in T-0018.
+Probe rerun on 2026-02-28 (fresh observer) indicates the E-0002 probes still fail (“No idea” answers for both Settings controls and strong confusion about proposals/experiments); follow-ups are tracked in T-0023 and T-0024.
