@@ -661,10 +661,10 @@ export function App() {
               <p>Loading local state...</p>
             </div>
           )}
-          {!hasMessages && (
+          {!hasMessages && !isBooting && (
             <div className="empty-state">
-              <p>No messages yet.</p>
-              <p>Use the composer below and press Enter to send.</p>
+              <p>This is your local chat workspace.</p>
+              <p>{isRuntimeOffline ? "Start the runtime, then send your first message." : "Type your first message below."}</p>
             </div>
           )}
 
@@ -686,7 +686,7 @@ export function App() {
             ref={inputRef}
             value={composer}
             className="composer"
-            placeholder={isRuntimeOffline ? "Chat is disabled while runtime is offline." : "Type a message and press Enter to send."}
+            placeholder={isRuntimeOffline ? "Chat is disabled while runtime is offline." : "Type your message..."}
             rows={3}
             disabled={isRuntimeOffline}
             onChange={(event) => setComposer(event.target.value)}

@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0021
-- Status: ready
+- Status: review
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -48,30 +48,40 @@ The current UI is simultaneously empty and noisy. The designer review (F-2026022
 - F-20260228-002
 
 ## Acceptance Criteria
-- [ ] First-run empty state frames the product and provides a single clear next action.
-- [ ] Duplicated instruction text is removed (no repeated "press Enter to send" in multiple places).
-- [ ] User-facing surfaces no longer mention storage implementation details (for example `SQLite`) as labels.
-- [ ] Regression coverage exists for the new empty-state/copy rules.
+- [x] First-run empty state frames the product and provides a single clear next action.
+- [x] Duplicated instruction text is removed (no repeated "press Enter to send" in multiple places).
+- [x] User-facing surfaces no longer mention storage implementation details (for example `SQLite`) as labels.
+- [x] Regression coverage exists for the new empty-state/copy rules.
 
 ## UX Acceptance Criteria (Only If `Area: ui`)
-- [ ] Copy/microcopy is consistent and unambiguous.
-- [ ] Empty/error states are clear and actionable.
+- [x] Copy/microcopy is consistent and unambiguous.
+- [x] Empty/error states are clear and actionable.
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
-- QA checkpoint:
+- QA checkpoint: `tickets/meta/qa/2026-02-28-qa-checkpoint-t0021.md`
 - Screenshots/artifacts:
+  - `tickets/meta/qa/artifacts/runtime-smoke/2026-02-28T19-33-36-438Z/smoke-fastapi.log`
 
 ## Evidence (Verification)
 - Tests run:
+  - `npm --prefix apps/desktop test -- appShell.test.tsx`
+  - `npm --prefix apps/desktop test`
+  - `npm --prefix apps/desktop run build`
+  - `npm --prefix apps/desktop run smoke:fastapi`
 - Manual checks performed:
+  - Reviewed `apps/desktop/src/App.tsx` empty-state and composer copy flow to confirm only one primary instruction block is rendered in the first-run state.
+  - QA checklist pass recorded in `tickets/meta/qa/2026-02-28-qa-checkpoint-t0021.md`.
 - Screenshots/logs/notes:
+  - Headless QA run; no screenshot captured.
+  - Runtime smoke artifact: `tickets/meta/qa/artifacts/runtime-smoke/2026-02-28T19-33-36-438Z/smoke-fastapi.log`
 
 ## Subtasks
-- [ ] Design updates
-- [ ] Implementation
-- [ ] Tests
-- [ ] Documentation updates (if any)
+- [x] Design updates
+- [x] Implementation
+- [x] Tests
+- [x] Documentation updates (if any)
 
 ## Change Log
 - 2026-02-28: Ticket created from external designer review (F-20260228-002) and moved to `ready/`.
-
+- 2026-02-28: Moved to `in-progress/`; simplified first-run empty-state copy, removed duplicated send guidance, and added a regression test for single empty-state instruction rendering.
+- 2026-02-28: Moved to `review/`; completed QA pass (tests/build/smoke + UX checklist) with no bugs found.
