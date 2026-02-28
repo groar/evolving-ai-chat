@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0020
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -54,31 +54,45 @@ The designer review (F-20260228-002) and prior micro-validation attempt (F-20260
 - F-20260228-002
 
 ## Acceptance Criteria
-- [ ] Runtime-offline messaging is consolidated into a single global indicator with plain-language explanation and clear next action.
-- [ ] Composer behavior is consistent with runtime availability (explicitly enabled/disabled with copy that explains why).
-- [ ] Runtime-backed sub-features (if visible) use scoped inline errors and do not duplicate global messaging.
-- [ ] Regression coverage exists for the runtime-offline state (copy + enable/disable rules).
+- [x] Runtime-offline messaging is consolidated into a single global indicator with plain-language explanation and clear next action.
+- [x] Composer behavior is consistent with runtime availability (explicitly enabled/disabled with copy that explains why).
+- [x] Runtime-backed sub-features (if visible) use scoped inline errors and do not duplicate global messaging.
+- [x] Regression coverage exists for the runtime-offline state (copy + enable/disable rules).
 
 ## UX Acceptance Criteria (Only If `Area: ui`)
-- [ ] Empty/error states are clear and actionable.
-- [ ] Copy/microcopy is consistent and unambiguous.
-- [ ] The runtime-offline state does not read like data loss or catastrophic failure.
+- [x] Empty/error states are clear and actionable.
+- [x] Copy/microcopy is consistent and unambiguous.
+- [x] The runtime-offline state does not read like data loss or catastrophic failure.
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
 - QA checkpoint:
+  - `tickets/meta/qa/2026-02-28-qa-checkpoint-t0020.md`
 - Screenshots/artifacts:
+  - `tickets/meta/qa/artifacts/runtime-smoke/2026-02-28T19-14-16-173Z/smoke-fastapi.log`
 
 ## Evidence (Verification)
 - Tests run:
+  - `npm test -- appShell` (apps/desktop) -> pass (`1 file, 5 tests`).
+  - `npm test` (apps/desktop) -> pass (`3 files, 14 tests`).
+  - `npm run build` (apps/desktop) -> pass.
+  - `npm run smoke:fastapi` (apps/desktop) -> pass.
 - Manual checks performed:
+  - Verified runtime-offline copy and composer disable behavior via deterministic render assertions in `apps/desktop/src/appShell.test.tsx`.
+  - Reviewed settings-surface runtime-offline scoped error expectations in `apps/desktop/src/settingsPanel.test.tsx` to confirm no global-message duplication in secondary surfaces.
 - Screenshots/logs/notes:
+  - Runtime smoke artifact log captured at the path above.
 
 ## Subtasks
-- [ ] Design updates
-- [ ] Implementation
-- [ ] Tests
-- [ ] Documentation updates (if any)
+- [x] Design updates
+- [x] Implementation
+- [x] Tests
+- [x] Documentation updates (if any)
 
 ## Change Log
 - 2026-02-28: Ticket created from external designer review (F-20260228-002) and moved to `ready/`.
-
+- 2026-02-28: Picked up by implementation agent and moved to `in-progress/`.
+- 2026-02-28: Consolidated runtime availability into a single global status banner with plain-language runtime explanation and one Retry action.
+- 2026-02-28: Composer is now explicitly disabled when runtime is offline, with offline-specific placeholder copy.
+- 2026-02-28: Distinguished runtime-offline vs runtime-request-error messaging to avoid treating all failures as offline.
+- 2026-02-28: Added regression coverage for single runtime-offline indicator copy, retry action visibility, and composer disable behavior.
+- 2026-02-28: Moved to `review/` and completed automatic QA phase (no bugs found).

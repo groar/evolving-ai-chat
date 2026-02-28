@@ -46,6 +46,14 @@ type RuntimeStatePayload = {
 };
 
 type LeftRailSurface = "conversations" | "settings" | "feedback" | "advanced";
+type RuntimeIssue =
+  | {
+      kind: "offline";
+    }
+  | {
+      kind: "error";
+      detail: string;
+    };
 
 const runtimeBase = "http://127.0.0.1:8787";
 const diagnosticsFlagKey = "show_runtime_diagnostics";
@@ -88,9 +96,7 @@ export function App() {
   const [feedbackNotice, setFeedbackNotice] = useState<string | null>(null);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [activeLeftRailSurface, setActiveLeftRailSurface] = useState<LeftRailSurface>("conversations");
-  const [runtimeError, setRuntimeError] = useState<string | null>(
-    "Runtime unavailable. Start the local runtime to enable responses."
-  );
+  const [runtimeIssue, setRuntimeIssue] = useState<RuntimeIssue | null>({ kind: "offline" });
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -111,7 +117,8 @@ export function App() {
   }, []);
 
   const hasMessages = messages.length > 0;
-  const canSend = composer.trim().length > 0 && !isSending && activeConversationId.length > 0;
+  const isRuntimeOffline = runtimeIssue?.kind === "offline";
+  const canSend = composer.trim().length > 0 && !isSending && activeConversationId.length > 0 && !isRuntimeOffline;
   const channelLabel = useMemo(() => (settings.channel === "experimental" ? "Experimental" : "Stable"), [settings.channel]);
   const diagnosticsEnabled = Boolean(settings.active_flags[diagnosticsFlagKey]);
   const canRetry = !isSending && !isResetting;
@@ -133,20 +140,23 @@ export function App() {
     setSettings(payload.settings ?? defaultSettings);
     setChangelog(payload.changelog ?? []);
     setProposals(payload.proposals ?? []);
-    setRuntimeError(null);
+    setRuntimeIssue(null);
   }
 
   async function refreshState(preferredConversationId?: string) {
     try {
       const response = await fetch(`${runtimeBase}/state`);
       if (!response.ok) {
-        throw new Error("Runtime unavailable");
+        const detail = await readErrorDetail(response);
+        setRuntimeIssue({ kind: "error", detail });
+        setSettingsError("Could not load changelog and proposals (runtime error).");
+        return;
       }
       const payload = (await response.json()) as RuntimeStatePayload;
       applyState(payload, preferredConversationId);
       setSettingsError(null);
     } catch {
-      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setRuntimeIssue({ kind: "offline" });
       setSettingsError("Could not load changelog and proposals (runtime offline).");
     } finally {
       setIsBooting(false);
@@ -171,12 +181,14 @@ export function App() {
         body: JSON.stringify({ title: "New Conversation", set_active: true })
       });
       if (!response.ok) {
-        throw new Error("Conversation create failed");
+        const detail = await readErrorDetail(response);
+        setRuntimeIssue({ kind: "error", detail });
+        return;
       }
       const payload = (await response.json()) as { conversation_id: string };
       await refreshState(payload.conversation_id);
     } catch {
-      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setRuntimeIssue({ kind: "offline" });
     }
   }
 
@@ -189,11 +201,13 @@ export function App() {
         method: "POST"
       });
       if (!response.ok) {
-        throw new Error("Conversation activation failed");
+        const detail = await readErrorDetail(response);
+        setRuntimeIssue({ kind: "error", detail });
+        return;
       }
       await refreshState(conversationId);
     } catch {
-      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setRuntimeIssue({ kind: "offline" });
     }
   }
 
@@ -207,7 +221,9 @@ export function App() {
         method: "DELETE"
       });
       if (!response.ok) {
-        throw new Error("Delete local data failed");
+        const detail = await readErrorDetail(response);
+        setRuntimeIssue({ kind: "error", detail });
+        return;
       }
       setComposer("");
       clearFeedbackItems(window.localStorage);
@@ -218,7 +234,7 @@ export function App() {
       setFeedbackError(null);
       await refreshState();
     } catch {
-      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setRuntimeIssue({ kind: "offline" });
     } finally {
       setIsResetting(false);
       inputRef.current?.focus();
@@ -236,7 +252,9 @@ export function App() {
         body: JSON.stringify({ channel: nextChannel })
       });
       if (!response.ok) {
-        throw new Error("Channel update failed");
+        const detail = await readErrorDetail(response);
+        setRuntimeIssue({ kind: "error", detail });
+        return;
       }
       const payload = (await response.json()) as { settings: RuntimeSettings };
       setSettings(payload.settings);
@@ -245,7 +263,7 @@ export function App() {
       }
       await refreshState(activeConversationId);
     } catch {
-      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setRuntimeIssue({ kind: "offline" });
       setSettingsError("Could not update release channel.");
     }
   }
@@ -261,14 +279,16 @@ export function App() {
         body: JSON.stringify({ enabled })
       });
       if (!response.ok) {
-        throw new Error("Flag update failed");
+        const detail = await readErrorDetail(response);
+        setRuntimeIssue({ kind: "error", detail });
+        return;
       }
       const payload = (await response.json()) as { settings: RuntimeSettings };
       setSettings(payload.settings);
       setSettingsNotice(`Updated diagnostics experiment: ${enabled ? "enabled" : "disabled"}.`);
       await refreshState(activeConversationId);
     } catch {
-      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setRuntimeIssue({ kind: "offline" });
       setSettingsError("Could not update experimental flag.");
     }
   }
@@ -282,14 +302,16 @@ export function App() {
         method: "POST"
       });
       if (!response.ok) {
-        throw new Error("Experiment reset failed");
+        const detail = await readErrorDetail(response);
+        setRuntimeIssue({ kind: "error", detail });
+        return;
       }
       const payload = (await response.json()) as { settings: RuntimeSettings };
       setSettings(payload.settings);
       setSettingsNotice("All experimental toggles reset. This does not roll back code or data.");
       await refreshState(activeConversationId);
     } catch {
-      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setRuntimeIssue({ kind: "offline" });
       setSettingsError("Could not reset experiments.");
     }
   }
@@ -396,7 +418,9 @@ export function App() {
       });
 
       if (!response.ok) {
-        throw new Error(`Runtime returned ${response.status}`);
+        const detail = await readErrorDetail(response);
+        setRuntimeIssue({ kind: "error", detail });
+        return;
       }
 
       const payload = (await response.json()) as {
@@ -408,7 +432,7 @@ export function App() {
       };
       await refreshState(payload.conversation_id);
     } catch {
-      setRuntimeError("Runtime unavailable. Retry once runtime is running.");
+      setRuntimeIssue({ kind: "offline" });
     } finally {
       setIsSending(false);
       inputRef.current?.focus();
@@ -606,6 +630,23 @@ export function App() {
             <p className="top-bar-subtitle">Self-evolving workbench baseline · Channel: {channelLabel}</p>
           </div>
         </header>
+        {runtimeIssue && (
+          <section role="status" className={`runtime-status ${runtimeIssue.kind === "offline" ? "offline" : "error"}`}>
+            <div className="runtime-status-copy">
+              <p className="runtime-status-title">
+                Runtime is the local background service that loads saved conversations and powers assistant replies.
+              </p>
+              <p>
+                {runtimeIssue.kind === "offline"
+                  ? "Chat sending is currently unavailable. Start the runtime, then retry."
+                  : `Runtime is reachable, but the last request failed: ${runtimeIssue.detail}`}
+              </p>
+            </div>
+            <button type="button" className="retry-btn" disabled={!canRetry} onClick={() => void retryRuntime()}>
+              Retry
+            </button>
+          </section>
+        )}
 
         <div className="transcript" aria-live="polite">
           {diagnosticsEnabled && (
@@ -637,15 +678,6 @@ export function App() {
         </div>
 
         <footer className="composer-wrap">
-          {runtimeError && (
-            <div role="alert" className="runtime-error">
-              <strong>Runtime status:</strong> {runtimeError}
-              <button type="button" className="retry-btn" disabled={!canRetry} onClick={() => void retryRuntime()}>
-                Retry
-              </button>
-            </div>
-          )}
-
           <label htmlFor="composer" className="sr-only">
             Message composer
           </label>
@@ -654,8 +686,9 @@ export function App() {
             ref={inputRef}
             value={composer}
             className="composer"
-            placeholder="Type a message and press Enter to send."
+            placeholder={isRuntimeOffline ? "Chat is disabled while runtime is offline." : "Type a message and press Enter to send."}
             rows={3}
+            disabled={isRuntimeOffline}
             onChange={(event) => setComposer(event.target.value)}
             onKeyDown={handleComposerKeyDown}
           />

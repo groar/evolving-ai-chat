@@ -626,17 +626,40 @@ body {
   gap: 10px;
 }
 
-.runtime-error {
-  border: 1px solid #f4a58b;
-  background: var(--danger-bg);
-  color: var(--danger-ink);
+.runtime-status {
   border-radius: 10px;
-  padding: 9px 11px;
+  margin: 12px 16px 0;
+  padding: 10px 12px;
   font-size: 0.9rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.runtime-status.offline {
+  border: 1px solid #f4a58b;
+  background: var(--danger-bg);
+  color: var(--danger-ink);
+}
+
+.runtime-status.error {
+  border: 1px solid #dfbe78;
+  background: #fff7e6;
+  color: #6b4e00;
+}
+
+.runtime-status-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.runtime-status-copy p {
+  margin: 0;
+}
+
+.runtime-status-title {
+  font-weight: 600;
 }
 
 .retry-btn {
