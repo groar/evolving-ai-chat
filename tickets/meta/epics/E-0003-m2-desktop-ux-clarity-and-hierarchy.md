@@ -41,13 +41,15 @@ Make the desktop app read and behave like a chat product first (clear primary fl
 - T-0019 Desktop nav hierarchy + progressive disclosure
 - T-0020 Runtime offline UX and actionable guidance
 - T-0021 Empty state + copy cleanup (reduce implementation leakage)
+- T-0022 Rerun E-0003 micro-validation probes and record results
 
 ## Progress (Ticket Status)
 - Done:
   - T-0019 Desktop nav hierarchy + progressive disclosure
   - T-0020 Runtime offline UX and actionable guidance
-- Ready:
   - T-0021 Empty state + copy cleanup (reduce implementation leakage)
+- Ready:
+  - T-0022 Rerun E-0003 micro-validation probes and record results
 
 ## Notes
 The current UI is a useful engineering workbench, but it cannot be the default surface if the product claim is "chat". This milestone is about hierarchy and comprehension, not "pretty".

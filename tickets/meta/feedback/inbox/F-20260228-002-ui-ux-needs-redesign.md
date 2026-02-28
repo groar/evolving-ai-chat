@@ -6,7 +6,7 @@
 - Source: external-designer-review
 - Theme: ux
 - Severity: S2
-- Linked Tickets: T-0019, T-0020, T-0021
+- Linked Tickets: T-0019, T-0020, T-0021, T-0022
 - Received: 2026-02-28
 - Updated: 2026-02-28
 
@@ -88,3 +88,6 @@ The current UI does not establish a clear user mental model or hierarchy: primar
 - Decision: ticketed
 - Rationale: The issues are systemic (IA, hierarchy, state messaging) and are blocking basic trust/usability; split into three scoped, testable UI tickets under a dedicated UX epic.
 - Revisit Trigger: after T-0019..T-0021 are accepted, rerun the E-0003 micro-probes and close the item.
+
+## Follow-up Tracking
+- 2026-02-28: T-0019..T-0021 accepted; micro-validation probe rerun tracked in T-0022.

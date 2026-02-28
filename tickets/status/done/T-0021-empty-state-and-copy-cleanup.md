@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0021
-- Status: review
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -85,3 +85,4 @@ The current UI is simultaneously empty and noisy. The designer review (F-2026022
 - 2026-02-28: Ticket created from external designer review (F-20260228-002) and moved to `ready/`.
 - 2026-02-28: Moved to `in-progress/`; simplified first-run empty-state copy, removed duplicated send guidance, and added a regression test for single empty-state instruction rendering.
 - 2026-02-28: Moved to `review/`; completed QA pass (tests/build/smoke + UX checklist) with no bugs found.
+- 2026-02-28: Accepted by PM; moved to `done/`.

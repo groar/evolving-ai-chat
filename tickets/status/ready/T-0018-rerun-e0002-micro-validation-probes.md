@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0018
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: chore
 - Area: ui
@@ -38,6 +38,19 @@ E-0002 was marked done as an engineering milestone, but its Validation Plan was 
 - Where results will be recorded:
   - This ticket Evidence section, or a dated PM checkpoint entry in `tickets/meta/feedback/`.
 
+### UI Spec Addendum (Required If `Area: ui`)
+- Primary job-to-be-done:
+  - Verify a first-time user can correctly interpret the Settings controls related to release channels and experiments.
+- Primary action and what must be visually primary:
+  - The probes are the primary action; the UI should not require hunting to reach `Settings`.
+- Navigation / progressive disclosure notes (what is secondary, and where it lives):
+  - Settings should be discoverable as a clear entry point from the default surface (no “hidden” controls implied by runtime errors).
+- Key states to design and verify (happy, empty, error/offline):
+  - Runtime offline: probe questions should still be answerable without implying conversations/data are at risk.
+- Copy constraints (what must not be implied):
+  - “Switch to Stable” must not imply data loss.
+  - “Reset Experiments” must not imply conversations/history are deleted.
+
 ## Evidence (Verification)
 - Notes:
 - Observer(s):
@@ -50,4 +63,4 @@ E-0002 was marked done as an engineering milestone, but its Validation Plan was 
 
 ## Change Log
 - 2026-02-28: Ticket created as follow-up validation for E-0002.
-
+- 2026-02-28: Groomed to `ready/` (added UI spec addendum and clarified evidence capture expectations).
