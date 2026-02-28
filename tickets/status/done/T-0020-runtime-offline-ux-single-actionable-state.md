@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0020
-- Status: review
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -96,3 +96,4 @@ The designer review (F-20260228-002) and prior micro-validation attempt (F-20260
 - 2026-02-28: Distinguished runtime-offline vs runtime-request-error messaging to avoid treating all failures as offline.
 - 2026-02-28: Added regression coverage for single runtime-offline indicator copy, retry action visibility, and composer disable behavior.
 - 2026-02-28: Moved to `review/` and completed automatic QA phase (no bugs found).
+- 2026-02-28: Accepted by PM and moved to `done/` (QA checkpoint passed).

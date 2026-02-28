@@ -45,8 +45,8 @@ Make the desktop app read and behave like a chat product first (clear primary fl
 ## Progress (Ticket Status)
 - Done:
   - T-0019 Desktop nav hierarchy + progressive disclosure
-- Ready:
   - T-0020 Runtime offline UX and actionable guidance
+- Ready:
   - T-0021 Empty state + copy cleanup (reduce implementation leakage)
 
 ## Notes
