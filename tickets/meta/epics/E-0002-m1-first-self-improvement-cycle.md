@@ -5,7 +5,7 @@
 - Status: done
 - Owner: pm-agent
 - Created: 2026-02-26
-- Updated: 2026-02-27
+- Updated: 2026-02-28
 
 ## Goal
 Ship the first full "observe -> propose -> validate -> release" improvement cycle in a way that is boring, safe, and repeatable.
@@ -33,6 +33,7 @@ Ship the first full "observe -> propose -> validate -> release" improvement cycl
 
 ## Linked Feedback
 - F-20260226-001
+- F-20260228-001
 
 ## Linked Tickets
 - T-0011 M1 spec: define the first improvement loop (doc)
@@ -41,6 +42,7 @@ Ship the first full "observe -> propose -> validate -> release" improvement cycl
 - T-0014 Python runtime deps and test bootstrap (FastAPI + pydantic)
 - T-0015 Proposal accept creates changelog entry
 - T-0016 Settings proposals panel (draft + validate + decide)
+- T-0017 Settings discoverability + runtime messaging confusion (follow-up bug)
 
 ## Progress (Ticket Status)
 - Done:
@@ -53,3 +55,4 @@ Ship the first full "observe -> propose -> validate -> release" improvement cycl
 
 ## Notes
 Keep this milestone constrained: aim for one narrow class of improvements (for example, UI microcopy or one settings tweak) so the loop can be proven quickly.
+Micro-validation attempt on 2026-02-28 failed immediately because the user could not find "Settings" and interpreted runtime-offline messaging as a broad app failure; tracked in T-0017.
