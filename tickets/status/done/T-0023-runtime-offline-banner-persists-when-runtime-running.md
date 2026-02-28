@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0023
-- Status: review
+- Status: done
 - Priority: P1
 - Type: bug
 - Epic: E-0003
@@ -69,3 +69,4 @@ This may be an actual runtime availability bug, a port/bind/permissions issue, o
 - 2026-02-28: Bug ticket created from E-0002 micro-validation probe results (T-0018).
 - 2026-02-28: Added automatic `/state` retry polling while runtime is offline so the banner clears as soon as the runtime becomes reachable without requiring manual retry.
 - 2026-02-28: Added regression coverage for offline auto-retry gating in `apps/desktop/src/appShell.test.tsx`.
+- 2026-02-28: Accepted to `done/` after QA checkpoint (`tickets/meta/qa/2026-02-28-qa-checkpoint-t0023.md`).
