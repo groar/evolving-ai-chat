@@ -51,7 +51,7 @@ Make the desktop app read and behave like a chat product first (clear primary fl
   - T-0020 Runtime offline UX and actionable guidance
   - T-0021 Empty state + copy cleanup (reduce implementation leakage)
   - T-0023 Runtime-offline banner persists when runtime is running
-- Ready:
+- Review:
   - T-0024 Settings controls not understandable to a fresh observer (stable/experiments/proposals)
 - Blocked:
   - T-0022 Rerun E-0003 micro-validation probes and record results

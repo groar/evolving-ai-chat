@@ -77,4 +77,4 @@ Rationale: rerunning probes before the above are fixed risks wasting the “fres
 - [ ] Update E-0003 status/notes
 
 ## Change Log
-- 2026-02-28: Ticket created and moved to `ready/`.
+- 2026-02-28: Ticket created; moved to `blocked/` pending runtime/banner and Settings clarity fixes.
