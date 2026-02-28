@@ -30,6 +30,14 @@ Use when the ticket introduces new rules/state/transitions or would otherwise fo
 - Edge cases / failure modes:
 - Validation plan:
 
+### UI Spec Addendum (Required If `Area: ui`)
+Keep this lightweight, but explicit enough to prevent "invented UI":
+- Primary job-to-be-done:
+- Primary action and what must be visually primary:
+- Navigation / progressive disclosure notes (what is secondary, and where it lives):
+- Key states to design and verify (happy, empty, error/offline):
+- Copy constraints (what must not be implied):
+
 ## Context
 - Why this matters now.
 - Any constraints or assumptions.

@@ -64,6 +64,7 @@ This guide defines periodic Product Manager (PM) workflow runs in `tickets/`.
      - Scope bounds (how the change stays constrained).
      - Edge cases and failure modes.
      - Validation plan (deterministic checks and/or targeted user probe).
+   - UI rule: if `Area: ui`, require the ticket includes the `UI Spec Addendum` (see `tickets/meta/templates/TEMPLATE.ticket.md`) even if the behavior is not otherwise ambiguous. This prevents accidental IA/hierarchy drift and keeps states/copy constraints explicit.
 7. Ticket quality pass:
    - Ensure metadata and `Updated` fields are current.
    - Ensure acceptance criteria are observable and testable.

@@ -29,7 +29,9 @@ This guide defines the agentic QA workflow for project teams using this scaffold
   - Exercise key user flows and critical edge cases.
   - Confirm output clarity and error behavior where relevant.
 - Visual UI smoke check applies if the host project has a UI (even for non-UI tickets), when possible, with screenshots and/or notes recorded.
-- Extended UX checks apply only if `Area: ui` on the ticket (keyboard usability, clear empty/error states, responsive sanity check).
+- **UX/UI Design QA (expert pass) is required when `Area: ui` on the ticket.**
+  - This is a heuristic evaluation (not external playtesting) focused on hierarchy, mental model, states, and copy clarity.
+  - Use the checklist in `tests/UX_QA_CHECKLIST.md` and record pass/fail + notes as part of the QA report.
 - For any ticket that changes user-facing text, include a copy regression sweep (typos, ambiguity, misleading implications, and term consistency).
 
 ## QA Workflow
@@ -42,20 +44,27 @@ If QA is invoked as the automatic QA phase immediately after implementation move
    - If the change is docs-only `.md` (no software/behavior impact), skip automated tests and do a focused doc consistency pass instead (links, terminology, copy regressions).
 3. Execute manual scenarios:
    - Run at least one normal-flow and one edge-case scenario (software/behavior changes only).
-4. Copy regression sweep (only if user-facing text changed):
+4. UX/UI Design QA (required for `Area: ui`):
+   - Run the checklist: `tests/UX_QA_CHECKLIST.md`.
+   - Validate the ticket’s `UX Acceptance Criteria` and any UI/copy constraints.
+   - Capture evidence:
+     - Prefer at least 1 screenshot of the primary view/state affected.
+     - If the ticket touches empty/error/runtime-offline states, capture those states too.
+     - If screenshots are not feasible, record why and provide detailed notes.
+5. Copy regression sweep (only if user-facing text changed):
    - Check term/format consistency against product docs.
    - Check "promise control": text does not imply unavailable behaviors/events.
    - Record exact lines reviewed in ticket evidence or QA report.
-5. If the host project has a UI, perform a visual UI smoke check:
+6. If the host project has a UI, perform a visual UI smoke check:
    - Open the UI and sanity-check the main flow(s) relevant to recent changes.
    - Capture screenshots and/or notes as evidence.
    - Map criterion -> evidence file/note -> pass/fail for user-facing acceptance criteria.
-6. Record findings:
+7. Record findings:
    - Capture expected vs actual behavior and deterministic reproduction steps.
-7. Create bug tickets:
+8. Create bug tickets:
    - Use `tickets/meta/templates/TEMPLATE.bug-ticket.md`.
    - Place new bug tickets in `tickets/status/backlog/` unless urgent triage requires `ready/`.
-8. Write QA run summary:
+9. Write QA run summary:
    - Add one dated report in `tickets/meta/qa/`.
 
 ## Output Requirements Per QA Run

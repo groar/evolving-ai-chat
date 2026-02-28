@@ -93,7 +93,10 @@ Each ticket must include:
 For bug tickets, use `tickets/meta/templates/TEMPLATE.bug-ticket.md`.
 
 ## UI/UX Changes
-If a ticket changes UI or user-facing behavior, mark it with `Area: ui` in its metadata and include UX-specific acceptance criteria and QA checks.
+If a ticket changes UI or user-facing behavior:
+- Mark it with `Area: ui` in its metadata.
+- Include UX-specific acceptance criteria and (lightweight) UI spec notes (primary action, key states, copy constraints).
+- During QA, run the UX/UI Design QA (expert pass) checklist in `tests/UX_QA_CHECKLIST.md` and record evidence in the QA report/ticket.
 
 ## Agent Operating Rules
 - Update ticket content as work progresses; do not leave stale status notes.

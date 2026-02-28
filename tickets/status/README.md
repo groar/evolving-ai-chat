@@ -37,6 +37,7 @@ A ticket is eligible for `done/` when:
 - [ ] If software/behavior changed, QA validation evidence is captured (or a waiver is recorded).
 - [ ] Follow-ups are ticketed (not left as “TODO” in notes).
 - [ ] If `Area: ui`, UX acceptance criteria are verified and evidence is recorded (notes and/or screenshots).
+  - Evidence expectation: at least 1 screenshot (or detailed notes if screenshots are not feasible) covering the primary affected view; include empty/error state screenshots when the ticket touches those states.
 - [ ] If user-facing text changed, a copy regression sweep was performed (typos, ambiguity, implication control, and term consistency).
 
 Note: external user validation is not a default DoD requirement for every ticket. Require it only when the ticket or owning epic explicitly depends on user-report outcomes; otherwise prefer deterministic checks and internal verification evidence.
