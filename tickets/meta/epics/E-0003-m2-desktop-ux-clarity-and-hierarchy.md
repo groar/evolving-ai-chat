@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: E-0003
-- Status: planned
+- Status: in-progress
 - Owner: pm-agent
 - Created: 2026-02-28
 - Updated: 2026-02-28
@@ -43,9 +43,11 @@ Make the desktop app read and behave like a chat product first (clear primary fl
 - T-0021 Empty state + copy cleanup (reduce implementation leakage)
 
 ## Progress (Ticket Status)
-- Planned:
-  - T-0019, T-0020, T-0021
+- Done:
+  - T-0019 Desktop nav hierarchy + progressive disclosure
+- Ready:
+  - T-0020 Runtime offline UX and actionable guidance
+  - T-0021 Empty state + copy cleanup (reduce implementation leakage)
 
 ## Notes
 The current UI is a useful engineering workbench, but it cannot be the default surface if the product claim is "chat". This milestone is about hierarchy and comprehension, not "pretty".
-

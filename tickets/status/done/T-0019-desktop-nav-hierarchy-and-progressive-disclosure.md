@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0019
-- Status: review
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -100,3 +100,4 @@ Designer review (F-20260228-002) indicates the app reads like a debug console an
 - 2026-02-28: Reworked left-rail IA into Conversations-first surfaces with progressive disclosure and canonical channel controls.
 - 2026-02-28: Added UI regression coverage for conversations-first IA and stable/experimental control surface presence.
 - 2026-02-28: Moved to `review/` and completed automatic QA phase (no bugs found).
+- 2026-02-28: PM accepted the change; moved ticket to `done/`.
