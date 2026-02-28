@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { App } from "./App";
+import { App, offlineStateRetryIntervalMs, shouldAutoRetryOfflineState } from "./App";
 
 describe("App shell IA", () => {
   it("defaults the left rail to conversations-first copy", () => {
@@ -45,5 +45,15 @@ describe("App shell IA", () => {
     const markup = renderToStaticMarkup(<App />);
     expect(markup.match(/class=\"empty-state\"/g)).toHaveLength(1);
     expect(markup).not.toContain("press Enter to send");
+  });
+
+  it("auto-retry guard only activates for offline runtime state", () => {
+    expect(shouldAutoRetryOfflineState({ kind: "offline" })).toBe(true);
+    expect(shouldAutoRetryOfflineState({ kind: "error", detail: "Bad request" })).toBe(false);
+    expect(shouldAutoRetryOfflineState(null)).toBe(false);
+  });
+
+  it("uses a short retry cadence for offline recovery", () => {
+    expect(offlineStateRetryIntervalMs).toBe(2000);
   });
 });

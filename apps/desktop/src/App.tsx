@@ -46,7 +46,7 @@ type RuntimeStatePayload = {
 };
 
 type LeftRailSurface = "conversations" | "settings" | "feedback" | "advanced";
-type RuntimeIssue =
+export type RuntimeIssue =
   | {
       kind: "offline";
     }
@@ -57,11 +57,16 @@ type RuntimeIssue =
 
 const runtimeBase = "http://127.0.0.1:8787";
 const diagnosticsFlagKey = "show_runtime_diagnostics";
+export const offlineStateRetryIntervalMs = 2000;
 const defaultSettings: RuntimeSettings = {
   channel: "stable",
   experimental_flags: {},
   active_flags: {}
 };
+
+export function shouldAutoRetryOfflineState(runtimeIssue: RuntimeIssue | null): boolean {
+  return runtimeIssue?.kind === "offline";
+}
 
 async function readErrorDetail(response: Response): Promise<string> {
   try {
@@ -125,6 +130,16 @@ export function App() {
   const canToggleFlags = settings.channel === "experimental" && !isSending && !isResetting;
   const configuredDiagnosticsFlag = Boolean(settings.experimental_flags[diagnosticsFlagKey]);
   const isFeedbackBusy = isSending || isResetting;
+
+  useEffect(() => {
+    if (!shouldAutoRetryOfflineState(runtimeIssue)) {
+      return;
+    }
+    const timerId = window.setInterval(() => {
+      void refreshState(activeConversationId || undefined);
+    }, offlineStateRetryIntervalMs);
+    return () => window.clearInterval(timerId);
+  }, [activeConversationId, runtimeIssue]);
 
   function applyState(payload: RuntimeStatePayload, preferredConversationId?: string) {
     setConversations(payload.conversations);

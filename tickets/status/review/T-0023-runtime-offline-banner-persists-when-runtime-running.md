@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0023
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: bug
 - Epic: E-0003
@@ -37,24 +37,29 @@ The runtime-offline banner can persist (“start the runtime, then retry”) des
 ## Evidence
 - Logs:
   - Micro-validation report captured in `tickets/status/done/T-0018-rerun-e0002-micro-validation-probes.md`.
+  - Runtime smoke (managed FastAPI + contract checks): `tickets/meta/qa/artifacts/runtime-smoke/2026-02-28T20-08-58-513Z/smoke-fastapi.log`.
+  - QA checkpoint: `tickets/meta/qa/2026-02-28-qa-checkpoint-t0023.md`.
 - Screenshots/video: none
-- Failing test(s): none
+- Automated checks:
+  - `npm --prefix apps/desktop test -- appShell.test.tsx settingsPanel.test.tsx feedbackPanel.test.tsx` (PASS)
+  - `npm --prefix apps/desktop run build` (PASS)
+  - `npm run smoke:fastapi` from `apps/desktop` (PASS)
 
 ## References
 - Feedback: `tickets/meta/feedback/inbox/F-20260228-003-e0002-probe-failed-runtime-offline-and-settings-confusion.md`
 - Related UX epic: `tickets/meta/epics/E-0003-m2-desktop-ux-clarity-and-hierarchy.md`
 
 ## Acceptance Criteria (Fix + Verify)
-- [ ] Root cause is fixed (runtime reachability detection reflects reality).
-- [ ] Reproduction steps no longer fail.
-- [ ] Regression test added/updated (offline -> online transition or “runtime running” state).
-- [ ] No regression in core chat flow and runtime-offline UX behavior.
+- [x] Root cause is fixed (runtime reachability detection reflects reality).
+- [x] Reproduction steps no longer fail.
+- [x] Regression test added/updated (offline -> online transition or “runtime running” state).
+- [x] No regression in core chat flow and runtime-offline UX behavior.
 
 ## Subtasks
-- [ ] Reproduce locally with logs (verify `/state` reachability and error details)
-- [ ] Implement fix
-- [ ] Add/adjust tests
-- [ ] Validate fix via QA scenario
+- [x] Reproduce locally with logs (verify `/state` reachability and error details)
+- [x] Implement fix
+- [x] Add/adjust tests
+- [x] Validate fix via QA scenario
 - [ ] Update docs/copy if needed
 
 ## Notes
@@ -62,3 +67,5 @@ This may be an actual runtime availability bug, a port/bind/permissions issue, o
 
 ## Change Log
 - 2026-02-28: Bug ticket created from E-0002 micro-validation probe results (T-0018).
+- 2026-02-28: Added automatic `/state` retry polling while runtime is offline so the banner clears as soon as the runtime becomes reachable without requiring manual retry.
+- 2026-02-28: Added regression coverage for offline auto-retry gating in `apps/desktop/src/appShell.test.tsx`.
