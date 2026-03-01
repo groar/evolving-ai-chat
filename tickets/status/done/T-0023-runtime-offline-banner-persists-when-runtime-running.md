@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0023
-- Status: review
+- Status: done
 - Priority: P1
 - Type: bug
 - Epic: E-0003
@@ -73,4 +73,4 @@ Reopened after user report on 2026-03-01. Root cause identified as missing CORS 
 - 2026-03-01: Reopened after user report that runtime-offline state persisted.
 - 2026-03-01: Added FastAPI CORS middleware for Tauri/local dev origins in `apps/desktop/runtime/main.py`.
 - 2026-03-01: Added regression coverage asserting CORS middleware configuration in `apps/desktop/runtime/test_proposals.py`.
-- 2026-03-01: Revalidated with runtime unit tests and managed FastAPI smoke; awaiting PM acceptance.
+- 2026-03-01: Revalidated with runtime unit tests and managed FastAPI smoke; accepted back to `done/` after QA checkpoint (`tickets/meta/qa/2026-03-01-qa-checkpoint-t0023-reopen.md`).

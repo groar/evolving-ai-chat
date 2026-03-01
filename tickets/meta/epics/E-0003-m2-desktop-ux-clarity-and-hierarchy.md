@@ -5,7 +5,7 @@
 - Status: in-progress
 - Owner: pm-agent
 - Created: 2026-02-28
-- Updated: 2026-02-28
+- Updated: 2026-03-01
 
 ## Goal
 Make the desktop app read and behave like a chat product first (clear primary flow, clear next action, trustworthy states), while keeping advanced/dev features available via progressive disclosure.
@@ -44,6 +44,7 @@ Make the desktop app read and behave like a chat product first (clear primary fl
 - T-0022 Rerun E-0003 micro-validation probes and record results
 - T-0023 Runtime-offline banner persists when runtime is running
 - T-0024 Settings controls not understandable to a fresh observer (stable/experiments/proposals)
+- T-0025 Clarify offline safety and simplify Settings copy/layout
 
 ## Progress (Ticket Status)
 - Done:
@@ -53,9 +54,12 @@ Make the desktop app read and behave like a chat product first (clear primary fl
   - T-0023 Runtime-offline banner persists when runtime is running
 - Review:
   - T-0024 Settings controls not understandable to a fresh observer (stable/experiments/proposals)
+- Ready:
+  - T-0025 Clarify offline safety and simplify Settings copy/layout
 - Blocked:
   - T-0022 Rerun E-0003 micro-validation probes and record results
 
 ## Notes
 The current UI is a useful engineering workbench, but it cannot be the default surface if the product claim is "chat". This milestone is about hierarchy and comprehension, not "pretty".
 Fresh-observer probes for E-0002 on 2026-02-28 indicate Settings terminology and runtime reachability states still undermine trust; T-0023 is accepted and T-0024 remains prioritized before re-running E-0003 probes (T-0022).
+Fresh-observer probes on 2026-03-01 show improved first-run mental model, but offline safety and Settings scan/comprehension still need another iteration (T-0025) before closing the epic validation loop.

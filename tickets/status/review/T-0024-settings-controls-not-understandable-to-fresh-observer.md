@@ -9,7 +9,7 @@
 - Epic: E-0003
 - Owner: ai-agent
 - Created: 2026-02-28
-- Updated: 2026-02-28
+- Updated: 2026-03-01
 
 ## Summary
 Fresh-observer micro-validation indicates that the Settings surface (including “Switch to Stable”, “Reset Experiments”, and the changelog/proposals concepts) is not self-explanatory (“No idea”, “super crowded”, “what is a proposal/experiment?”). This blocks trust in the safety/rollback promise and prevents the intended validation loop from completing.
@@ -140,6 +140,7 @@ E-0002’s tier-2 probes (fresh observer) produced “No idea” answers for bot
 - [x] Design/copy pass for Settings/Changelog/Proposals concepts
 - [x] Implement small UI adjustments (progressive disclosure)
 - [x] Add/adjust tests
+- [x] Run fresh-observer comprehension probes and record results (2026-03-01)
 - [ ] Rerun E-0002 probes and record results
 
 ## Evidence
@@ -155,6 +156,17 @@ E-0002’s tier-2 probes (fresh observer) produced “No idea” answers for bot
   - Added regression assertions in `apps/desktop/src/settingsPanel.test.tsx` for canonical channel control, progressive disclosure labels, and safety copy.
 - QA notes:
   - QA checkpoint: `tickets/meta/qa/2026-02-28-qa-checkpoint-t0024.md` (PASS, no bugs filed).
+- Micro-validation (fresh observer, mac 14", no hints) — 2026-03-01:
+  - Probe 1 (verbatim):
+    - "This app is a local AI chat I think. I would try it by sending messages, and would expect the aI to answer, much like chatgpt"
+  - Probe 2 (verbatim):
+    - "When it is offline, I can't use the chat, which means the AI runs online. I can still access settings and things like that. I would press retry to access the app, since the chat is the main thing to do."
+  - Probe 3 (verbatim):
+    - "Yes I can find the settings, they are easily found, but just a bit weird they are under \"conversations\".. No idea what is safe or not offline. I imagine it's going to choose between an experimental or stable version of the chat app. This whole panel is a bit mysteriously worded and a bit obscure to me.. It says conversations are not lost. I guess resetting would remove access to all experimental features?"
+  - Interpretation:
+    - Probe 1: PASS (correct mental model: local AI chat; primary action: send message).
+    - Probe 2: PARTIAL (banner is actionable, but implies "AI runs online" when offline; offline/safe-usage remains unclear).
+    - Probe 3: PARTIAL/FAIL (Settings found, but "safe offline" not understood; copy reads as jargon-heavy/wordy and hard to scan).
 
 ## Change Log
 - 2026-02-28: Ticket created from E-0002 micro-validation probe results (T-0018).
