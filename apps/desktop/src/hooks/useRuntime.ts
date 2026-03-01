@@ -589,7 +589,12 @@ export function useRuntime() {
   useEffect(() => {
     Promise.all([getAllApiKeysFromStore(), getDefaultModelFromStore()]).then(([keys, modelId]) => {
       const rt = useRuntimeStore.getState();
-      rt.setApiKeySet(Boolean(keys.openai) || Boolean(keys.anthropic));
+      const hasAny = Boolean(keys.openai) || Boolean(keys.anthropic);
+      rt.setApiKeySet(hasAny);
+      rt.setApiKeys({
+        openai: Boolean(keys.openai),
+        anthropic: Boolean(keys.anthropic)
+      });
       if (modelId) rt.setSelectedModelId(modelId);
     });
   }, []);
