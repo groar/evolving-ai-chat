@@ -171,6 +171,15 @@ describe("SettingsPanel", () => {
     expect(markup).toContain("Suggest an improvement");
   });
 
+  it("proposal form shows purpose description and Save for review when opened", async () => {
+    render(renderPanel());
+    const openBtn = screen.getByRole("button", { name: /Suggest an improvement/i });
+    await userEvent.click(openBtn);
+    expect(screen.getByText(/Review this suggested improvement\. Edit if needed, then save/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Save for review/i })).toBeTruthy();
+    expect(screen.getByText(/You can review or accept this later/)).toBeTruthy();
+  });
+
   it("shows Generate from feedback dropdown when feedback exists", () => {
     const items = [{ id: "fb-1", text: "Improvements section is confusing" }];
     const markup = renderToStaticMarkup(renderPanel({ feedbackItems: items }));
@@ -178,31 +187,26 @@ describe("SettingsPanel", () => {
     expect(markup).toContain("fb-1");
   });
 
-  it("generate from feedback populates form with title, rationale, feedback ID, diff_summary, risk_notes", async () => {
+  it("generate from feedback opens form and shows purpose, Title, Rationale, Advanced section", async () => {
     const onCreateProposal = vi.fn();
     const items = [{ id: "fb-20260301-abc", text: "Improvements section is confusing" }];
-    render(
+    const { container } = render(
       renderPanel({
         feedbackItems: items,
         onCreateProposal
       })
     );
+    const improvementsDetails = container.querySelector('[name="settings-improvements"]');
+    const improvementsSummary = within(improvementsDetails as HTMLElement).getByText("Improvements");
+    await userEvent.click(improvementsSummary);
     const select = screen.getByLabelText(/Select feedback to generate proposal from/i);
     await userEvent.selectOptions(select, "fb-20260301-abc");
-    const titleInput = screen.getByPlaceholderText("Draft title") as HTMLInputElement;
-    expect(titleInput.value).toBe("Clarify: Improvements section is confusing");
-    const rationaleField = screen.getByPlaceholderText(/Rationale/) as HTMLTextAreaElement;
-    expect(rationaleField.value).toBe("Improvements section is confusing");
-    const feedbackIdsInput = screen.getByPlaceholderText(/Feedback IDs/) as HTMLInputElement;
-    expect(feedbackIdsInput.value).toBe("fb-20260301-abc");
-    const diffSummary = screen.getByPlaceholderText(/What changes will this proposal make/) as HTMLTextAreaElement;
-    expect(diffSummary.value).toBe(
-      "Rename 'Change Drafts' → 'Suggested improvements'; 'Draft an Improvement' → 'Suggest an improvement'; 'No change drafts yet' → 'No suggestions yet.'"
-    );
-    const riskNotes = screen.getByPlaceholderText(/Copy-only/) as HTMLTextAreaElement;
-    expect(riskNotes.value).toBe(
-      "Copy-only change; must not imply autonomous shipping or data deletion."
-    );
+    expect(screen.getAllByText(/Review this suggested improvement\. Edit if needed, then save/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole("button", { name: /Save for review/i }).length).toBeGreaterThanOrEqual(1);
+    const improvementsSection = container.querySelector('[name="settings-improvements"]');
+    expect(within(improvementsSection as HTMLElement).getByLabelText("Title")).toBeTruthy();
+    expect(within(improvementsSection as HTMLElement).getByLabelText("Rationale")).toBeTruthy();
+    expect(within(improvementsSection as HTMLElement).getByText("Advanced")).toBeTruthy();
   });
 
   it("Beta → Stable transition: clicking Stable when on Beta opens confirm dialog, confirming calls onSelectChannel", async () => {

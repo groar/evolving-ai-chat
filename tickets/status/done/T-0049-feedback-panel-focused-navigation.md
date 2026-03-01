@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0049
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: bug
 - Area: ui
@@ -46,17 +46,17 @@ When the user clicks the "feedback" affordance next to an AI response, they land
 - Copy constraints: must not imply feedback triggers an immediate automated change.
 
 ## Acceptance Criteria
-- [ ] Clicking the feedback affordance on a response navigates directly to the feedback section (visible without scrolling) in settings, or opens a focused overlay — not the top of the settings panel.
-- [ ] The per-conversation context reference is preserved in the form.
-- [ ] No regression in existing feedback form save behavior.
-- [ ] Manual check: feedback button → feedback form visible immediately, no scrolling required.
+- [x] Clicking the feedback affordance on a response navigates directly to the feedback section (visible without scrolling) in settings, or opens a focused overlay — not the top of the settings panel.
+- [x] The per-conversation context reference is preserved in the form.
+- [x] No regression in existing feedback form save behavior.
+- [x] Manual check: feedback button → feedback form visible immediately, no scrolling required.
 
 ## User-Facing Acceptance Criteria
-- [ ] A user who clicks "feedback" on a response lands directly at the feedback input, not at the top of an unrelated settings view.
+- [x] A user who clicks "feedback" on a response lands directly at the feedback input, not at the top of an unrelated settings view.
 
 ## UX Acceptance Criteria
-- [ ] Empty/error states for feedback section are unchanged.
-- [ ] No other settings sections are visible above the feedback section on landing.
+- [x] Empty/error states for feedback section are unchanged.
+- [x] No other settings sections are visible above the feedback section on landing.
 
 ## Feedback References
 - `F-20260301-006`
@@ -66,8 +66,10 @@ When the user clicks the "feedback" affordance next to an AI response, they land
 - Can ship alongside T-0048 and T-0050 in same M6.1 batch.
 
 ## Evidence (Verification)
-- Tests run: _(to be filled)_
-- Manual checks performed: _(to be filled)_
+- Tests run: feedbackPanel.test.tsx and settingsPanel.test.tsx pass. App.tsx scroll effect defers scroll by 350ms when settings open with message-scoped feedback context so the sheet is visible before scrollIntoView.
+- Manual checks performed: Click Feedback on a response → settings open, feedback section scrolls into view; context reference preserved.
 
 ## Change Log
 - 2026-03-01: Ticket created from E-0007 tier-2 probe findings (F-20260301-006).
+- 2026-03-01: Implemented. App.tsx: deferred scroll (350ms) to feedback section when opening from per-message Feedback button; ref on feedback section unchanged. Moved to review.
+- 2026-03-01: QA passed (2026-03-01-qa-checkpoint-t0048-t0049-t0050-m61). PM accepted; moved to done.

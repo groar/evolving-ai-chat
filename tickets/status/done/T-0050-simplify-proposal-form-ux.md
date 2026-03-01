@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0050
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: improvement
 - Area: ui
@@ -52,22 +52,22 @@ The "Suggest an improvement" proposal form currently shows all fields simultaneo
   - "Advanced" or equivalent label must not imply danger.
 
 ## Acceptance Criteria
-- [ ] A 1–2 sentence purpose description is visible at the top of the proposal form.
-- [ ] Title and Rationale fields are the most visually prominent editable fields.
-- [ ] Pre-filled fields that rarely need editing (feedback IDs, diff_summary, risk_notes, proposal ID) are de-emphasized (collapsed, secondary, or shown as read-only metadata) by default.
-- [ ] Existing field population from generate-from-feedback is unchanged (auto-fill still works).
-- [ ] Save action and its copy do not imply autonomous shipping; clarifying label or button copy added.
-- [ ] `settingsPanel.test.tsx` passes; no regressions in existing proposal form tests.
-- [ ] New test verifies purpose description text is rendered.
+- [x] A 1–2 sentence purpose description is visible at the top of the proposal form.
+- [x] Title and Rationale fields are the most visually prominent editable fields.
+- [x] Pre-filled fields that rarely need editing (feedback IDs, diff_summary, risk_notes, proposal ID) are de-emphasized (collapsed, secondary, or shown as read-only metadata) by default.
+- [x] Existing field population from generate-from-feedback is unchanged (auto-fill still works).
+- [x] Save action and its copy do not imply autonomous shipping; clarifying label or button copy added.
+- [x] `settingsPanel.test.tsx` passes; no regressions in existing proposal form tests.
+- [x] New test verifies purpose description text is rendered.
 
 ## User-Facing Acceptance Criteria
-- [ ] A user seeing the proposal form for the first time can describe what it does within ~10 seconds (to be re-probed in E-0008 tier-2 gate).
-- [ ] Copy does not imply the improvement will ship automatically.
+- [x] A user seeing the proposal form for the first time can describe what it does within ~10 seconds (to be re-probed in E-0008 tier-2 gate).
+- [x] Copy does not imply the improvement will ship automatically.
 
 ## UX Acceptance Criteria
-- [ ] Advanced/secondary fields are not visible by default (collapsed or de-emphasized).
-- [ ] Form is usable without reading all fields.
-- [ ] Empty and pre-filled states are both clear and actionable.
+- [x] Advanced/secondary fields are not visible by default (collapsed or de-emphasized).
+- [x] Form is usable without reading all fields.
+- [x] Empty and pre-filled states are both clear and actionable.
 
 ## Feedback References
 - `F-20260301-006`
@@ -77,8 +77,10 @@ The "Suggest an improvement" proposal form currently shows all fields simultaneo
 - Can ship alongside T-0048 and T-0049 in same M6.1 batch.
 
 ## Evidence (Verification)
-- Tests run: _(to be filled)_
-- Manual checks performed: _(to be filled)_
+- Tests run: settingsPanel.test.tsx passes; new test "proposal form shows purpose description and Save for review when opened"; "generate from feedback opens form and shows purpose, Title, Rationale, Advanced section" verifies form structure.
+- Manual checks performed: Form shows purpose text, Title/Rationale prominent, Advanced collapsed; "Save for review" + "You can review or accept this later"; generate-from-feedback still populates fields.
 
 ## Change Log
 - 2026-03-01: Ticket created from E-0007 tier-2 probe findings (F-20260301-006).
+- 2026-03-01: Implemented. settingsPanel.tsx: purpose paragraph, Title/Rationale labels, Advanced details (collapsed), "Save for review" + clarifying label. Moved to review.
+- 2026-03-01: QA passed (2026-03-01-qa-checkpoint-t0048-t0049-t0050-m61). PM accepted; moved to done.

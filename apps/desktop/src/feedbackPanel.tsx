@@ -60,10 +60,17 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
 
   const canSubmit = draftText.trim().length > 0 && !isBusy;
 
+  const sectionSubheading =
+    contextPointer?.includes(":")
+      ? "About this response"
+      : contextPointer
+        ? "About this conversation"
+        : "About the app or a response";
+
   return (
     <section className="grid gap-2.5" aria-label="Local feedback capture">
       <div className="flex justify-between items-center gap-2">
-        <p className="m-0 text-sm font-semibold text-foreground">Feedback</p>
+        <p className="m-0 text-sm font-semibold text-foreground">{sectionSubheading}</p>
         <button type="button" className={railBtn} onClick={onToggleOpen}>
           {isOpen ? "Close" : "New feedback"}
         </button>

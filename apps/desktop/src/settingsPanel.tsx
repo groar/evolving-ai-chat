@@ -510,43 +510,55 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
         {isCreateDraftOpen && (
           <div className="border border-border rounded-lg bg-white p-2.5 grid gap-2">
+            <p className="m-0 text-sm text-foreground">
+              Review this suggested improvement. Edit if needed, then save — you can review and accept or discard it later.
+            </p>
             <label className="text-sm font-semibold text-foreground" htmlFor="proposal-title-input">
-              Suggest an improvement
+              Title
             </label>
             <input
               id="proposal-title-input"
               className={settingsInput}
               type="text"
-              placeholder="Draft title"
+              placeholder="Short title for this suggestion"
               value={proposalTitle}
               onChange={(event) => setProposalTitle(event.target.value)}
               disabled={isBusy}
             />
+            <label className="text-sm font-semibold text-foreground" htmlFor="proposal-rationale-input">
+              Rationale
+            </label>
             <textarea
+              id="proposal-rationale-input"
               className={settingsTextarea}
-              placeholder="Rationale (required if no feedback IDs linked)"
+              placeholder="Why this change (required if no feedback IDs linked)"
               rows={3}
               value={proposalRationale}
               onChange={(event) => setProposalRationale(event.target.value)}
               disabled={isBusy}
             />
-            <input
-              className={settingsInput}
-              type="text"
-              list="feedback-id-options"
-              placeholder="Feedback IDs (comma-separated, optional)"
-              value={proposalFeedbackIdsCsv}
-              onChange={(event) => setProposalFeedbackIdsCsv(event.target.value)}
-              disabled={isBusy}
-            />
-            <datalist id="feedback-id-options">
-              {sortedFeedbackItems.map((f) => (
-                <option key={f.id} value={f.id} />
-              ))}
-            </datalist>
-            {(proposalDiffSummary.length > 0 || proposalRiskNotes.length > 0) && (
-              <>
-                <label className="text-sm font-medium text-foreground" htmlFor="proposal-diff-summary-input">
+            <details className="grid gap-2 text-muted-foreground" name="proposal-advanced">
+              <summary className="cursor-pointer text-sm font-medium text-foreground">Advanced</summary>
+              <div className="grid gap-2 pt-1">
+                <label className="text-xs font-medium text-foreground" htmlFor="proposal-feedback-ids-input">
+                  Feedback IDs (comma-separated, optional)
+                </label>
+                <input
+                  id="proposal-feedback-ids-input"
+                  className={settingsInput}
+                  type="text"
+                  list="feedback-id-options"
+                  placeholder="F-YYYYMMDD-NNN,…"
+                  value={proposalFeedbackIdsCsv}
+                  onChange={(event) => setProposalFeedbackIdsCsv(event.target.value)}
+                  disabled={isBusy}
+                />
+                <datalist id="feedback-id-options">
+                  {sortedFeedbackItems.map((f) => (
+                    <option key={f.id} value={f.id} />
+                  ))}
+                </datalist>
+                <label className="text-xs font-medium text-foreground" htmlFor="proposal-diff-summary-input">
                   Diff summary (optional)
                 </label>
                 <textarea
@@ -558,7 +570,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                   onChange={(e) => setProposalDiffSummary(e.target.value)}
                   disabled={isBusy}
                 />
-                <label className="text-sm font-medium text-foreground" htmlFor="proposal-risk-notes-input">
+                <label className="text-xs font-medium text-foreground" htmlFor="proposal-risk-notes-input">
                   Risk notes (optional)
                 </label>
                 <textarea
@@ -570,16 +582,19 @@ export function SettingsPanel(props: SettingsPanelProps) {
                   onChange={(e) => setProposalRiskNotes(e.target.value)}
                   disabled={isBusy}
                 />
-              </>
-            )}
+              </div>
+            </details>
             {proposalFormError && (
               <p className="m-0 border border-[#f4a58b] rounded-lg bg-[#fff0ea] text-destructive text-xs py-2 px-2.5">
                 {proposalFormError}
               </p>
             )}
-            <button type="button" className={railBtn} onClick={submitCreateProposal} disabled={isBusy}>
-              Save Draft
-            </button>
+            <div className="grid gap-0.5">
+              <button type="button" className={railBtn} onClick={submitCreateProposal} disabled={isBusy}>
+                Save for review
+              </button>
+              <p className="m-0 text-xs text-muted-foreground">You can review or accept this later.</p>
+            </div>
           </div>
         )}
 

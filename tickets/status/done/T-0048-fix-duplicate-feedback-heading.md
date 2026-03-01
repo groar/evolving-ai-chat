@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0048
-- Status: ready
+- Status: done
 - Priority: P2
 - Type: bug
 - Area: ui
@@ -38,16 +38,16 @@ The feedback panel renders "Feedback" as both the top-level page/panel title and
   - Must not imply feedback is submitted automatically or that the agent acts on it immediately.
 
 ## Acceptance Criteria
-- [ ] The word "Feedback" appears at most once as a heading/title within the feedback panel view.
-- [ ] The panel body uses a descriptive subheading or label (not a repeat of "Feedback") to orient the user to the form.
-- [ ] Existing feedback form functionality (text input, category checkboxes, context reference, Save Feedback button) is unchanged.
-- [ ] `settingsPanel.test.tsx` passes; no regressions.
+- [x] The word "Feedback" appears at most once as a heading/title within the feedback panel view.
+- [x] The panel body uses a descriptive subheading or label (not a repeat of "Feedback") to orient the user to the form.
+- [x] Existing feedback form functionality (text input, category checkboxes, context reference, Save Feedback button) is unchanged.
+- [x] `settingsPanel.test.tsx` passes; no regressions.
 
 ## User-Facing Acceptance Criteria
-- [ ] A user opening the feedback panel sees no duplicated "Feedback" heading.
+- [x] A user opening the feedback panel sees no duplicated "Feedback" heading.
 
 ## UX Acceptance Criteria
-- [ ] Copy is unambiguous and does not repeat the same word consecutively as a heading.
+- [x] Copy is unambiguous and does not repeat the same word consecutively as a heading.
 
 ## Feedback References
 - `F-20260301-006`
@@ -56,8 +56,10 @@ The feedback panel renders "Feedback" as both the top-level page/panel title and
 - Part of E-0008 M6.1 batch; can ship independently.
 
 ## Evidence (Verification)
-- Tests run: _(to be filled)_
-- Manual checks performed: _(to be filled)_
+- Tests run: feedbackPanel.test.tsx passes. Panel section subheading now context-based ("About this response" / "About this conversation" / "About the app or a response") instead of repeating "Feedback".
+- Manual checks performed: Feedback panel shows single "Feedback" in App.tsx section header; body uses descriptive subheading only.
 
 ## Change Log
 - 2026-03-01: Ticket created from E-0007 tier-2 probe findings (F-20260301-006).
+- 2026-03-01: Implemented. feedbackPanel.tsx: replaced duplicate "Feedback" heading with sectionSubheading from contextPointer. Moved to review.
+- 2026-03-01: QA passed (2026-03-01-qa-checkpoint-t0048-t0049-t0050-m61). PM accepted; moved to done.

@@ -83,10 +83,15 @@ export function App() {
     }
   }, [streamingText]);
 
+  // When opening settings from the per-message Feedback button, scroll to feedback section after sheet is visible.
   useEffect(() => {
-    if (settingsOpen && feedback.isOpen && feedback.contextPointer?.includes(":")) {
-      feedbackSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!settingsOpen || !feedback.isOpen || !feedback.contextPointer?.includes(":")) {
+      return;
     }
+    const timeoutId = window.setTimeout(() => {
+      feedbackSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 350);
+    return () => window.clearTimeout(timeoutId);
   }, [settingsOpen, feedback.isOpen, feedback.contextPointer]);
 
   useEffect(() => {
