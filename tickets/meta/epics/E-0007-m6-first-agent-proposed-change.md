@@ -2,10 +2,10 @@
 
 ## Metadata
 - ID: E-0007
-- Status: active
+- Status: closed
 - Owner: pm-agent
 - Created: 2026-03-01
-- Updated: 2026-03-01 (PM checkpoint-27)
+- Updated: 2026-03-01 (PM checkpoint-28; closed with findings)
 
 ## Goal
 Ship the first agent-proposed change that originates from genuine usage of the product. The system observes a concrete signal (explicit user feedback captured in-app, or a defined implicit friction trigger), generates a proposal artifact, runs validation, and the user accepts — landing a real, visible improvement. This is the first live test of the product thesis: the observe-propose-validate loop can deliver value a user recognizes and appreciates.
@@ -70,9 +70,19 @@ Ship the first agent-proposed change that originates from genuine usage of the p
 - T-0011 M1 spec, T-0012 feedback capture, T-0013 proposal artifact, T-0015 accept→changelog, T-0016 proposals panel
 
 ## Progress (Ticket Status)
-- Done: T-0045 (scope complete), T-0046 (implementation complete; copy changes shipped)
-- Ready: T-0047 (E2E smoke + tier-2 probe + epic closure)
-- Pending: E2E smoke (feedback → generate → validate → accept), tier-2 micro-validation — both addressed by T-0047
+- Done: T-0045 (scope complete), T-0046 (implementation complete; copy changes shipped), T-0047 (validation + epic closure)
+- E2E smoke: PARTIAL — user completed feedback capture → proposal form; did not complete validate → accept → changelog path (UX confusion blocked completion).
+- Tier-2 probes: ALL FAIL — comprehension, value, trust all failed. See T-0047 Evidence section for full results (F-20260301-006).
+
+## DoD Resolution
+1. Real signal captured — ✓ (organic usage produced feedback items).
+2. Proposal generated — ✓ (generate-from-feedback affordance works; T-0046).
+3. Pipeline exercised — ✓ (feedback → proposal form populated; partial; accept path not completed by user).
+4. Change is user-visible — ✓ (copy changes observable in Settings; "Suggested improvements").
+5. Comprehension gate (tier-2) — **FAILED**. User could not explain the loop within ~10 seconds. Explicitly resolved: follow-up tickets T-0048 (duplicate heading), T-0049 (feedback navigation), T-0050 (proposal form UX) created. E-0008 scoped for M6.1 UX clarity. M7 expansion of improvement classes BLOCKED until E-0008 comprehension gate passes.
+
+## Outcome
+Epic closed with findings. The loop infrastructure exists and ran end-to-end (partially), but the UX is not yet legible to the primary user. M6.1 (E-0008) addresses the legibility gap before M7 scope expansion.
 
 ## Notes
 - Improvement class must be narrow: e.g. UI microcopy, one settings default, or one prompt/routing tweak. Avoid scope creep.
