@@ -98,9 +98,9 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
 ### Near-Term Plan
 - Active milestone: M6 — "First Agent-Proposed Change from Real Usage" (E-0007) (active 2026-03-01)
   - Goal: Ship the first agent-proposed change driven by real usage signal.
-  - Done: T-0045 (M6 scope / spec addendum).
-  - Ready: T-0046 (wire proposal-from-feedback + first instance — rank 1 in ORDER.md).
-  - Planned: T-0046 implementation → smoke test → tier-2 comprehension probe (see E-0007 Validation Plan).
+  - Done: T-0045 (M6 scope / spec addendum), T-0046 (generate-from-feedback + copy improvements shipped).
+  - Ready: T-0047 (E2E smoke + tier-2 comprehension probe + E-0007 epic closure — rank 1 in ORDER.md).
+  - Planned: T-0047 run → E-0007 closes → M7 scoping.
 - Previous: M5 — "Conversational UX Table Stakes" (E-0006) (completed 2026-03-01)
   - T-0036–T-0040, T-0042, T-0043, T-0044. Tier-3 validation: partial pass, proceed.
 - M4 — "UI Simplification & Chat-First Redesign" (E-0005) (completed 2026-03-01)

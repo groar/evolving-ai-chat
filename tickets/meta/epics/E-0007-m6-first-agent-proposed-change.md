@@ -5,7 +5,7 @@
 - Status: active
 - Owner: pm-agent
 - Created: 2026-03-01
-- Updated: 2026-03-01
+- Updated: 2026-03-01 (PM checkpoint-27)
 
 ## Goal
 Ship the first agent-proposed change that originates from genuine usage of the product. The system observes a concrete signal (explicit user feedback captured in-app, or a defined implicit friction trigger), generates a proposal artifact, runs validation, and the user accepts — landing a real, visible improvement. This is the first live test of the product thesis: the observe-propose-validate loop can deliver value a user recognizes and appreciates.
@@ -64,13 +64,15 @@ Ship the first agent-proposed change that originates from genuine usage of the p
 ### M6 tickets (new work)
 - T-0045 M6 scope: define improvement class, trigger, and first instance (done)
 - T-0046 M6 wire proposal-from-feedback + first instance (done)
+- T-0047 E2E smoke + tier-2 comprehension probe + epic closure (ready)
 
 ### Infrastructure dependencies (E-0002, done)
 - T-0011 M1 spec, T-0012 feedback capture, T-0013 proposal artifact, T-0015 accept→changelog, T-0016 proposals panel
 
 ## Progress (Ticket Status)
-- Done: T-0045 (scope complete), T-0046 (implementation complete)
-- Pending: E2E smoke (feedback → generate → validate → accept), tier-2 micro-validation
+- Done: T-0045 (scope complete), T-0046 (implementation complete; copy changes shipped)
+- Ready: T-0047 (E2E smoke + tier-2 probe + epic closure)
+- Pending: E2E smoke (feedback → generate → validate → accept), tier-2 micro-validation — both addressed by T-0047
 
 ## Notes
 - Improvement class must be narrow: e.g. UI microcopy, one settings default, or one prompt/routing tweak. Avoid scope creep.

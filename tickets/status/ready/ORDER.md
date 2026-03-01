@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| — | _(empty)_ | | T-0046 in progress. |
+| 1 | T-0047-e0007-validation-e2e-smoke-tier2-closure | P1 | E2E smoke + tier-2 probe + E-0007 epic closure. Pick up next. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -24,4 +24,4 @@ This file is the source of truth for ready-ticket pickup order.
 ## Next Up (Backlog)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| — | _(empty)_ | | | No further backlog items scoped. Next epic/milestone to be defined after T-0046 completes. |
+| — | _(empty)_ | | | No further M6 backlog. M7 to be scoped after E-0007 closes (T-0047 done). |
