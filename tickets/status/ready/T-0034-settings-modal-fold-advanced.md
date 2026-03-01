@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0034
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -76,3 +76,4 @@ Consider using shadcn/ui Sheet (slide-out from right) rather than Dialog for Set
 
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
+- 2026-03-01: Promoted to ready. T-0031 and T-0033 complete; dependencies satisfied. Ship alongside T-0033 (layout) — T-0033 done.

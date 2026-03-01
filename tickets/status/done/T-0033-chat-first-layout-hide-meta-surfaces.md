@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0033
-- Status: review
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -99,3 +99,4 @@ Consider a command palette (Cmd+K) for power-user navigation — search conversa
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
 - 2026-03-01: Promoted to ready. T-0031 and T-0032 complete; dependencies satisfied.
 - 2026-03-01: Implemented. Chat-first layout: collapsible Sheet sidebar (left), Settings sheet (right), top bar with conversation title. Replaced user-visible "runtime" with "assistant service". Moved to review.
+- 2026-03-01: PM acceptance. QA checkpoint passed (21 tests, build, UX checklist, copy sweep); no bugs. Moved to done.

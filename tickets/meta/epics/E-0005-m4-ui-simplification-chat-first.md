@@ -8,6 +8,7 @@
 - Updated: 2026-03-01
 
 
+
 ## Goal
 Strip the UI back to a chat-first experience. Adopt the stated design system (Tailwind + shadcn/ui). Decompose the frontend monolith. Make Settings, Feedback, and Advanced ambient rather than primary navigation destinations. The result: opening the app feels like opening a conversation, not a control panel.
 
@@ -41,8 +42,8 @@ Product & design review (F-20260301-002) found that 75% of the left-rail navigat
 - T-0035 User-facing copy and empty state rewrite
 
 ## Progress (Ticket Status)
-- Done: T-0031 (2026-03-01), T-0032 (2026-03-01)
-- Ready: T-0033 (rank 1), then T-0034, T-0035
+- Done: T-0031 (2026-03-01), T-0032 (2026-03-01), T-0033 (2026-03-01)
+- Ready: T-0034 (rank 1), then T-0035
 
 ## Validation Plan
 - Tier-2 micro-validation after T-0033 and T-0034 ship:
