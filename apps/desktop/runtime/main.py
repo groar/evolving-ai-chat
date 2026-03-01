@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from .models import (
     AddValidationRunRequest,
@@ -20,6 +21,13 @@ from .models import (
 from .storage import RuntimeStorage
 
 app = FastAPI(title="Evolving AI Chat Runtime", version="0.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"^(tauri://localhost|http://localhost(?::\d+)?|http://127\.0\.0\.1(?::\d+)?)$",
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 storage = RuntimeStorage()
 
 

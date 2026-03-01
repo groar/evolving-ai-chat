@@ -2,13 +2,13 @@
 
 ## Metadata
 - ID: T-0023
-- Status: done
+- Status: review
 - Priority: P1
 - Type: bug
 - Epic: E-0003
 - Owner: ai-agent
 - Created: 2026-02-28
-- Updated: 2026-02-28
+- Updated: 2026-03-01
 
 ## Summary
 The desktop app can show the runtime-offline banner (“start the runtime, then retry”) even when the observer believes the runtime is running. This blocks chat sending, undermines trust, and invalidates usability probes that assume runtime-backed features are reachable.
@@ -37,13 +37,13 @@ The runtime-offline banner can persist (“start the runtime, then retry”) des
 ## Evidence
 - Logs:
   - Micro-validation report captured in `tickets/status/done/T-0018-rerun-e0002-micro-validation-probes.md`.
-  - Runtime smoke (managed FastAPI + contract checks): `tickets/meta/qa/artifacts/runtime-smoke/2026-02-28T20-08-58-513Z/smoke-fastapi.log`.
-  - QA checkpoint: `tickets/meta/qa/2026-02-28-qa-checkpoint-t0023.md`.
+  - Runtime smoke (managed FastAPI + contract checks): `tickets/meta/qa/artifacts/runtime-smoke/2026-03-01T08-39-00-312Z/smoke-fastapi.log`.
+  - QA checkpoint: `tickets/meta/qa/2026-03-01-qa-checkpoint-t0023-reopen.md`.
 - Screenshots/video: none
 - Automated checks:
-  - `npm --prefix apps/desktop test -- appShell.test.tsx settingsPanel.test.tsx feedbackPanel.test.tsx` (PASS)
-  - `npm --prefix apps/desktop run build` (PASS)
-  - `npm run smoke:fastapi` from `apps/desktop` (PASS)
+  - `npm --prefix apps/desktop test -- appShell.test.tsx` (PASS)
+  - `cd apps/desktop && uv run --with-requirements runtime/requirements.txt python3 -m unittest runtime/test_proposals.py` (PASS)
+  - `cd apps/desktop && npm run smoke:fastapi` (PASS)
 
 ## References
 - Feedback: `tickets/meta/feedback/inbox/F-20260228-003-e0002-probe-failed-runtime-offline-and-settings-confusion.md`
@@ -60,13 +60,17 @@ The runtime-offline banner can persist (“start the runtime, then retry”) des
 - [x] Implement fix
 - [x] Add/adjust tests
 - [x] Validate fix via QA scenario
-- [ ] Update docs/copy if needed
+- [x] Update docs/copy if needed
 
 ## Notes
-This may be an actual runtime availability bug, a port/bind/permissions issue, or an error path incorrectly categorized as “offline”. The fix should ensure the UI distinguishes “offline” vs “runtime error” and surfaces actionable detail only in advanced views.
+Reopened after user report on 2026-03-01. Root cause identified as missing CORS middleware in the runtime API: desktop WebView requests to `http://127.0.0.1:8787` were blocked by origin policy, which the app surfaced as `offline` despite the runtime process being healthy.
 
 ## Change Log
 - 2026-02-28: Bug ticket created from E-0002 micro-validation probe results (T-0018).
 - 2026-02-28: Added automatic `/state` retry polling while runtime is offline so the banner clears as soon as the runtime becomes reachable without requiring manual retry.
 - 2026-02-28: Added regression coverage for offline auto-retry gating in `apps/desktop/src/appShell.test.tsx`.
 - 2026-02-28: Accepted to `done/` after QA checkpoint (`tickets/meta/qa/2026-02-28-qa-checkpoint-t0023.md`).
+- 2026-03-01: Reopened after user report that runtime-offline state persisted.
+- 2026-03-01: Added FastAPI CORS middleware for Tauri/local dev origins in `apps/desktop/runtime/main.py`.
+- 2026-03-01: Added regression coverage asserting CORS middleware configuration in `apps/desktop/runtime/test_proposals.py`.
+- 2026-03-01: Revalidated with runtime unit tests and managed FastAPI smoke; awaiting PM acceptance.

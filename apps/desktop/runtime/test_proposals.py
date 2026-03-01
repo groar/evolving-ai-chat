@@ -5,6 +5,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from fastapi.middleware.cors import CORSMiddleware
+
+from runtime.main import app
 from runtime.models import ChangeProposal, ProposalDecision, ValidationRunSummary
 from runtime.storage import RuntimeStorage
 
@@ -154,6 +157,19 @@ class ProposalStorageFlowTests(unittest.TestCase):
             self.assertEqual(len(linked_entries), 1)
             self.assertEqual(linked_entries[0]["title"], "Proposal accepted")
             self.assertEqual(linked_entries[0]["summary"], "Accepted proposal recorded in local changelog.")
+
+
+class RuntimeCorsTests(unittest.TestCase):
+    def test_runtime_has_cors_middleware_for_desktop_origins(self) -> None:
+        cors_entries = [middleware for middleware in app.user_middleware if middleware.cls is CORSMiddleware]
+        self.assertEqual(len(cors_entries), 1)
+        cors_entry = cors_entries[0]
+        self.assertEqual(
+            cors_entry.kwargs.get("allow_origin_regex"),
+            r"^(tauri://localhost|http://localhost(?::\d+)?|http://127\.0\.0\.1(?::\d+)?)$",
+        )
+        self.assertEqual(cors_entry.kwargs.get("allow_methods"), ["*"])
+        self.assertEqual(cors_entry.kwargs.get("allow_headers"), ["*"])
 
 
 if __name__ == "__main__":
