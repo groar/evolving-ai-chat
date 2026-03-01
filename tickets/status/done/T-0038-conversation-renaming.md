@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0038
-- Status: ready
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -40,23 +40,28 @@ Allow users to rename conversations from the sidebar. Currently all conversation
 - F-20260301-002
 
 ## Acceptance Criteria
-- [ ] Users can rename a conversation by clicking on its title in the sidebar (or via an edit icon).
-- [ ] Pressing Enter saves the new title; pressing Escape cancels.
-- [ ] The backend persists the new title (new PATCH or PUT endpoint on `/conversations/{id}`).
-- [ ] New conversations auto-title from the user's first message (first ~50 characters) after the first exchange completes.
-- [ ] Renamed conversations show their custom title in the sidebar and top bar.
-- [ ] If rename fails (offline/error), the old title is preserved and an inline error is shown.
+- [x] Users can rename a conversation by clicking on its title in the sidebar (or via an edit icon).
+- [x] Pressing Enter saves the new title; pressing Escape cancels.
+- [x] The backend persists the new title (new PATCH or PUT endpoint on `/conversations/{id}`).
+- [x] New conversations auto-title from the user's first message (first ~50 characters) after the first exchange completes.
+- [x] Renamed conversations show their custom title in the sidebar and top bar.
+- [x] If rename fails (offline/error), the old title is preserved and an inline error is shown.
 
 ## Dependencies / Sequencing
 - Depends on: none (backend change is small; can ship independently).
 - Blocks: none.
 
 ## Subtasks
-- [ ] Add PATCH `/conversations/{id}` endpoint to backend (title update)
-- [ ] Add inline rename UI in conversation sidebar
-- [ ] Implement auto-title from first user message
-- [ ] Update top bar to show conversation title
-- [ ] Add tests (frontend + backend)
+- [x] Add PATCH `/conversations/{id}` endpoint to backend (title update)
+- [x] Add inline rename UI in conversation sidebar
+- [x] Implement auto-title from first user message
+- [x] Update top bar to show conversation title
+- [x] Add tests (frontend + backend)
+
+## Evidence
+- Backend: PATCH `/conversations/{id}` with `UpdateConversationRequest`; `storage.update_conversation_title`; `try_auto_title_from_first_message` called after first exchange (chat JSON + stream). Auto-title truncates to 50 chars.
+- Frontend: Pencil icon on each conversation; click opens inline input; Enter saves (PATCH), Escape cancels; inline error on failure. Top bar already shows `activeConversation?.title`.
+- Tests: `ConversationRenameTests` (PATCH update, 404); `AutoTitleTests` (first exchange auto-titles). Runtime stub updated for PATCH.
 
 ## Notes
 Auto-titling via AI summary (e.g., "Summarize this conversation in 5 words") is a nice stretch goal but requires real model calls (M3). For now, truncating the first user message is sufficient.
@@ -64,3 +69,5 @@ Auto-titling via AI summary (e.g., "Summarize this conversation in 5 words") is 
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
 - 2026-03-01: Moved to ready (PM checkpoint 17).
+- 2026-03-01: Implementation complete. PATCH endpoint, updateConversationTitle, inline rename UI with pencil icon, auto-title from first user message. Moved to review.
+- 2026-03-01: QA checkpoint 2026-03-01-qa-checkpoint-t0038.md — PASS. PM accepted; moved to done.

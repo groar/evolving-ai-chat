@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import { PanelLeftIcon, SettingsIcon } from "lucide-react";
+import { PanelLeftIcon, PencilIcon, SettingsIcon } from "lucide-react";
 import { FeedbackPanel } from "./feedbackPanel";
+import { MarkdownMessage } from "./MarkdownMessage";
 import { SettingsPanel } from "./settingsPanel";
 import {
   Sheet,
@@ -32,6 +33,7 @@ export function App() {
 
   const runtime = useRuntime();
   const { conversations, activeConversationId, messages, createConversation, activateConversation } = useConversations();
+  const { updateConversationTitle } = runtime;
 
   const runtimeIssue = useRuntimeStore((s) => s.runtimeIssue);
   const isBooting = useRuntimeStore((s) => s.isBooting);
@@ -58,6 +60,9 @@ export function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState("");
+  const [renameError, setRenameError] = useState<string | null>(null);
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c.conversation_id === activeConversationId),
@@ -123,7 +128,16 @@ export function App() {
   return (
     <main className="app-shell grid grid-cols-1 gap-0 h-screen min-h-screen">
       {/* Conversation sidebar (collapsible) */}
-      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+      <Sheet
+        open={sidebarOpen}
+        onOpenChange={(open) => {
+          setSidebarOpen(open);
+          if (!open) {
+            setEditingConversationId(null);
+            setRenameError(null);
+          }
+        }}
+      >
         <SheetContent side="left" className="w-[min(360px,85vw)] p-0 flex flex-col" showCloseButton={true}>
           <SheetHeader className="px-4 pt-4 pb-2 border-b border-border">
             <SheetTitle>Conversations</SheetTitle>
@@ -131,21 +145,85 @@ export function App() {
           <section className="min-h-0 overflow-auto p-4 grid gap-2" aria-live="polite">
             <ul className="m-0 p-0 list-none grid gap-2">
               {conversations.map((conversation) => (
-                <li key={conversation.conversation_id}>
-                  <button
-                    type="button"
-                    className={`w-full text-left border rounded-xl py-2.5 px-3 cursor-pointer font-inherit transition-all ${
-                      conversation.conversation_id === activeConversationId
-                        ? "border-primary bg-[#fff2e6] text-foreground shadow-[inset_0_0_0_1px_#efbe91]"
-                        : "border-border bg-white text-muted-foreground hover:border-[#efbe91] hover:text-foreground"
-                    }`}
-                    onClick={() => {
-                      void activateConversation(conversation.conversation_id);
-                      setSidebarOpen(false);
-                    }}
-                  >
-                    {conversation.title}
-                  </button>
+                <li key={conversation.conversation_id} className="grid gap-0.5">
+                  {editingConversationId === conversation.conversation_id ? (
+                    <div className="grid gap-1">
+                      <input
+                        type="text"
+                        value={renameDraft}
+                        onChange={(e) => {
+                          setRenameDraft(e.target.value);
+                          setRenameError(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            void (async () => {
+                              const result = await updateConversationTitle(
+                                conversation.conversation_id,
+                                renameDraft
+                              );
+                              if (result.ok) {
+                                setEditingConversationId(null);
+                                setRenameDraft("");
+                                setRenameError(null);
+                              } else {
+                                setRenameError(result.error ?? "Rename failed");
+                              }
+                            })();
+                          }
+                          if (e.key === "Escape") {
+                            setEditingConversationId(null);
+                            setRenameDraft("");
+                            setRenameError(null);
+                          }
+                        }}
+                        className="w-full border border-border rounded-lg py-2 px-3 text-[0.9375rem] font-inherit bg-white focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:border-[#efbe91]"
+                        placeholder="Conversation title"
+                        autoFocus
+                        aria-label="Rename conversation"
+                      />
+                      {renameError && (
+                        <p className="m-0 text-xs text-destructive">{renameError}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      className={`flex items-center gap-2 w-full border rounded-xl py-2.5 px-3 transition-all ${
+                        conversation.conversation_id === activeConversationId
+                          ? "border-primary bg-[#fff2e6] shadow-[inset_0_0_0_1px_#efbe91]"
+                          : "border-border bg-white hover:border-[#efbe91]"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        className={`flex-1 min-w-0 text-left font-inherit cursor-pointer truncate ${
+                          conversation.conversation_id === activeConversationId
+                            ? "text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                        onClick={() => {
+                          void activateConversation(conversation.conversation_id);
+                          setSidebarOpen(false);
+                        }}
+                      >
+                        {conversation.title}
+                      </button>
+                      <button
+                        type="button"
+                        className="shrink-0 p-1 rounded text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91]"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingConversationId(conversation.conversation_id);
+                          setRenameDraft(conversation.title);
+                          setRenameError(null);
+                        }}
+                        aria-label={`Rename ${conversation.title}`}
+                      >
+                        <PencilIcon className="size-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -364,7 +442,11 @@ export function App() {
                   </button>
                 )}
               </div>
-              <p className="m-0 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{message.text}</p>
+              {message.role === "assistant" ? (
+                <MarkdownMessage text={message.text} />
+              ) : (
+                <p className="m-0 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{message.text}</p>
+              )}
               {message.meta && <p className="mt-1.5 text-muted-foreground text-xs m-0">{message.meta}</p>}
             </article>
           ))}

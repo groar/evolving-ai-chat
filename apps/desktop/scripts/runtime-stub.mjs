@@ -196,6 +196,38 @@ const server = createServer((req, res) => {
     return;
   }
 
+  if (
+    req.url?.startsWith("/conversations/") &&
+    !req.url.endsWith("/activate") &&
+    req.method === "PATCH"
+  ) {
+    const conversationId = req.url.replace("/conversations/", "").trim();
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", () => {
+      const conv = conversations.find((c) => c.conversation_id === conversationId);
+      if (!conv) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ detail: "Conversation does not exist." }));
+        return;
+      }
+      try {
+        const payload = JSON.parse(body || "{}");
+        const title = typeof payload.title === "string" && payload.title.trim() ? payload.title.trim() : conv.title;
+        conv.title = title.length > 120 ? title.slice(0, 120) : title;
+        conv.updated_at = new Date().toISOString();
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ conversation_id: conversationId }));
+      } catch {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ detail: "Invalid payload." }));
+      }
+    });
+    return;
+  }
+
   if (req.url?.startsWith("/conversations/") && req.url?.endsWith("/activate") && req.method === "POST") {
     const conversationId = req.url.replace("/conversations/", "").replace("/activate", "");
     const match = conversations.find((conversation) => conversation.conversation_id === conversationId);

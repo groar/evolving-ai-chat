@@ -37,8 +37,9 @@ Product & design review (F-20260301-002) identified that after M3 (real chat) an
 - T-0040 Token/cost display per message
 
 ## Progress (Ticket Status)
-- Ready: T-0036 (rank 1), T-0038 (rank 2).
-- Backlog: T-0037, T-0039, T-0040.
+- Done: T-0036 (Markdown rendering), T-0038 (conversation renaming).
+- Ready: _(queue empty)_
+- Backlog: T-0037 (code blocks), T-0039 (model selector), T-0040 (token/cost).
 
 ## Validation Plan
 - Tier-3 external validation after all tickets ship:

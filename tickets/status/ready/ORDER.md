@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0036 Markdown rendering in assistant responses | P1 | E-0006; unblocked by T-0031. |
-| 2 | T-0038 Conversation renaming | P2 | E-0006; independent. |
+| — | _(queue empty)_ | | T-0036, T-0038 completed. Next: T-0037 (depends on T-0036). |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

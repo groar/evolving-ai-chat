@@ -294,3 +294,72 @@ class ConfigureEndpointTests(unittest.TestCase):
                 resp = client.get("/state")
                 self.assertEqual(resp.status_code, 200)
                 self.assertTrue(resp.json().get("api_key_configured"))
+
+
+class ConversationRenameTests(unittest.TestCase):
+    def test_patch_conversation_updates_title(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = str(Path(temp_dir) / "runtime.db")
+            with patch("runtime.main.chat_adapter") as mock_adapter:
+                mock_adapter.has_api_key.return_value = True
+                client = _make_client(db_path)
+                # Create conversation
+                resp = client.post(
+                    "/conversations",
+                    json={"title": "New Conversation", "set_active": True},
+                )
+                self.assertEqual(resp.status_code, 200)
+                conv_id = resp.json()["conversation_id"]
+                # Rename
+                resp = client.patch(
+                    f"/conversations/{conv_id}",
+                    json={"title": "My Chat About Python"},
+                )
+                self.assertEqual(resp.status_code, 200)
+                # Verify title updated in state
+                resp = client.get("/state")
+                self.assertEqual(resp.status_code, 200)
+                convs = resp.json().get("conversations", [])
+                found = next((c for c in convs if c["conversation_id"] == conv_id), None)
+                self.assertIsNotNone(found)
+                self.assertEqual(found["title"], "My Chat About Python")
+
+    def test_patch_nonexistent_conversation_returns_404(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = str(Path(temp_dir) / "runtime.db")
+            client = _make_client(db_path)
+            resp = client.patch(
+                "/conversations/nonexistent-id",
+                json={"title": "Renamed"},
+            )
+            self.assertEqual(resp.status_code, 404)
+
+
+class AutoTitleTests(unittest.TestCase):
+    def test_first_exchange_auto_titles_from_user_message(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = str(Path(temp_dir) / "runtime.db")
+
+            def fake_chat(message: str, model_id: str | None = None, history=None):
+                return "Hello!", "gpt-4o-mini", 0.00001
+
+            with patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test"}, clear=False):
+                with patch("runtime.main.chat_adapter.chat", fake_chat):
+                    client = _make_client(db_path)
+                    # Create new conversation
+                    resp = client.post(
+                        "/conversations",
+                        json={"title": "New Conversation", "set_active": True},
+                    )
+                    self.assertEqual(resp.status_code, 200)
+                    conv_id = resp.json()["conversation_id"]
+                    # Send first message
+                    resp = client.post("/chat", json={"message": "How do I install Python on macOS?"})
+                    self.assertEqual(resp.status_code, 200)
+                    # Verify auto-title
+                    resp = client.get("/state")
+                    self.assertEqual(resp.status_code, 200)
+                    convs = resp.json().get("conversations", [])
+                    found = next((c for c in convs if c["conversation_id"] == conv_id), None)
+                    self.assertIsNotNone(found)
+                    self.assertEqual(found["title"], "How do I install Python on macOS?")

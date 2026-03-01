@@ -21,6 +21,7 @@ from .models import (
     HealthResponse,
     NewConversationRequest,
     NewConversationResponse,
+    UpdateConversationRequest,
     ReleaseChannelUpdateRequest,
     RuntimeSettingsResponse,
     RuntimeStateResponse,
@@ -192,6 +193,7 @@ def _chat_json(payload: ChatRequest) -> ChatResponse | JSONResponse:
             "message_received",
             {"conversation_id": conversation_id, "role": "assistant", "model_id": response.model_id},
         )
+        storage.try_auto_title_from_first_message(conversation_id)
         return response
     except MissingApiKeyError:
         storage.append_event("runtime_error", {"error": "api_key_not_set", "endpoint": "/chat"})
@@ -275,6 +277,7 @@ async def _stream_chat_sse(payload: ChatRequest) -> AsyncIterator[str]:
                 "message_received",
                 {"conversation_id": conversation_id, "role": "assistant", "model_id": model_id},
             )
+            storage.try_auto_title_from_first_message(conversation_id)
             yield f"data: {json.dumps(event)}\n\n"
             return
 
@@ -297,6 +300,19 @@ def create_conversation(payload: NewConversationRequest) -> NewConversationRespo
     title = payload.title.strip() or "New Conversation"
     conversation_id = storage.create_conversation(title=title, set_active=payload.set_active)
     return NewConversationResponse(conversation_id=conversation_id)
+
+
+@app.patch("/conversations/{conversation_id}", response_model=NewConversationResponse)
+def update_conversation(conversation_id: str, payload: UpdateConversationRequest) -> NewConversationResponse:
+    try:
+        storage.update_conversation_title(conversation_id, payload.title)
+        return NewConversationResponse(conversation_id=conversation_id)
+    except ValueError as error:
+        storage.append_event(
+            "runtime_error",
+            {"detail": str(error), "endpoint": f"/conversations/{conversation_id}"},
+        )
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 @app.post("/conversations/{conversation_id}/activate", response_model=NewConversationResponse)

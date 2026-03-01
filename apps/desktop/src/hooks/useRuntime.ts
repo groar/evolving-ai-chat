@@ -161,6 +161,34 @@ export function useRuntime() {
     [refreshState]
   );
 
+  const updateConversationTitle = useCallback(
+    async (conversationId: string, title: string): Promise<{ ok: boolean; error?: string }> => {
+      const rt = useRuntimeStore.getState();
+      const conv = useConversationStore.getState();
+      if (rt.isSending || rt.isResetting) return { ok: false, error: "Cannot rename while busy." };
+      const trimmed = title.trim();
+      if (!trimmed) return { ok: false, error: "Title cannot be empty." };
+      try {
+        const response = await fetch(`${runtimeBase}/conversations/${conversationId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: trimmed })
+        });
+        if (!response.ok) {
+          const detail = await readErrorDetail(response);
+          rt.setRuntimeIssue({ kind: "error", detail });
+          return { ok: false, error: detail };
+        }
+        await refreshState(conv.activeConversationId);
+        return { ok: true };
+      } catch {
+        rt.setRuntimeIssue({ kind: "offline" });
+        return { ok: false, error: "Can't reach the assistant. Check if it's running." };
+      }
+    },
+    [refreshState]
+  );
+
   const deleteLocalData = useCallback(
     async (inputRef: { current: HTMLTextAreaElement | null }, clearFeedback: () => void) => {
       const rt = useRuntimeStore.getState();
@@ -535,6 +563,7 @@ export function useRuntime() {
     retryRuntime,
     createConversation,
     activateConversation,
+    updateConversationTitle,
     deleteLocalData,
     updateChannel,
     updateExperimentalFlag,

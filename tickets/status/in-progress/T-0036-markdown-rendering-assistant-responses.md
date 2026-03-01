@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0036
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -39,12 +39,12 @@ Render assistant response text as Markdown instead of plain text. Support headin
 - F-20260301-002
 
 ## Acceptance Criteria
-- [ ] Assistant messages render Markdown: headings (h1-h4), bold, italic, inline code, links, ordered/unordered lists, blockquotes, horizontal rules.
-- [ ] User messages remain plain text (no Markdown rendering).
-- [ ] Messages without Markdown syntax render normally (no visual artifacts or broken layout).
-- [ ] Links in rendered Markdown open in the default browser (Tauri external link handling).
-- [ ] Rendered Markdown is styled consistently with the app's design tokens (font, colors, spacing).
-- [ ] XSS protection: raw HTML in Markdown input is escaped (not rendered as HTML).
+- [x] Assistant messages render Markdown: headings (h1-h4), bold, italic, inline code, links, ordered/unordered lists, blockquotes, horizontal rules.
+- [x] User messages remain plain text (no Markdown rendering).
+- [x] Messages without Markdown syntax render normally (no visual artifacts or broken layout).
+- [x] Links in rendered Markdown open in the default browser (Tauri external link handling).
+- [x] Rendered Markdown is styled consistently with the app's design tokens (font, colors, spacing).
+- [x] XSS protection: raw HTML in Markdown input is escaped (not rendered as HTML).
 
 ## UX Acceptance Criteria
 - [ ] Primary flow is keyboard-usable.
@@ -57,12 +57,17 @@ Render assistant response text as Markdown instead of plain text. Support headin
 - Blocks: T-0037 (code block syntax highlighting builds on Markdown code block rendering).
 
 ## Subtasks
-- [ ] Choose Markdown library (react-markdown or similar)
-- [ ] Implement Markdown renderer component for assistant messages
-- [ ] Style rendered Markdown with app design tokens (or @tailwindcss/typography)
-- [ ] Ensure XSS safety (sanitize HTML)
-- [ ] Add tests for Markdown rendering (key patterns)
-- [ ] Verify user messages are unaffected
+- [x] Choose Markdown library (react-markdown or similar)
+- [x] Implement Markdown renderer component for assistant messages
+- [x] Style rendered Markdown with app design tokens (or @tailwindcss/typography)
+- [x] Ensure XSS safety (sanitize HTML)
+- [x] Add tests for Markdown rendering (key patterns)
+- [x] Verify user messages are unaffected
+
+## Evidence
+- `MarkdownMessage.tsx`: component using react-markdown + remark-gfm; @tailwindcss/typography prose classes; custom link handler for external URLs (window.open); user messages unchanged in App.tsx.
+- `MarkdownMessage.test.tsx`: 7 tests for plain text, bold, inline code, links, headings, lists, XSS escape.
+- Build and test: `npm run build`, `npm run test` pass.
 
 ## Notes
 `react-markdown` with `remark-gfm` (GitHub Flavored Markdown) is the standard choice. Pair with `@tailwindcss/typography` (the `prose` class) for instant, beautiful Markdown styling if T-0031 is done first.
@@ -70,3 +75,4 @@ Render assistant response text as Markdown instead of plain text. Support headin
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
 - 2026-03-01: Moved to ready (PM checkpoint 17).
+- 2026-03-01: Implementation complete. Added react-markdown, remark-gfm, @tailwindcss/typography. Created MarkdownMessage component for assistant messages. User messages remain plain text. Links open in default browser via window.open. XSS-safe. Moved to review.

@@ -752,6 +752,53 @@ class RuntimeStorage:
             self._set_active_conversation_id(connection, conversation_id)
             return conversation_id
 
+    def update_conversation_title(self, conversation_id: str, title: str) -> None:
+        """Update conversation title. Raises ValueError if conversation does not exist."""
+        trimmed = title.strip() or "New Conversation"
+        if len(trimmed) > 120:
+            trimmed = trimmed[:120]
+        with self._lock, self._connect() as connection:
+            cur = connection.execute(
+                "UPDATE conversations SET title = ?, updated_at = ? WHERE conversation_id = ?",
+                (trimmed, utc_now_iso(), conversation_id),
+            )
+            if cur.rowcount == 0:
+                raise ValueError("Conversation does not exist.")
+            self.append_event_locked(
+                connection,
+                event_type="conversation_renamed",
+                payload={"conversation_id": conversation_id, "title": trimmed},
+            )
+
+    def try_auto_title_from_first_message(self, conversation_id: str) -> None:
+        """If conversation title is 'New Conversation', set it from first user message (truncated to 50 chars)."""
+        with self._lock, self._connect() as connection:
+            conv = connection.execute(
+                "SELECT title FROM conversations WHERE conversation_id = ?",
+                (conversation_id,),
+            ).fetchone()
+            if not conv or str(conv["title"]) != "New Conversation":
+                return
+            row = connection.execute(
+                "SELECT text FROM messages WHERE conversation_id = ? AND role = 'user' ORDER BY message_id ASC LIMIT 1",
+                (conversation_id,),
+            ).fetchone()
+            if not row:
+                return
+            text = str(row["text"]).strip()
+            if not text:
+                return
+            title = text[:50] + ("..." if len(text) > 50 else "")
+            connection.execute(
+                "UPDATE conversations SET title = ?, updated_at = ? WHERE conversation_id = ?",
+                (title, utc_now_iso(), conversation_id),
+            )
+            self.append_event_locked(
+                connection,
+                event_type="conversation_auto_titled",
+                payload={"conversation_id": conversation_id, "title": title},
+            )
+
     def append_message(self, conversation_id: str, role: str, text: str, meta: str | None = None) -> None:
         now = utc_now_iso()
         with self._lock, self._connect() as connection:

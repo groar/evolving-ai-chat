@@ -101,6 +101,10 @@ class NewConversationResponse(BaseModel):
     conversation_id: str
 
 
+class UpdateConversationRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=120)
+
+
 class HealthResponse(BaseModel):
     ok: bool
 

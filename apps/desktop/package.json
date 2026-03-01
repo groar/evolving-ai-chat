@@ -17,6 +17,7 @@
     "tauri:dev": "npx tauri dev"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.1",
     "@tauri-apps/plugin-store": "^2.4.2",
     "class-variance-authority": "^0.7.1",
@@ -26,6 +27,8 @@
     "radix-ui": "^1.4.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",
     "zustand": "^5.0.11"
