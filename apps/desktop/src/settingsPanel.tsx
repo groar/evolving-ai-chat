@@ -292,7 +292,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
   }
 
   return (
-    <section className="grid gap-3 max-h-none min-h-0 overflow-visible min-w-0" aria-label="Settings">
+    <section className="grid gap-5 max-h-none min-h-0 overflow-visible min-w-0" aria-label="Settings">
       <div className="flex justify-between items-center gap-2">
         <p className="m-0 text-sm font-semibold text-foreground">Connections</p>
       </div>
@@ -334,7 +334,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
           )}
           <button
             type="button"
-            className={railBtn}
+            className={`${railBtn} w-fit min-w-[100px]`}
             onClick={() => void handleSaveApiKey()}
             disabled={isBusy || isSavingApiKey || apiKeyInput.trim().length === 0}
           >
@@ -357,13 +357,13 @@ export function SettingsPanel(props: SettingsPanelProps) {
       </div>
       <p className="m-0 text-sm text-foreground">Controls which features are active. Your conversations and history are never affected.</p>
 
-      <div className="channel-toggle grid grid-cols-2 gap-1.5">
+      <div className="channel-toggle grid grid-cols-2 gap-2">
         <button
           type="button"
-          className={`border rounded-lg bg-white text-foreground py-2 px-2.5 font-inherit cursor-pointer transition-all disabled:opacity-55 disabled:cursor-not-allowed ${
+          className={`border rounded-xl py-2.5 px-3 text-sm font-medium font-inherit cursor-pointer transition-all disabled:opacity-55 disabled:cursor-not-allowed ${
             settings.channel === "stable"
-              ? "border-primary bg-[#fff2e6] text-primary font-bold"
-              : "border-border hover:border-[#efbe91] hover:bg-[#fff8f2]"
+              ? "border-primary bg-[#fff2e6] text-primary shadow-[inset_0_0_0_1px_rgba(210,87,34,0.2)]"
+              : "border-border bg-white text-foreground hover:border-[#efbe91] hover:bg-[#fff8f2]"
           }`}
           onClick={requestSwitchToStable}
           disabled={isBusy}
@@ -372,10 +372,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </button>
         <button
           type="button"
-          className={`border rounded-lg bg-white text-foreground py-2 px-2.5 font-inherit cursor-pointer transition-all disabled:opacity-55 disabled:cursor-not-allowed ${
+          className={`border rounded-xl py-2.5 px-3 text-sm font-medium font-inherit cursor-pointer transition-all disabled:opacity-55 disabled:cursor-not-allowed ${
             settings.channel === "experimental"
-              ? "border-primary bg-[#fff2e6] text-primary font-bold"
-              : "border-border hover:border-[#efbe91] hover:bg-[#fff8f2]"
+              ? "border-primary bg-[#fff2e6] text-primary shadow-[inset_0_0_0_1px_rgba(210,87,34,0.2)]"
+              : "border-border bg-white text-foreground hover:border-[#efbe91] hover:bg-[#fff8f2]"
           }`}
           onClick={() => onSelectChannel("experimental")}
           disabled={isBusy}

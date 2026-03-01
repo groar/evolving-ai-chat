@@ -156,11 +156,11 @@ export function App() {
 
       {/* Settings sheet (Settings, Feedback, Advanced) */}
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <SheetContent side="right" className="w-[min(400px,90vw)] overflow-y-auto">
-          <SheetHeader className="pb-2">
+        <SheetContent side="right" className="w-[min(400px,90vw)] overflow-y-auto flex flex-col bg-panel border-l border-border">
+          <SheetHeader className="px-5 pt-5 pb-2 shrink-0">
             <SheetTitle>Settings</SheetTitle>
           </SheetHeader>
-          <div className="grid gap-4 pb-8">
+          <div className="grid gap-4 pb-8 px-5">
             <SettingsPanel
               settings={settings}
               changelog={changelog}
