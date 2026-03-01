@@ -186,7 +186,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
   function requestSwitchToStable() {
     const confirmed = confirmAction(
-      "Switch to Stable? This changes feature preferences only and does not delete conversations/history."
+      "Switch to Stable? Your conversations and history are unaffected."
     );
     if (!confirmed) {
       return;
@@ -196,7 +196,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
   function requestResetExperiments() {
     const confirmed = confirmAction(
-      "Reset all early-access toggles? This does not delete conversations/history."
+      "Reset all toggles to defaults? No data is deleted."
     );
     if (!confirmed) {
       return;
@@ -261,21 +261,19 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
   return (
     <section className="settings-panel" aria-label="Settings">
-      <p className="settings-title">Settings</p>
-
       <div className="settings-section-header">
-        <p className="settings-title">Safe while offline</p>
+        <p className="settings-title">Works offline</p>
       </div>
       <ul className="settings-bullets">
-        <li>Browse conversations and history</li>
-        <li>View and change channel, early-access toggles</li>
-        <li>Use Feedback and change drafts</li>
+        <li>Browse and search conversations</li>
+        <li>Change settings and feature toggles</li>
+        <li>Capture and review feedback</li>
       </ul>
 
       <div className="settings-section-header">
         <p className="settings-title">Release Channel</p>
       </div>
-      <p className="settings-copy">Switching channel changes feature behavior only. Does not delete conversations/history or roll back code.</p>
+      <p className="settings-copy">Controls which features are active. Your conversations and history are never affected.</p>
 
       <div className="channel-toggle">
         <button
@@ -298,7 +296,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
       <details className="settings-disclosure">
         <summary className="settings-disclosure-summary">Early-Access Features (advanced)</summary>
-        <p className="settings-copy">Optional beta toggles. On/off changes feature behavior only, not conversations/history.</p>
+        <p className="settings-copy">Optional beta toggles. Your data is never affected.</p>
         <label className="flag-control">
           <input
             type="checkbox"
@@ -316,7 +314,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             Reset Early-Access Features
           </button>
         </div>
-        <p className="flag-note">Resetting toggles sets early-access features to defaults and does not delete conversations/history.</p>
+        <p className="flag-note">Resets all toggles to defaults. No data is deleted.</p>
       </details>
 
       {notice && (

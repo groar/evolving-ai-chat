@@ -274,7 +274,7 @@ export function App() {
       const payload = (await response.json()) as { settings: RuntimeSettings };
       setSettings(payload.settings);
       if (nextChannel === "stable") {
-        setSettingsNotice("Switched to Stable. This changes feature preferences only and does not delete conversations/history.");
+        setSettingsNotice("Switched to Stable. Your conversations and history are unaffected.");
       }
       await refreshState(activeConversationId);
     } catch {
@@ -323,7 +323,7 @@ export function App() {
       }
       const payload = (await response.json()) as { settings: RuntimeSettings };
       setSettings(payload.settings);
-      setSettingsNotice("All early-access toggles reset. This does not delete conversations/history or roll back code.");
+      setSettingsNotice("All toggles reset to defaults. No data deleted.");
       await refreshState(activeConversationId);
     } catch {
       setRuntimeIssue({ kind: "offline" });
@@ -497,8 +497,7 @@ export function App() {
     <main className="app-shell">
       <aside className="left-rail">
         <header className="left-rail-header">
-          <h1>Conversations</h1>
-          <p>Start here, then open other surfaces when needed.</p>
+          <h1>Evolving AI Chat</h1>
         </header>
         <nav className="left-rail-nav" aria-label="Left rail surfaces">
           <button
@@ -560,12 +559,6 @@ export function App() {
           )}
           {activeLeftRailSurface === "settings" && (
             <div className="surface-panel">
-              <div className="surface-panel-header">
-                <p className="surface-panel-title">Settings</p>
-                <button type="button" className="rail-btn" onClick={() => setActiveLeftRailSurface("conversations")}>
-                  Back to Conversations
-                </button>
-              </div>
               <SettingsPanel
                 settings={settings}
                 changelog={changelog}
@@ -589,12 +582,6 @@ export function App() {
           )}
           {activeLeftRailSurface === "feedback" && (
             <div className="surface-panel">
-              <div className="surface-panel-header">
-                <p className="surface-panel-title">Feedback</p>
-                <button type="button" className="rail-btn" onClick={() => setActiveLeftRailSurface("conversations")}>
-                  Back to Conversations
-                </button>
-              </div>
               <FeedbackPanel
                 isOpen={isFeedbackOpen}
                 isBusy={isFeedbackBusy}
@@ -613,17 +600,8 @@ export function App() {
           )}
           {activeLeftRailSurface === "advanced" && (
             <div className="surface-panel">
-              <div className="surface-panel-header">
-                <p className="surface-panel-title">Advanced</p>
-                <button type="button" className="rail-btn" onClick={() => setActiveLeftRailSurface("conversations")}>
-                  Back to Conversations
-                </button>
-              </div>
               <div className="advanced-panel">
-                <p className="settings-copy">Current release channel: {channelLabel}.</p>
-                <p className="flag-note">
-                  Stable/Experimental controls live in Settings to keep one canonical control surface.
-                </p>
+                <p className="settings-copy">Release channel: {channelLabel}. Change it in Settings.</p>
                 <button
                   type="button"
                   className="rail-btn danger"
@@ -642,19 +620,19 @@ export function App() {
         <header className="top-bar">
           <div>
             <p className="top-bar-title">Local Desktop Chat</p>
-            <p className="top-bar-subtitle">Self-evolving workbench baseline · Channel: {channelLabel}</p>
+            <p className="top-bar-subtitle">Local AI chat · {channelLabel} channel</p>
           </div>
         </header>
         {runtimeIssue && (
           <section role="status" className={`runtime-status ${runtimeIssue.kind === "offline" ? "offline" : "error"}`}>
             <div className="runtime-status-copy">
               <p className="runtime-status-title">
-                Chat is unavailable because a local service on this device is not reachable.
+                The local runtime is not running.
               </p>
               <p>
                 {runtimeIssue.kind === "offline"
-                  ? "Start the local service, then Retry."
-                  : `The local service is reachable, but the last request failed: ${runtimeIssue.detail}`}
+                  ? "Start it, then press Retry."
+                  : `Runtime responded with an error: ${runtimeIssue.detail}`}
               </p>
             </div>
             <button type="button" className="retry-btn" disabled={!canRetry} onClick={() => void retryRuntime()}>
@@ -678,14 +656,14 @@ export function App() {
           )}
             {!hasMessages && !isBooting && (
             <div className="empty-state">
-              <p>This is your local chat workspace.</p>
-              <p>{isRuntimeOffline ? "Start the local service, then send your first message." : "Type your first message below."}</p>
+              <p>Your local AI assistant.</p>
+              <p>{isRuntimeOffline ? "Start the runtime, then send your first message." : "Type your first message below."}</p>
             </div>
           )}
 
           {messages.map((message) => (
             <article key={message.id} className={`message ${message.role}`}>
-              <h2>{message.role === "user" ? "You" : "Assistant"}</h2>
+              <p className="message-role">{message.role === "user" ? "You" : "Assistant"}</p>
               <p>{message.text}</p>
               {message.meta && <p className="message-meta">{message.meta}</p>}
             </article>
@@ -696,20 +674,22 @@ export function App() {
           <label htmlFor="composer" className="sr-only">
             Message composer
           </label>
-          <textarea
-            id="composer"
-            ref={inputRef}
-            value={composer}
-            className="composer"
-            placeholder={isRuntimeOffline ? "Chat requires the local service. Start it, then send." : "Type your message..."}
-            rows={3}
-            disabled={isRuntimeOffline}
-            onChange={(event) => setComposer(event.target.value)}
-            onKeyDown={handleComposerKeyDown}
-          />
-          <button type="button" className="send-btn" disabled={!canSend} onClick={() => void sendMessage()}>
-            {isSending ? "Sending..." : "Send"}
-          </button>
+          <div className="composer-bar">
+            <textarea
+              id="composer"
+              ref={inputRef}
+              value={composer}
+              className="composer"
+              placeholder={isRuntimeOffline ? "Start the runtime to chat." : "Type a message..."}
+              rows={1}
+              disabled={isRuntimeOffline}
+              onChange={(event) => setComposer(event.target.value)}
+              onKeyDown={handleComposerKeyDown}
+            />
+            <button type="button" className="send-btn" disabled={!canSend} onClick={() => void sendMessage()}>
+              {isSending ? <span className="sending-indicator" aria-label="Sending" /> : "Send"}
+            </button>
+          </div>
         </footer>
       </section>
     </main>

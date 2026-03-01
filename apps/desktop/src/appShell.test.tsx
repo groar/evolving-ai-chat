@@ -6,7 +6,7 @@ describe("App shell IA", () => {
   it("defaults the left rail to conversations-first copy", () => {
     const markup = renderToStaticMarkup(<App />);
     expect(markup).toContain("Conversations");
-    expect(markup).toContain("Start here, then open other surfaces when needed.");
+    expect(markup).toContain("Evolving AI Chat");
     expect(markup).not.toContain("SQLite");
   });
 
@@ -26,8 +26,8 @@ describe("App shell IA", () => {
 
   it("renders a single runtime-offline status with clear next action", () => {
     const markup = renderToStaticMarkup(<App />);
-    expect(markup).toContain("Chat is unavailable because a local service on this device is not reachable.");
-    expect(markup).toContain("Start the local service, then Retry.");
+    expect(markup).toContain("The local runtime is not running.");
+    expect(markup).toContain("Start it, then press Retry.");
     expect(markup).toContain(">Retry<");
     expect(markup).not.toContain("online");
   });
@@ -35,7 +35,7 @@ describe("App shell IA", () => {
   it("disables composer input when runtime is offline", () => {
     const markup = renderToStaticMarkup(<App />);
     expect(markup).toContain('id="composer"');
-    expect(markup).toContain('placeholder="Chat requires the local service. Start it, then send."');
+    expect(markup).toContain('placeholder="Start the runtime to chat."');
     expect(markup).toContain("disabled");
   });
 

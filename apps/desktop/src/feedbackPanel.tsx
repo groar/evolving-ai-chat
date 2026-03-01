@@ -64,11 +64,11 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
       <div className="feedback-panel-header">
         <p className="settings-title">Feedback Inbox</p>
         <button type="button" className="rail-btn" onClick={onToggleOpen}>
-          {isOpen ? "Hide Feedback" : "Capture Feedback"}
+          {isOpen ? "Close" : "New feedback"}
         </button>
       </div>
 
-      <p className="feedback-copy">Feedback stays local on this device. Nothing is sent anywhere.</p>
+      <p className="feedback-copy">Stored locally on this device only.</p>
 
       {isOpen && (
         <form
