@@ -1,6 +1,11 @@
+/**
+ * @vitest-environment happy-dom
+ */
 import type { ComponentProps } from "react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { SettingsPanel, type ChangeProposal, type ChangelogEntry, type RuntimeSettings } from "./settingsPanel";
 
 function makeSettings(overrides: Partial<RuntimeSettings> = {}): RuntimeSettings {
@@ -158,5 +163,20 @@ describe("SettingsPanel", () => {
     expect(markup).toContain("Connections");
     expect(markup).toContain("Set ✓");
     expect(markup).toContain("Remove");
+  });
+
+  it("Beta → Stable transition: clicking Stable when on Beta opens confirm dialog, confirming calls onSelectChannel", async () => {
+    const onSelectChannel = vi.fn();
+    render(
+      renderPanel({
+        settings: makeSettings({ channel: "experimental" }),
+        onSelectChannel
+      })
+    );
+    const stableBtn = screen.getByRole("button", { name: /Stable \(recommended\)/ });
+    await userEvent.click(stableBtn);
+    const confirmBtn = screen.getByRole("button", { name: /Switch to Stable/ });
+    await userEvent.click(confirmBtn);
+    expect(onSelectChannel).toHaveBeenCalledWith("stable");
   });
 });

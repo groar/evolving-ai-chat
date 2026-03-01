@@ -1,5 +1,14 @@
 import { useMemo, useState } from "react";
 import { railBtn, railBtnDanger, settingsInput, settingsTextarea } from "@/lib/ui-classes";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import type { ProviderId } from "./apiKeyStore";
 
 type RuntimeSettings = {
@@ -171,6 +180,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     isSavingApiKey
   } = props;
 
+  const [switchToStableConfirmOpen, setSwitchToStableConfirmOpen] = useState(false);
   const [apiKeyInputs, setApiKeyInputs] = useState<Record<ProviderId, string>>({ openai: "", anthropic: "" });
   const [proposalTitle, setProposalTitle] = useState("");
   const [proposalRationale, setProposalRationale] = useState("");
@@ -218,13 +228,13 @@ export function SettingsPanel(props: SettingsPanelProps) {
   }
 
   function requestSwitchToStable() {
-    const confirmed = confirmAction(
-      "Switch to stable updates? Your conversations and history are unaffected."
-    );
-    if (!confirmed) {
-      return;
-    }
+    if (settings.channel === "stable") return;
+    setSwitchToStableConfirmOpen(true);
+  }
+
+  function confirmSwitchToStable() {
     onSelectChannel("stable");
+    setSwitchToStableConfirmOpen(false);
   }
 
   function requestResetExperiments() {
@@ -617,6 +627,28 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </ul>
         )}
       </details>
+
+      <Dialog open={switchToStableConfirmOpen} onOpenChange={setSwitchToStableConfirmOpen}>
+        <DialogContent showCloseButton={false} className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Switch to Stable?</DialogTitle>
+            <DialogDescription>
+              Your conversations and history are unaffected.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter showCloseButton={false} className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setSwitchToStableConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={confirmSwitchToStable}>
+              Switch to Stable
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="border-t border-dashed border-border pt-2.5 grid gap-2.5">
         <p className="m-0 text-sm font-semibold text-foreground">Changelog</p>

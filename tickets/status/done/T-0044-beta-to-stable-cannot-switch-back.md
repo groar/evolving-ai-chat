@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0044
-- Status: ready
+- Status: done
 - Priority: P2
 - Type: bug
 - Area: ui
@@ -24,13 +24,18 @@ After switching to Beta (early access) in Settings, the user cannot switch back 
 - F-20260301-005
 
 ## Acceptance Criteria
-- [ ] User can switch from Beta (early access) back to Stable (recommended) in Settings.
-- [ ] Channel switch is bidirectional: Stable ↔ Beta works in both directions.
-- [ ] At least one deterministic test or manual scenario verifies the Beta → Stable transition.
+- [x] User can switch from Beta (early access) back to Stable (recommended) in Settings.
+- [x] Channel switch is bidirectional: Stable ↔ Beta works in both directions.
+- [x] At least one deterministic test or manual scenario verifies the Beta → Stable transition.
 
 ## UX Acceptance Criteria (Area: ui)
-- [ ] Stable button is clickable and responsive when channel is Beta.
-- [ ] After switching to Stable, UI reflects channel change and notice is shown as intended.
+- [x] Stable button is clickable and responsive when channel is Beta.
+- [x] After switching to Stable, UI reflects channel change and notice is shown as intended.
+
+## Evidence
+- **Root cause fix**: Replaced `window.confirm` (unreliable in Tauri WebView) with an in-app Dialog for Switch to Stable. `apps/desktop/src/settingsPanel.tsx` uses Radix Dialog with "Switch to Stable?" prompt.
+- **Deterministic test**: `settingsPanel.test.tsx` — "Beta → Stable transition: clicking Stable when on Beta opens confirm dialog, confirming calls onSelectChannel". Uses @testing-library/react + user-event.
+- **QA checkpoint**: `tickets/meta/qa/2026-03-01-qa-checkpoint-t0044.md` — PASS; UX checklist passed.
 
 ## Dependencies / Sequencing
 - Root cause: Settings channel toggle in `apps/desktop/src/settingsPanel.tsx`; `requestSwitchToStable` + `confirmAction`; `useRuntime.updateChannel`.
@@ -38,3 +43,5 @@ After switching to Beta (early access) in Settings, the user cannot switch back 
 ## Change Log
 - 2026-03-01: Ticket created from F-20260301-005 (user report: cannot click back on Stable after selecting Beta).
 - 2026-03-01: Moved to ready (rank 1). PM run 24.
+- 2026-03-01: Implemented. Replaced window.confirm with in-app Dialog; added Beta→Stable test. Moved to review.
+- 2026-03-01: QA checkpoint PASS. PM acceptance; moved to done.

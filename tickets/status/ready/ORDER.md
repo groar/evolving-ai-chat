@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0044 | P2 | Beta → Stable channel switch regression (S2). |
-| 2 | T-0045 | P1 | M6 scope: define improvement class, trigger, first instance. |
+| 1 | T-0045 | P1 | M6 scope: define improvement class, trigger, first instance. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
