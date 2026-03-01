@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0045 | P1 | M6 scope: define improvement class, trigger, first instance. |
+| — | _(empty)_ | | T-0045 moved to review. PM to replenish from backlog. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -24,4 +24,4 @@ This file is the source of truth for ready-ticket pickup order.
 ## Next Up (Backlog)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| — | _(empty)_ | | | E-0007 (M6) scoped. Ready replenished. |
+| 1 | T-0046 | P1 | E-0007 | M6 wire proposal-from-feedback + first instance. Move to ready after T-0045 accepted. |

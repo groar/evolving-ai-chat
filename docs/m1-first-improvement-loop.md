@@ -203,3 +203,50 @@ Prompts (1-2 sentence responses):
 Recording location:
 - Primary: implementing ticket `Evidence (Verification)` section.
 - Alternate: dated PM checkpoint in `tickets/meta/feedback/` with a backlink to the ticket.
+
+---
+
+## M6 Addendum: First Agent-Proposed Change from Real Usage
+
+*Added 2026-03-01. Defines scope for E-0007 (M6): first real change driven by usage signal.*
+
+### Improvement Class
+- **Class**: `settings-trust-microcopy-v1` (unchanged from M1).
+- **Scope**: Trust-surface microcopy in Settings only. Bounded surfaces:
+  - Updates & Safety section (channel labels, helper copy)
+  - Early Access section (labels, toggle copy, reset button)
+  - Improvements section (Change Drafts, proposal lifecycle labels)
+  - Changelog section (labels, empty states)
+- **Files affected**: `apps/desktop/src/settingsPanel.tsx` (primary) and any copy constants it uses.
+- **Constraints**: Copy-only changes; must not imply autonomous shipping, data deletion, or unsupported behavior.
+
+### Trigger
+- **Primary trigger**: Explicit in-app feedback captured via the existing feedback form.
+- **Routing rule**: Feedback with `area` matching `settings.trust_surface` (or `area` that the runtime maps to this improvement class) is eligible for proposal generation. For M6, any in-app feedback can trigger if the user explicitly requests "generate proposal from this feedback" — the improvement class is fixed to `settings-trust-microcopy-v1`.
+- **No implicit triggers for M6**: Repeated friction patterns, analytics-derived signals, or auto-generation from usage logs are out of scope.
+
+### Proposal Generation (M6 First Instance)
+- **Input**: One feedback item ID (from in-app capture).
+- **Output**: A proposal artifact with required M1 fields, populated by the runtime.
+- **Generation logic (v1)**: Rule-based. Given feedback F:
+  - `title`: `"Clarify: " + F.title` (or F.title if it is already descriptive)
+  - `summary`: F.summary
+  - `feedback_ids`: [F.id]
+  - `improvement_class`: `settings-trust-microcopy-v1`
+  - `bounded_change`: `["apps/desktop/src/settingsPanel.tsx"]`
+  - `risk_notes`: `"Copy-only change; must not imply autonomous shipping or data deletion."`
+  - `diff_summary`: Human-editable; for the first instance, a predefined mapping (see First Example) may be used.
+- **Implementation note**: Feedback is stored in frontend localStorage; the runtime does not have feedback data. Generation can be frontend-driven: when the user selects "Generate from feedback" with one feedback ID, the frontend populates the proposal form from that feedback (title, summary, feedback_ids, default diff_summary/risk_notes) and submits via existing `POST /proposals`. No new runtime endpoint required for M6.
+- **User flow**: User captures feedback → opens Improvements → selects "Generate from feedback" (or similar) with one feedback ID → frontend populates draft → user submits → user adds validation run, accepts/rejects. The pipeline (observe → propose → validate → release) is exercised end-to-end.
+
+### First Concrete Example
+| Phase | Artifact | Example |
+| --- | --- | --- |
+| **Signal** | feedback_item | User submits: title "Improvements section is confusing", summary "I don't know what 'Change Drafts' means or what 'Draft an Improvement' does.", area `settings.trust_surface` |
+| **Proposal** | proposal | Generated: title "Clarify Improvements section labels", summary from feedback, improvement_class `settings-trust-microcopy-v1`, bounded_change `[settingsPanel.tsx]`, risk_notes as above. diff_summary: "Rename 'Change Drafts' → 'Suggested improvements'; 'Draft an Improvement' → 'Suggest an improvement'; 'No change drafts yet' → 'No suggestions yet.'" |
+| **Validation** | validation_run | Gates: copy-constraint-check, settings-smoke-flow. Both pass. |
+| **Decision** | release_decision | User accepts. |
+| **Release** | changelog_entry | Created with proposal_id, title, summary, channel. User sees the change in Settings. |
+
+### Implementation Ticket(s)
+- T-0046: Wire proposal-from-feedback generation + first instance (improvement class, trigger, generation endpoint, UI affordance, smoke test).

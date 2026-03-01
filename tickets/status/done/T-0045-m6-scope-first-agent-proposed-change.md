@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0045
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: docs
 - Area: core
@@ -25,16 +25,18 @@ Define the concrete scope for M6: which improvement class to target, what trigge
 - `STATUS.md`
 
 ## Acceptance Criteria
-- [ ] Spec document (or addendum) defines:
+- [x] Spec document (or addendum) defines:
   - Exactly one improvement class for M6 (e.g. "UI microcopy in empty state" or "settings default value").
   - Trigger: explicit feedback from in-app capture, or a defined implicit signal (e.g. repeated friction pattern).
   - First concrete example: what change would be proposed, from what signal, and how validation runs.
-- [ ] At least one implementation ticket is created or identified to execute the first instance.
-- [ ] Doc links from E-0007 and is referenced in acceptance evidence.
+- [x] At least one implementation ticket is created or identified to execute the first instance.
+- [x] Doc links from E-0007 and is referenced in acceptance evidence.
 
 ## Evidence (Verification)
-- Doc review: spec covers improvement class, trigger, and first example.
-- Implementation ticket(s) created and linked to E-0007.
+- Doc review: spec covers improvement class, trigger, and first example. M6 addendum in `docs/m1-first-improvement-loop.md` defines `settings-trust-microcopy-v1`, explicit in-app feedback trigger, rule-based proposal generation, and first example (Improvements section label clarification).
+- Implementation ticket(s) created and linked to E-0007: T-0046 in backlog.
 
 ## Change Log
 - 2026-03-01: Ticket created; moved to ready (rank 2). PM run 24.
+- 2026-03-01: Moved to in-progress. Added M6 addendum to `docs/m1-first-improvement-loop.md`. Created T-0046, linked to E-0007. Moved to review.
+- 2026-03-01: Doc review PASS (`tickets/meta/qa/2026-03-01-doc-review-t0045.md`). PM acceptance. Moved to done.
