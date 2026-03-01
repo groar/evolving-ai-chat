@@ -178,3 +178,41 @@ class ConfigureRequest(BaseModel):
     anthropic_api_key: str | None = Field(default=None, max_length=4000)
 
 
+# ---------------------------------------------------------------------------
+# M8 agent code-patch models (T-0059)
+# ---------------------------------------------------------------------------
+
+class CodePatchRequest(BaseModel):
+    """Request body for POST /agent/code-patch (spec §4)."""
+    feedback_id: str = Field(min_length=1, max_length=120)
+    feedback_title: str = Field(min_length=1, max_length=240)
+    feedback_summary: str = Field(default="", max_length=4000)
+    feedback_area: str = Field(min_length=1, max_length=120)
+    base_ref: str = Field(min_length=1, max_length=120)
+
+
+class CodePatchResponse(BaseModel):
+    """Response body for POST /agent/code-patch (spec §4)."""
+    patch_id: str
+    status: str
+    title: str | None = None
+    description: str | None = None
+    eta_seconds: int | None = None
+    scope_violations: list[str] | None = None
+
+
+class PatchStatusResponse(BaseModel):
+    """Response body for GET /agent/patch-status/{patch_id}."""
+    patch_id: str
+    status: str
+    title: str | None = None
+    description: str | None = None
+    files_changed: list[str] | None = None
+    scope_violations: list[str] | None = None
+    failure_reason: str | None = None
+    applied_at: str | None = None
+    git_commit_sha: str | None = None
+    reverted_at: str | None = None
+    revert_commit_sha: str | None = None
+
+

@@ -11,12 +11,16 @@ from .adapters.anthropic_adapter import MissingApiKeyError as AnthropicMissingAp
 from .adapters.openai_adapter import MissingApiKeyError as OpenAIMissingApiKeyError
 from .adapters.registry import list_models
 from .adapters.router import ChatRouter
+from .agent.patch_agent import HarnessUnavailableError, MalformedPatchError, PiDevPatchAgent, validate_scope
+from .agent.patch_storage import PatchStorage
 from .models import (
     AddValidationRunRequest,
     ApiKeysStatus,
     ChangeProposal,
     ChatRequest,
     ChatResponse,
+    CodePatchRequest,
+    CodePatchResponse,
     ConfigureRequest,
     CreateProposalRequest,
     DeleteDataResponse,
@@ -25,6 +29,7 @@ from .models import (
     ModelEntry,
     NewConversationRequest,
     NewConversationResponse,
+    PatchStatusResponse,
     PersonaAddition,
     UpdateConversationRequest,
     ReleaseChannelUpdateRequest,
@@ -35,6 +40,8 @@ from .models import (
 from .storage import RuntimeStorage
 
 chat_router = ChatRouter()
+patch_agent = PiDevPatchAgent()
+patch_storage = PatchStorage()
 
 
 def _format_assistant_meta(
@@ -407,3 +414,110 @@ def activate_conversation(conversation_id: str) -> NewConversationResponse:
 def delete_local_data() -> DeleteDataResponse:
     active_conversation_id = storage.reset_all()
     return DeleteDataResponse(ok=True, active_conversation_id=active_conversation_id)
+
+
+# ---------------------------------------------------------------------------
+# M8 agent code-patch endpoints (T-0059)
+# ---------------------------------------------------------------------------
+
+@app.post("/agent/code-patch", response_model=CodePatchResponse)
+def agent_code_patch(payload: CodePatchRequest) -> CodePatchResponse | JSONResponse:
+    """Generate a code patch from a feedback payload (spec §4).
+
+    Triggers the agent harness, validates scope (Layer 2), stores the artifact,
+    and returns immediately. Apply runs asynchronously (T-0060); the frontend
+    polls GET /agent/patch-status/{patch_id} for status transitions.
+    """
+    if patch_storage.has_patch_in_flight():
+        storage.append_event(
+            "patch_in_progress",
+            {"feedback_id": payload.feedback_id, "endpoint": "/agent/code-patch"},
+        )
+        return JSONResponse(
+            status_code=409,
+            content={
+                "error": "patch_in_progress",
+                "detail": "A patch is already being processed. Try again once it completes.",
+            },
+        )
+
+    feedback = {
+        "id": payload.feedback_id,
+        "title": payload.feedback_title,
+        "summary": payload.feedback_summary,
+        "area": payload.feedback_area,
+    }
+
+    try:
+        artifact = patch_agent.generate_patch(feedback, payload.base_ref)
+    except HarnessUnavailableError as exc:
+        storage.append_event(
+            "patch_harness_unavailable",
+            {"feedback_id": payload.feedback_id, "detail": str(exc)},
+        )
+        return JSONResponse(
+            status_code=503,
+            content={"error": "harness_unavailable", "detail": str(exc)},
+        )
+    except MalformedPatchError as exc:
+        storage.append_event(
+            "patch_malformed",
+            {"feedback_id": payload.feedback_id, "detail": str(exc)},
+        )
+        return JSONResponse(
+            status_code=422,
+            content={"error": "malformed_patch", "detail": str(exc)},
+        )
+
+    # Layer 2 scope validation — runs after harness returns, before any file is written
+    violations = validate_scope(artifact.files_changed)
+    if violations:
+        artifact.status = "scope_blocked"
+        artifact.scope_violations = violations
+        patch_storage.save(artifact)
+        storage.append_event(
+            "patch_scope_blocked",
+            {"patch_id": artifact.id, "violations": violations},
+        )
+        return CodePatchResponse(
+            patch_id=artifact.id,
+            status="scope_blocked",
+            scope_violations=violations,
+        )
+
+    patch_storage.save(artifact)
+    storage.append_event(
+        "patch_created",
+        {"patch_id": artifact.id, "feedback_id": payload.feedback_id},
+    )
+    return CodePatchResponse(
+        patch_id=artifact.id,
+        status=artifact.status,
+        title=artifact.title,
+        description=artifact.description,
+        eta_seconds=15,
+    )
+
+
+@app.get("/agent/patch-status/{patch_id}", response_model=PatchStatusResponse)
+def agent_patch_status(patch_id: str) -> PatchStatusResponse | JSONResponse:
+    """Return current status of a patch artifact (spec §4)."""
+    artifact = patch_storage.load(patch_id)
+    if artifact is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": "patch_not_found", "patch_id": patch_id},
+        )
+    return PatchStatusResponse(
+        patch_id=artifact.id,
+        status=artifact.status,
+        title=artifact.title,
+        description=artifact.description,
+        files_changed=artifact.files_changed,
+        scope_violations=artifact.scope_violations or None,
+        failure_reason=artifact.failure_reason,
+        applied_at=artifact.applied_at,
+        git_commit_sha=artifact.git_commit_sha,
+        reverted_at=artifact.reverted_at,
+        revert_commit_sha=artifact.revert_commit_sha,
+    )
