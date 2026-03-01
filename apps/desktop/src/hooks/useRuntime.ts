@@ -94,7 +94,7 @@ export function useRuntime() {
         if (!response.ok) {
           const detail = await readErrorDetail(response);
           rt.setRuntimeIssue({ kind: "error", detail });
-          setts.setSettingsError("Could not load changelog and proposals (runtime error).");
+          setts.setSettingsError("Could not load updates and drafts.");
           return;
         }
         const payload = (await response.json()) as RuntimeStatePayload;
@@ -102,7 +102,7 @@ export function useRuntime() {
         setts.setSettingsError(null);
       } catch {
         rt.setRuntimeIssue({ kind: "offline" });
-        setts.setSettingsError("Could not load changelog and proposals (runtime offline).");
+        setts.setSettingsError("Could not load updates and drafts. Check if the assistant is running.");
       } finally {
         rt.setIsBooting(false);
       }
@@ -207,12 +207,12 @@ export function useRuntime() {
         const payload = (await response.json()) as { settings: RuntimeSettings };
         setts.setSettings(payload.settings);
         if (nextChannel === "stable") {
-          setts.setSettingsNotice("Switched to Stable. Your conversations and history are unaffected.");
+          setts.setSettingsNotice("Switched to stable updates. Your conversations and history are unaffected.");
         }
         await refreshState(conv.activeConversationId);
       } catch {
         rt.setRuntimeIssue({ kind: "offline" });
-        setts.setSettingsError("Could not update release channel.");
+        setts.setSettingsError("Could not save your preference.");
       }
     },
     [refreshState]
@@ -237,7 +237,7 @@ export function useRuntime() {
         }
         const payload = (await response.json()) as { settings: RuntimeSettings };
         setts.setSettings(payload.settings);
-        setts.setSettingsNotice(`Updated diagnostics early-access feature: ${enabled ? "enabled" : "disabled"}.`);
+        setts.setSettingsNotice(`Behind-the-scenes info: ${enabled ? "enabled" : "disabled"}.`);
         await refreshState(conv.activeConversationId);
       } catch {
         rt.setRuntimeIssue({ kind: "offline" });

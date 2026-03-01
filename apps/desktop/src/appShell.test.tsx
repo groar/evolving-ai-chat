@@ -24,20 +24,22 @@ describe("App shell IA", () => {
     expect(markup).not.toContain("Back to Conversations");
   });
 
-  it("renders a single runtime-offline status with clear next action", () => {
+  it("renders a single offline status with clear next action", () => {
     const markup = renderToStaticMarkup(<App />);
-    expect(markup).toContain("The assistant service is not running.");
-    expect(markup).toContain("Start it, then press Retry.");
+    // Apostrophe may be HTML-encoded (&#x27;) in SSR
+    expect(markup).toContain("reach the assistant");
+    expect(markup).toContain("Check if it");
+    expect(markup).toContain("press Retry");
     expect(markup).toContain(">Retry<");
     expect(markup).not.toContain("online");
   });
 
-  it("disables composer input when runtime is offline or API key not configured", () => {
+  it("disables composer input when assistant is offline or API key not configured", () => {
     const markup = renderToStaticMarkup(<App />);
     expect(markup).toContain('id="composer"');
     expect(
       markup.includes('placeholder="Add your API key in Settings to chat."') ||
-        markup.includes('placeholder="Start the runtime to chat."')
+        markup.includes('placeholder="Can\'t reach the assistant — check your connection."')
     ).toBe(true);
     expect(markup).toContain("disabled");
   });
@@ -48,7 +50,7 @@ describe("App shell IA", () => {
     expect(markup).not.toContain("press Enter to send");
   });
 
-  it("auto-retry guard only activates for offline runtime state", () => {
+  it("auto-retry guard only activates for offline state", () => {
     expect(shouldAutoRetryOfflineState({ kind: "offline" })).toBe(true);
     expect(shouldAutoRetryOfflineState({ kind: "error", detail: "Bad request" })).toBe(false);
     expect(shouldAutoRetryOfflineState(null)).toBe(false);

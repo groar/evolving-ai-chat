@@ -218,7 +218,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
   function requestSwitchToStable() {
     const confirmed = confirmAction(
-      "Switch to Stable? Your conversations and history are unaffected."
+      "Switch to stable updates? Your conversations and history are unaffected."
     );
     if (!confirmed) {
       return;
@@ -348,15 +348,15 @@ export function SettingsPanel(props: SettingsPanelProps) {
       </div>
       <ul className="m-0 ml-4 p-0 text-sm text-foreground leading-relaxed [&>li]:mb-1">
         <li>Browse and search conversations</li>
-        <li>Change settings and feature toggles</li>
+        <li>Change settings and early-access options</li>
         <li>Capture and review feedback</li>
       </ul>
 
       <div className="flex justify-between items-center gap-2">
         <p className="m-0 text-sm font-semibold text-foreground">Updates & Safety</p>
       </div>
-      <p className="m-0 text-sm font-semibold text-foreground">Release Channel</p>
-      <p className="m-0 text-sm text-foreground">Controls which features are active. Your conversations and history are never affected.</p>
+      <p className="m-0 text-sm font-semibold text-foreground">Updates</p>
+      <p className="m-0 text-sm text-foreground">Choose which updates you receive. Your conversations and history are never affected.</p>
 
       <div className="channel-toggle grid grid-cols-2 gap-2">
         <button
@@ -395,7 +395,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             disabled={!canToggleFlags}
             onChange={(event) => onToggleDiagnostics(event.target.checked)}
           />
-          Show local service diagnostics (early-access feature)
+          Show behind-the-scenes info (early-access)
         </label>
         {settings.channel !== "experimental" && (
           <p className="m-0 text-xs text-muted-foreground">Switch to Beta (early access) to adjust early-access feature toggles.</p>
@@ -620,8 +620,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
               <li key={`${entry.created_at}-${entry.title}`} className="border border-border rounded-lg bg-white p-2.5 grid gap-1">
                 <div className="flex justify-between gap-2 items-center">
                   <p className="m-0 text-sm font-bold">{entry.title}</p>
-                  <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground capitalize">
-                    {entry.channel}
+                  <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground">
+                    {entry.channel === "experimental" ? "Beta" : "Stable"}
                   </span>
                 </div>
                 <p className="m-0 text-sm text-foreground">{entry.summary}</p>
@@ -629,7 +629,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                   {formatTimestamp(entry.created_at)}
                   {entry.ticket_id ? ` · ${entry.ticket_id}` : ""}
                   {entry.proposal_id ? ` · ${entry.proposal_id}` : ""}
-                  {entry.flags_changed && entry.flags_changed.length > 0 ? ` · ${entry.flags_changed.join(", ")}` : ""}
+                  {entry.flags_changed && entry.flags_changed.length > 0 ? " · early-access changes" : ""}
                 </p>
               </li>
             ))}

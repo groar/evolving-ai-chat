@@ -61,7 +61,7 @@ describe("SettingsPanel", () => {
   it("renders a clearly labeled settings section", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Settings");
-    expect(markup).toContain("Release Channel");
+    expect(markup).toContain("Updates");
     expect(markup).toContain("Improvements");
   });
 
@@ -135,12 +135,12 @@ describe("SettingsPanel", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Works offline");
     expect(markup).toContain("Browse and search conversations");
-    expect(markup).toContain("Change settings and feature toggles");
+    expect(markup).toContain("Change settings and early-access options");
   });
 
-  it("shows runtime-offline error copy without implying settings are unavailable", () => {
-    const markup = renderToStaticMarkup(renderPanel({ error: "Could not load changelog and proposals (runtime offline)." }));
-    expect(markup).toContain("Could not load changelog and proposals (runtime offline).");
+  it("shows offline error copy without implying settings are unavailable", () => {
+    const markup = renderToStaticMarkup(renderPanel({ error: "Could not load updates and drafts. Check if the assistant is running." }));
+    expect(markup).toContain("Could not load updates and drafts. Check if the assistant is running.");
     expect(markup).not.toContain("Could not load changelog, proposals, and settings.");
   });
 

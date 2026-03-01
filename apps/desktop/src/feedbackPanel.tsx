@@ -87,7 +87,7 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
             className="w-full resize-y min-h-[72px] rounded-lg border border-border py-2.5 px-2.5 font-inherit bg-white focus:outline-none focus:border-[#efbe91] focus:ring-2 focus:ring-[#efbe91]/50 focus:ring-offset-2"
             value={draftText}
             rows={3}
-            placeholder="Example: The experiment controls were hard to find."
+            placeholder="Example: The settings were hard to find."
             onChange={(event) => onChangeDraftText(event.target.value)}
           />
 

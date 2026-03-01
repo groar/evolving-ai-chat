@@ -249,7 +249,7 @@ export function App() {
         {runtimeIssue && runtimeIssue.kind === "api_key_not_set" && (
           <section role="status" className="rounded-lg m-3 mt-0 mx-4 py-2.5 px-3 text-[0.9rem] flex items-center justify-between gap-3">
             <div className="grid gap-0.5">
-              <p className="m-0 font-semibold">Add your OpenAI API key in Settings to start chatting.</p>
+              <p className="m-0 font-semibold">Add your API key in Settings to start chatting.</p>
               <p className="m-0">Open Settings and add your API key in the Connections section.</p>
             </div>
             <button
@@ -271,11 +271,15 @@ export function App() {
             }`}
           >
             <div className="grid gap-0.5">
-              <p className="m-0 font-semibold">The assistant service is not running.</p>
+              <p className="m-0 font-semibold">
+                {runtimeIssue.kind === "offline"
+                  ? "Can't reach the assistant."
+                  : "The assistant returned an error."}
+              </p>
               <p className="m-0">
                 {runtimeIssue.kind === "offline"
-                  ? "Start it, then press Retry."
-                  : `The service returned an error: ${runtimeIssue.detail}`}
+                  ? "Check if it's running, then press Retry."
+                  : runtimeIssue.detail}
               </p>
             </div>
             <button
@@ -291,26 +295,26 @@ export function App() {
 
         <div className="overflow-auto p-4 grid gap-3 content-start" aria-live="polite">
           {diagnosticsEnabled && (
-            <section className="border border-[#9ebf97] bg-[#effbe8] rounded-xl py-2.5 px-3 grid gap-0.5" aria-label="Diagnostics">
-              <p className="m-0 text-sm">Diagnostics enabled</p>
+            <section className="border border-[#9ebf97] bg-[#effbe8] rounded-xl py-2.5 px-3 grid gap-0.5" aria-label="Behind-the-scenes info">
+              <p className="m-0 text-sm">Behind-the-scenes info</p>
               <p className="m-0 text-sm">Conversations: {conversations.length}</p>
               <p className="m-0 text-sm">Messages in view: {messages.length}</p>
             </section>
           )}
           {isBooting && (
             <div className="empty-state border border-dashed border-border rounded-xl p-4 text-muted-foreground bg-[#fffaf0]">
-              <p className="m-0 mb-2">Loading local state...</p>
+              <p className="m-0 mb-2">Loading...</p>
             </div>
           )}
           {!hasMessages && !isBooting && (
             <div className="empty-state border border-dashed border-border rounded-xl p-4 text-muted-foreground bg-[#fffaf0]">
-              <p className="m-0 mb-2">Your local AI assistant.</p>
+              <p className="m-0 mb-2">What's on your mind?</p>
               <p className="m-0 mb-2">
                 {!apiKeyConfigured
-                  ? "Add your OpenAI API key in Settings to start chatting."
+                  ? "Add your API key in Settings to start chatting."
                   : isRuntimeOffline
-                    ? "Start the assistant service, then send your first message."
-                    : "Type your first message below."}
+                    ? "Can't reach the assistant — check if it's running, then send your first message."
+                    : "Start a conversation — type your message below."}
               </p>
               {!apiKeyConfigured && (
                 <button
@@ -366,7 +370,7 @@ export function App() {
                 !apiKeyConfigured
                   ? "Add your API key in Settings to chat."
                   : isRuntimeOffline
-                    ? "Start the assistant service to chat."
+                    ? "Can't reach the assistant — check your connection."
                     : "Type a message..."
               }
               rows={1}

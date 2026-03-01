@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0035 User-facing copy and empty state rewrite | P2 | Quick copy pass; deps T-0033 done. |
-| 2 | T-0041 Clarify feedback scope (per-response vs app-level) | P2 | E-0005 Probe 3 follow-up. |
+| 1 | T-0041 Clarify feedback scope (per-response vs app-level) | P2 | E-0005 Probe 3 follow-up. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
