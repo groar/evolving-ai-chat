@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0039
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: feature
 - Area: core
@@ -80,3 +80,4 @@ Consider a thin adapter interface that T-0027's OpenAI adapter already partially
 
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
+- 2026-03-01: Promoted to ready (PM run 21; queue replenishment).

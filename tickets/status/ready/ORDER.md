@@ -15,14 +15,14 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| — | _(queue empty; next from backlog)_ | | T-0037 in review; T-0039, T-0040 in backlog |
+| 1 | T-0039 Model selector (multi-provider) | P2 | E-0006; depends on T-0027, T-0030. |
+| 2 | T-0040 Token/cost display per message | P3 | E-0006; depends on T-0027. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
 - If the table is empty, pause new implementation pickup and wait for PM queue updates.
 
-## Next Up (Backlog — Will Move to Ready as Queue Drains)
+## Next Up (Backlog)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| 2 | T-0039 Model selector (multi-provider) | P2 | E-0006 | Depends on T-0027, T-0030. |
-| 3 | T-0040 Token/cost display per message | P3 | E-0006 | Depends on T-0027. Lowest priority. |
+| — | _(empty)_ | | | E-0006 remaining work now in ready queue. |

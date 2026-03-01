@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0040
-- Status: backlog
+- Status: ready
 - Priority: P3
 - Type: feature
 - Area: ui
@@ -70,3 +70,4 @@ Cost estimation requires a price-per-token table per model. Keep this as a simpl
 
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
+- 2026-03-01: Promoted to ready (PM run 21; queue replenishment).
