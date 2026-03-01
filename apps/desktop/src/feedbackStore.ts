@@ -1,6 +1,6 @@
 export type FeedbackStatus = "new" | "triaged" | "converted" | "closed";
 
-export type FeedbackTag = "confusing" | "feature-request" | "bug-risk" | "copy";
+export type FeedbackTag = "confusing" | "feature-request" | "bug-risk" | "copy" | "tone";
 
 export type FeedbackDraft = {
   text: string;
@@ -23,7 +23,8 @@ export const feedbackTagOptions: Array<{ value: FeedbackTag; label: string }> = 
   { value: "confusing", label: "Confusing" },
   { value: "feature-request", label: "Feature request" },
   { value: "bug-risk", label: "Bug risk" },
-  { value: "copy", label: "Copy" }
+  { value: "copy", label: "Copy" },
+  { value: "tone", label: "Response tone & style" }
 ];
 
 export function createFeedbackItem(

@@ -60,19 +60,12 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
 
   const canSubmit = draftText.trim().length > 0 && !isBusy;
 
-  const sectionSubheading =
-    contextPointer?.includes(":")
-      ? "About this response"
-      : contextPointer
-        ? "About this conversation"
-        : "About the app or a response";
-
   return (
-    <section className="grid gap-2.5" aria-label="Local feedback capture">
+    <section className="grid gap-2.5" aria-label="Help improve this software">
       <div className="flex justify-between items-center gap-2">
-        <p className="m-0 text-sm font-semibold text-foreground">{sectionSubheading}</p>
+        <p className="m-0 text-sm font-semibold text-foreground">Help improve this software</p>
         <button type="button" className={railBtn} onClick={onToggleOpen}>
-          {isOpen ? "Close" : "New feedback"}
+          {isOpen ? "Close" : "New improvement"}
         </button>
       </div>
 
@@ -92,19 +85,15 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
             return (
               <>
                 <p className="m-0 text-xs text-muted-foreground">
-                  {isMessageScoped
-                    ? "Feedback about this response"
-                    : contextPointer
-                      ? "Feedback about this conversation"
-                      : "Feedback about the app or a specific response"}
+                  What should this software do differently?
                 </p>
                 {!contextPointer && (
                   <p className="m-0 text-xs text-muted-foreground">
-                    Tip: Use the "Feedback" link on any assistant message to give feedback about that response.
+                    Tip: Use the &quot;Improve&quot; link on any assistant message to help improve that response.
                   </p>
                 )}
                 <label htmlFor="feedback-input" className="text-sm font-medium">
-                  {isMessageScoped ? "What felt confusing or what should change about this response?" : "What felt confusing or what should change?"}
+                  What should this software do differently?
                 </label>
                 <textarea
                   id="feedback-input"
@@ -113,13 +102,13 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                   rows={3}
                   placeholder={
                     isMessageScoped
-                      ? "Example: The tone felt off, or the answer was incomplete."
-                      : "Example: The settings were hard to find, or about a specific response."
+                      ? "Example: Make responses more concise, or clarify this label."
+                      : "Example: Settings were hard to find, or a specific response needs improvement."
                   }
                   onChange={(event) => onChangeDraftText(event.target.value)}
                 />
 
-                <div className="grid gap-1" aria-label="Feedback tags">
+                <div className="grid gap-1" aria-label="Improvement categories">
                   {feedbackTagOptions.map((option) => (
                     <label key={option.value} className="flex items-center gap-1.5 text-sm">
                       <input
@@ -142,7 +131,7 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
           })()}
 
           <button type="submit" className={railBtn} disabled={!canSubmit}>
-            Save Feedback
+            Submit Improvement
           </button>
         </form>
       )}
@@ -161,7 +150,7 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
       <div className="border-t border-dashed border-border pt-2.5 grid gap-2.5">
         <p className="m-0 text-sm font-semibold text-foreground">Captured Items</p>
         {items.length === 0 ? (
-          <p className="m-0 text-xs text-muted-foreground">No feedback captured yet.</p>
+          <p className="m-0 text-xs text-muted-foreground">No improvements captured yet.</p>
         ) : (
           <ul className="list-none m-0 p-0 grid gap-2">
             {items.map((item) => (

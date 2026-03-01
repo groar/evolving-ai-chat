@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { railBtn, railBtnDanger, settingsInput, settingsTextarea } from "@/lib/ui-classes";
+import { generateProposalFromFeedback } from "./proposalGenerator";
+import { isConcreteProposal } from "./proposalQualityGuard";
 import {
   Dialog,
   DialogContent,
@@ -258,6 +260,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
   function submitCreateProposal() {
     const title = proposalTitle.trim();
     const rationale = proposalRationale.trim();
+    const diffSummary = proposalDiffSummary.trim();
     const sourceFeedbackIds = parseCsvIds(proposalFeedbackIdsCsv);
     if (title.length === 0) {
       setProposalFormError("Draft title is required.");
@@ -269,11 +272,19 @@ export function SettingsPanel(props: SettingsPanelProps) {
       return;
     }
 
+    if (sourceFeedbackIds.length > 0) {
+      const firstFeedback = feedbackItems.find((f) => f.id === sourceFeedbackIds[0]);
+      if (firstFeedback && !isConcreteProposal({ title, rationale, diffSummary, feedbackText: firstFeedback.text })) {
+        setProposalFormError(GENERATION_FAILED_MESSAGE);
+        return;
+      }
+    }
+
     onCreateProposal({
       title,
       rationale,
       source_feedback_ids: sourceFeedbackIds,
-      diff_summary: proposalDiffSummary.trim() || undefined,
+      diff_summary: diffSummary || undefined,
       risk_notes: proposalRiskNotes.trim() || undefined
     });
     setProposalTitle("");
@@ -285,17 +296,21 @@ export function SettingsPanel(props: SettingsPanelProps) {
     setIsCreateDraftOpen(false);
   }
 
-  const COPY_ONLY_RISK_NOTES = "Copy-only change; must not imply autonomous shipping or data deletion.";
-  const FIRST_INSTANCE_DIFF_SUMMARY =
-    "Rename 'Change Drafts' → 'Suggested improvements'; 'Draft an Improvement' → 'Suggest an improvement'; 'No change drafts yet' → 'No suggestions yet.'";
+  const GENERATION_FAILED_MESSAGE =
+    "We couldn't generate a specific improvement for this feedback. Try describing the issue in more detail.";
 
   function generateFromFeedback(feedback: { id: string; text: string }) {
-    const title = feedback.text.trim().length > 0 ? `Clarify: ${feedback.text}` : "Clarify feedback";
-    setProposalTitle(title);
-    setProposalRationale(feedback.text);
+    const result = generateProposalFromFeedback(feedback, 2);
+    if (!result.ok) {
+      setProposalFormError(result.message);
+      setIsCreateDraftOpen(true);
+      return;
+    }
+    setProposalTitle(result.title);
+    setProposalRationale(result.rationale);
     setProposalFeedbackIdsCsv(feedback.id);
-    setProposalDiffSummary(FIRST_INSTANCE_DIFF_SUMMARY);
-    setProposalRiskNotes(COPY_ONLY_RISK_NOTES);
+    setProposalDiffSummary(result.diffSummary ?? "");
+    setProposalRiskNotes(result.riskNotes ?? "Copy-only change; must not imply autonomous shipping or data deletion.");
     setProposalFormError(null);
     setIsCreateDraftOpen(true);
   }

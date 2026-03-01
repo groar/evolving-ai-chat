@@ -83,7 +83,7 @@ export function App() {
     }
   }, [streamingText]);
 
-  // When opening settings from the per-message Feedback button, scroll to feedback section after sheet is visible.
+  // When opening settings from the per-message Improve button, scroll to Improve section after sheet is visible.
   useEffect(() => {
     if (!settingsOpen || !feedback.isOpen || !feedback.contextPointer?.includes(":")) {
       return;
@@ -259,7 +259,7 @@ export function App() {
         </SheetContent>
       </Sheet>
 
-      {/* Settings sheet (Settings, Feedback, Danger Zone) */}
+      {/* Settings sheet (Settings, Improve, Danger Zone) */}
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         <SheetContent side="right" className="w-[min(400px,90vw)] overflow-y-auto flex flex-col bg-panel border-l border-border">
           <SheetHeader className="px-5 pt-5 pb-2 shrink-0">
@@ -291,7 +291,7 @@ export function App() {
               isSavingApiKey={isSavingApiKey}
             />
             <section ref={feedbackSectionRef} className="border-t border-border pt-4">
-              <h3 className="text-sm font-semibold mb-2">Feedback</h3>
+              <h3 className="text-sm font-semibold mb-2">Improve</h3>
               <FeedbackPanel
                 isOpen={feedback.isOpen}
                 isBusy={isFeedbackBusy}
@@ -455,12 +455,13 @@ export function App() {
                   <button
                     type="button"
                     className="shrink-0 text-xs text-muted-foreground hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-1 rounded"
+                    aria-label="Help improve this software"
                     onClick={() => {
                       setSettingsOpen(true);
                       feedback.openFeedbackForMessage(activeConversationId, message.id);
                     }}
                   >
-                    Feedback
+                    Improve
                   </button>
                 )}
               </div>

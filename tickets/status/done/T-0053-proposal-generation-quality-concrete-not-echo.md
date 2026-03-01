@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0053
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: core
@@ -24,12 +24,12 @@ Improve the proposal generation step so it produces specific, actionable proposa
 See T-0052 § "Proposal Quality Rules". This ticket implements those rules for the existing `settings-trust-microcopy-v1` class as well as any class registered going forward.
 
 ## Acceptance Criteria
-- [ ] Proposal generator applies the four quality rules from T-0052 before writing to the proposal artifact.
-- [ ] If a generated proposal fails any quality rule, it is either regenerated (up to 2 retries) or surfaces a "could not generate a concrete proposal" error state in the proposals panel — no silent echo proposals.
-- [ ] The proposal `Title` field for a `settings-trust-microcopy-v1` trigger is a concrete description (e.g. "Rename 'Safe Offline' label to 'Works without internet'") not the raw feedback text.
-- [ ] Existing proposals panel tests updated to reflect new title/description format.
-- [ ] At least two new unit tests added: one that asserts a feedback echo is rejected, one that asserts a compliant proposal passes.
-- [ ] QA checkpoint filed in `tickets/meta/qa/` after verification.
+- [x] Proposal generator applies the four quality rules from T-0052 before writing to the proposal artifact.
+- [x] If a generated proposal fails any quality rule, it is either regenerated (up to 2 retries) or surfaces a "could not generate a concrete proposal" error state in the proposals panel — no silent echo proposals.
+- [x] The proposal `Title` field for a `settings-trust-microcopy-v1` trigger is a concrete description (e.g. "Rename 'Safe Offline' label to 'Works without internet'") not the raw feedback text.
+- [x] Existing proposals panel tests updated to reflect new title/description format.
+- [x] At least two new unit tests added: one that asserts a feedback echo is rejected, one that asserts a compliant proposal passes.
+- [x] QA checkpoint filed in `tickets/meta/qa/` after verification.
 
 ## UI Spec Addendum
 - Proposals panel: if generation fails quality check and retries exhausted, show inline message: "We couldn't generate a specific improvement for this feedback. Try describing the issue in more detail."
@@ -40,5 +40,15 @@ See T-0052 § "Proposal Quality Rules". This ticket implements those rules for t
 - Does not block: T-0054 (can run in parallel).
 - T-0055 should begin after this ticket is in review (so the new class benefits from improved generation).
 
+## Evidence
+- proposalQualityGuard.ts: isConcreteProposal() checks rules 1–4 (named target, described change, linked rationale, not re-statement).
+- proposalGenerator.ts: generateProposalFromFeedback() uses heuristics + known mappings; retries up to 2x; returns error message when no compliant proposal.
+- settingsPanel.tsx: generateFromFeedback uses generator; shows inline error when generation fails; submitCreateProposal runs guard when feedback IDs linked.
+- proposalQualityGuard.test.ts: 4 tests (echo rejected, verbatim copy rejected, compliant accepted).
+- proposalGenerator.test.ts: 4 tests (Improvements section, Safe Offline, empty feedback, non-echo output).
+- All 56 desktop tests pass.
+
 ## Change Log
 - 2026-03-01: Created by PM checkpoint (M7 scoping). Moved to ready.
+- 2026-03-01: Implementation complete. Quality guard + heuristic generator. Moved to review.
+- 2026-03-01: QA checkpoint passed. PM accepted. Moved to done.

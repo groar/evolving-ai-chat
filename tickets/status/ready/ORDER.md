@@ -15,10 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0054-feedback-entry-point-copy-software-evolution-framing.md | P2 | UI copy only; independent of spec; unblocked now that T-0052 is done. |
-| 2 | T-0053-proposal-generation-quality-concrete-not-echo.md | P1 | T-0052 spec complete; unblocked. |
-| 3 | T-0055-system-prompt-persona-tuning-improvement-class.md | P1 | Depends on T-0053 (at least in review). |
-| 4 | T-0056-e0009-m7-tier2-validation-epic-closure.md | P1 | Validation; pick up only after T-0053–T-0055 are all done. |
+| 1 | T-0055-system-prompt-persona-tuning-improvement-class.md | P1 | T-0053 done; unblocked. |
+| 2 | T-0056-e0009-m7-tier2-validation-epic-closure.md | P1 | Validation; pick up only after T-0053–T-0055 are all done. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

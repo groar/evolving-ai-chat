@@ -90,21 +90,22 @@ describe("FeedbackPanel", () => {
     expect(savedItems[0]?.tags).toEqual(["confusing"]);
   });
 
-  it("shows 'Feedback about this response' when contextPointer includes message id (conv:msg format)", () => {
+  it("shows 'Help improve this software' and 'What should this software do differently?' when form is open", () => {
     const markup = renderToStaticMarkup(renderPanel({ contextPointer: "conv-abc:msg-123" }));
-    expect(markup).toContain("Feedback about this response");
+    expect(markup).toContain("Help improve this software");
+    expect(markup).toContain("What should this software do differently?");
     expect(markup).toContain("response in conversation conv-abc");
   });
 
-  it("shows 'Feedback about the app or a specific response' and per-message tip when contextPointer is null", () => {
+  it("shows Improve link tip when contextPointer is null", () => {
     const markup = renderToStaticMarkup(renderPanel({ contextPointer: null }));
-    expect(markup).toContain("Feedback about the app or a specific response");
-    expect(markup).toContain("link on any assistant message to give feedback about that response");
+    expect(markup).toContain("Improve");
+    expect(markup).toContain("link on any assistant message");
   });
 
-  it("shows 'Feedback about this conversation' when contextPointer is conversation-only", () => {
+  it("shows context for conversation when contextPointer is conversation-only", () => {
     const markup = renderToStaticMarkup(renderPanel({ contextPointer: "conv-1" }));
-    expect(markup).toContain("Feedback about this conversation");
+    expect(markup).toContain("Help improve this software");
     expect(markup).toContain("conversation conv-1");
   });
 });

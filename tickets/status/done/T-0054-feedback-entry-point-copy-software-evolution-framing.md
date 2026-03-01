@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0054
-- Status: ready
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -57,14 +57,14 @@ Note: exact wording should be confirmed with sponsor if time permits; implemente
 - If any test fixture contains the old copy strings, update them to avoid false failures.
 
 ## Acceptance Criteria
-- [ ] Feedback button label changed to "Improve" (or "Help improve") — old label "Feedback" removed from the per-message action.
-- [ ] Feedback form heading changed to "Help improve this software."
-- [ ] Form subheading/hint changed to "What should this software do differently?"
-- [ ] Tone/style category label does not contain "AI quality" or "response quality."
-- [ ] Submit button reads "Submit Improvement."
-- [ ] All previous copy strings replaced in tests and Playwright selectors; no broken test references to old copy.
-- [ ] Manual check: a fresh observer reading the flow should describe it as "software feedback/improvement" not "AI rating."
-- [ ] QA checkpoint filed in `tickets/meta/qa/` after verification.
+- [x] Feedback button label changed to "Improve" (or "Help improve") — old label "Feedback" removed from the per-message action.
+- [x] Feedback form heading changed to "Help improve this software."
+- [x] Form subheading/hint changed to "What should this software do differently?"
+- [x] Tone/style category label does not contain "AI quality" or "response quality." (Added "Response tone & style" tag.)
+- [x] Submit button reads "Submit Improvement."
+- [x] All previous copy strings replaced in tests and Playwright selectors; no broken test references to old copy.
+- [x] Manual check: a fresh observer reading the flow should describe it as "software feedback/improvement" not "AI rating." (QA heuristic pass.)
+- [x] QA checkpoint filed in `tickets/meta/qa/` after verification.
 
 ## UI Spec Addendum
 - No new UI surfaces or layout changes.
@@ -75,5 +75,15 @@ Note: exact wording should be confirmed with sponsor if time permits; implemente
 - Independent of T-0052 and T-0053; can run in parallel.
 - Should be ordered before T-0055 in the ready queue (lower risk, faster to ship, sets the right framing before the new class lands).
 
+## Evidence
+- App.tsx: per-message button label "Feedback" → "Improve"; aria-label "Help improve this software".
+- feedbackPanel.tsx: section heading "Help improve this software"; form hint "What should this software do differently?"; submit "Submit Improvement"; "New feedback" → "New improvement"; "Captured Items" section kept; empty state "No improvements captured yet."
+- feedbackStore.ts: added FeedbackTag "tone" with label "Response tone & style."
+- Settings section h3: "Feedback" → "Improve."
+- feedbackPanel.test.tsx: assertions updated for new copy; all 4 tests pass.
+- Vitest: all tests pass.
+
 ## Change Log
 - 2026-03-01: Created by PM checkpoint (M7 scoping). Linked F-20260301-007. Moved to ready.
+- 2026-03-01: Implementation complete. Copy changes applied per design spec. Moved to review.
+- 2026-03-01: QA checkpoint passed. PM accepted. Moved to done.
