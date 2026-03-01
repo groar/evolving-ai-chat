@@ -15,13 +15,14 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0058 | P1 | M8 design spec — agentic code modification loop. Complete before any M8 implementation starts. |
+| 1 | T-0059 | P1 | M8 agent harness integration — implement first; T-0060 and T-0061 depend on it. |
+| 2 | T-0060 | P1 | M8 git-backed apply/rollback — depends on T-0059. |
+| 3 | T-0061 | P1 | M8 non-review UI — depends on T-0059; can run in parallel with T-0060 using mocked API. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
 - If the table is empty, pause new implementation pickup and wait for PM queue updates.
 
-## Next Up (Backlog)
-| Rank | Ticket | Priority | Epic | Notes |
-| --- | --- | --- | --- | --- |
-| — | _(pending T-0058)_ | | E-0010 | M8 implementation tickets (agent integration, diff UI, apply/rollback) to be created from T-0058 design spec. |
+## Notes
+- T-0058 (M8 design spec) completed 2026-03-01; canonical spec in `docs/m8-code-loop.md`.
+- All three tickets above are scoped from T-0058. The spec is the source of truth — do not invent behavior not described there.

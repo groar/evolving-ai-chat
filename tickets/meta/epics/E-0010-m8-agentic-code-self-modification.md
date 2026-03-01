@@ -5,7 +5,7 @@
 - Status: active
 - Owner: pm-agent
 - Created: 2026-03-01
-- Updated: 2026-03-01
+- Updated: 2026-03-01 (T-0058 spec complete; T-0059/T-0060/T-0061 drafted)
 
 ## Goal
 Wire the real self-evolution loop end-to-end: the app receives user feedback, an agent drafts actual source-code changes, the user reviews a diff and accepts or rejects, and on acceptance the code is applied and the app rebuilds. This is the vision described in STATUS.md ("agentic coding in the background") made concrete for the first time.
@@ -56,15 +56,20 @@ The previous approach (M6/M7) only modified runtime config (system prompt string
 - F-20260301-008 (pivot signal)
 
 ## Linked Tickets
-- T-0058: M8 design spec — agentic code modification loop (feedback → patch → diff review → apply → rollback) (ready)
+- T-0058: M8 design spec — agentic code modification loop (in-progress → review)
+- T-0059: Agent harness integration — `PatchAgent` interface, `POST /agent/code-patch`, harness client, scope-guard system prompt, patch artifact schema (ready)
+- T-0060: Git-backed apply/rollback — sandboxed build gate, `git commit` on apply, `git revert` on rollback, `POST /agent/rollback`, status transitions (ready)
+- T-0061: Non-review UI — in-app notification states, Changelog Undo action, diff toggle, all copy strings (ready)
 
 ## Progress
 - Done:
   - (none yet)
-- Next up:
-  - T-0058 (design spec — rank 1 in ready queue)
-- Planned:
-  - T-0059+: implementation tickets (scoped after T-0058 design spec)
+- In progress:
+  - T-0058 (design spec — spec written in `docs/m8-code-loop.md`; moving to review)
+- Ready (in pickup order):
+  1. T-0059 (agent harness — blocks T-0060 and T-0061)
+  2. T-0060 (git apply/rollback — depends on T-0059)
+  3. T-0061 (UI — depends on T-0059; parallelisable with T-0060 using mocked API)
 
 ## Notes
 - T-0009 (agentic harness baseline) established the pi.dev-like loop concept. The key gap is that the harness was never wired against real source files with a user-facing diff review UI. M8 closes that gap.
