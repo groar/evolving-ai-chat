@@ -101,7 +101,7 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
 - In progress: M5 — “Conversational UX Table Stakes” (E-0006)
   - Goal: make the base chat experience excellent enough for daily use — prerequisite for self-evolution to generate meaningful signal.
   - Done: T-0036 (Markdown rendering), T-0038 (conversation renaming).
-  - Backlog: T-0037 (code block highlighting), T-0039 (model selector), T-0040 (token/cost display).
+  - Backlog: T-0037 (code block highlighting), T-0039 (model selector).
 - Future: M6 — “First Agent-Proposed Change” (epic TBD)
   - Goal: the system observes a real usage pattern and proposes a concrete change autonomously. This is the moment the product thesis is validated.
   - Not yet scoped — depends on M3–M5 establishing real, sustained usage.

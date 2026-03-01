@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import os
 import sqlite3
 import threading
@@ -8,6 +9,8 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+_COST_RE = re.compile(r"~?\$([0-9.]+)")
 
 DEFAULT_RELEASE_CHANNEL = "stable"
 ALLOWED_RELEASE_CHANNELS = {"stable", "experimental"}
@@ -20,6 +23,33 @@ ALLOWED_VALIDATION_STATUS = {"passing", "failing"}
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _parse_cost_from_meta(meta: str | None) -> float | None:
+    """Extract cost from meta string (handles ~$0.003 and $0.00 formats). Returns None if not found."""
+    if not meta:
+        return None
+    m = _COST_RE.search(meta)
+    if not m:
+        return None
+    try:
+        return float(m.group(1))
+    except ValueError:
+        return None
+
+
+def _sum_cost_from_messages(messages: list[dict[str, Any]]) -> float | None:
+    """Sum cost from assistant message metas. Returns None if no costs found."""
+    total = 0.0
+    found = False
+    for row in messages:
+        if row.get("role") != "assistant":
+            continue
+        cost = _parse_cost_from_meta(row.get("meta"))
+        if cost is not None:
+            total += cost
+            found = True
+    return round(total, 6) if found else None
 
 
 class RuntimeStorage:
@@ -654,6 +684,8 @@ class RuntimeStorage:
                 (active_id,),
             ).fetchall()
 
+            cost_total = _sum_cost_from_messages([dict(row) for row in messages])
+
             return {
                 "active_conversation_id": active_id,
                 "conversations": [dict(row) for row in conversations],
@@ -661,6 +693,7 @@ class RuntimeStorage:
                 "settings": self._read_release_settings_locked(connection),
                 "changelog": self._list_changelog_locked(connection),
                 "proposals": self._list_proposals_locked(connection),
+                "conversation_cost_total": cost_total,
             }
 
     def get_release_settings(self) -> dict[str, Any]:

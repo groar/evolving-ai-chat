@@ -35,7 +35,7 @@ class ChatEndpointHappyPathTests(unittest.TestCase):
             db_path = str(Path(temp_dir) / "runtime.db")
 
             def fake_chat(message: str, model_id: str | None = None, history=None):
-                return "Hello, human!", "gpt-4o-mini", 0.000015
+                return "Hello, human!", "gpt-4o-mini", 0.000015, 10, 5
 
             with patch("runtime.main.chat_router.chat", fake_chat):
                 client = _make_client(db_path)
@@ -48,13 +48,16 @@ class ChatEndpointHappyPathTests(unittest.TestCase):
             self.assertNotEqual(data["model_id"], "stub")
             self.assertGreater(data["cost"], 0)
             self.assertIn("created_at", data)
+            self.assertEqual(data["prompt_tokens"], 10)
+            self.assertEqual(data["completion_tokens"], 5)
+            self.assertEqual(data["total_tokens"], 15)
 
     def test_chat_model_override_from_request(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             db_path = str(Path(temp_dir) / "runtime.db")
 
             def fake_chat(message: str, model_id: str | None = None, history=None):
-                return "Hi", model_id or "gpt-4o-mini", 0.001
+                return "Hi", model_id or "gpt-4o-mini", 0.001, 50, 20
 
             with patch("runtime.main.chat_router.chat", fake_chat):
                 client = _make_client(db_path)
@@ -76,7 +79,7 @@ class ChatEndpointHappyPathTests(unittest.TestCase):
             def fake_chat(message: str, model_id: str | None = None, history=None):
                 nonlocal seen_history
                 seen_history = history
-                return "reply two", "gpt-4o-mini", 0.00002
+                return "reply two", "gpt-4o-mini", 0.00002, 30, 15
 
             with patch("runtime.main.chat_router.chat", fake_chat):
                 client = _make_client(db_path)
@@ -108,7 +111,7 @@ class ChatEndpointHappyPathTests(unittest.TestCase):
             def fake_chat(message: str, model_id: str | None = None, history=None):
                 nonlocal seen_history
                 seen_history = history
-                return "Hi", "gpt-4o-mini", 0.00001
+                return "Hi", "gpt-4o-mini", 0.00001, 5, 3
 
             with patch("runtime.main.chat_router.chat", fake_chat):
                 client = _make_client(db_path)
@@ -127,7 +130,7 @@ class ChatEndpointHappyPathTests(unittest.TestCase):
             def fake_chat(message: str, model_id: str | None = None, history=None):
                 nonlocal seen_history
                 seen_history = history if history is not None else []
-                return "Hi", "gpt-4o-mini", 0.00001
+                return "Hi", "gpt-4o-mini", 0.00001, 5, 3
 
             with patch("runtime.main.chat_router.chat", fake_chat):
                 client = _make_client(db_path)
@@ -159,6 +162,29 @@ class TruncationTests(unittest.TestCase):
         # Current message "last question" + some history should fit
         total_est = sum(_estimate_tokens(m["content"]) for m in result) + _estimate_tokens("last question")
         self.assertLessEqual(total_est, 8192 * 0.8 + 100)  # Allow small margin
+
+    def test_chat_usage_unavailable_hides_cost_gracefully(self) -> None:
+        """When prompt_tokens and completion_tokens are both 0, meta shows minimal format (no cost)."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = str(Path(temp_dir) / "runtime.db")
+
+            def fake_chat_no_usage(message: str, model_id: str | None = None, history=None):
+                return "Reply", "gpt-4o-mini", 0.0, 0, 0
+
+            with patch("runtime.main.chat_router.chat", fake_chat_no_usage):
+                client = _make_client(db_path)
+                resp = client.post("/chat", json={"message": "hello"})
+            self.assertEqual(resp.status_code, 200)
+            data = resp.json()
+            self.assertIsNone(data.get("prompt_tokens"))
+            self.assertIsNone(data.get("completion_tokens"))
+            self.assertIsNone(data.get("total_tokens"))
+            # Verify message was stored with minimal meta (no cost/tokens)
+            state = client.get("/state").json()
+            msgs = [m for m in state["messages"] if m["role"] == "assistant"]
+            self.assertEqual(len(msgs), 1)
+            self.assertIn("gpt-4o-mini", msgs[0]["meta"] or "")
+            self.assertNotIn("$", msgs[0]["meta"] or "")  # No cost when usage unavailable
 
     def test_truncate_history_keeps_all_when_under_budget(self) -> None:
         history = [
@@ -253,7 +279,7 @@ class ChatStreamingTests(unittest.TestCase):
             async def fake_stream(message: str, model_id=None, history=None):
                 yield {"delta": "Hello"}
                 yield {"delta": " world"}
-                yield {"done": True, "model_id": "gpt-4o-mini", "cost": 0.00001}
+                yield {"done": True, "model_id": "gpt-4o-mini", "cost": 0.00001, "prompt_tokens": 5, "completion_tokens": 8}
 
             with patch("runtime.main.chat_router.chat_stream", fake_stream):
                 client = _make_client(db_path)
@@ -300,6 +326,27 @@ class ConfigureEndpointTests(unittest.TestCase):
                 self.assertIn("models", resp.json())
                 self.assertIn("api_keys", resp.json())
                 self.assertGreater(len(resp.json()["models"]), 0)
+
+    def test_state_includes_conversation_cost_total_when_messages_have_cost(self) -> None:
+        """When assistant messages have cost in meta, state returns conversation_cost_total."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = str(Path(temp_dir) / "runtime.db")
+
+            def fake_chat(message: str, model_id: str | None = None, history=None):
+                return "Hi", "gpt-4o-mini", 0.0025, 100, 50
+
+            with patch("runtime.main.chat_router.chat", fake_chat):
+                client = _make_client(db_path)
+                resp = client.post("/chat", json={"message": "hello"})
+                self.assertEqual(resp.status_code, 200)
+            resp = client.get("/state")
+            self.assertEqual(resp.status_code, 200)
+            data = resp.json()
+            self.assertIn("conversation_cost_total", data)
+            self.assertIsNotNone(data["conversation_cost_total"])
+            # Cost is parsed from meta (~$0.003 format), so we get rounded display value
+            self.assertGreater(data["conversation_cost_total"], 0)
+            self.assertLessEqual(data["conversation_cost_total"], 0.01)
 
 
 class ConversationRenameTests(unittest.TestCase):
@@ -348,7 +395,7 @@ class AutoTitleTests(unittest.TestCase):
             db_path = str(Path(temp_dir) / "runtime.db")
 
             def fake_chat(message: str, model_id: str | None = None, history=None):
-                return "Hello!", "gpt-4o-mini", 0.00001
+                return "Hello!", "gpt-4o-mini", 0.00001, 20, 10
 
             with patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test"}, clear=False):
                 with patch("runtime.main.chat_router.chat", fake_chat):

@@ -22,6 +22,9 @@ class ChatResponse(BaseModel):
     model_id: str
     created_at: str
     cost: float
+    prompt_tokens: int | None = None
+    completion_tokens: int | None = None
+    total_tokens: int | None = None
 
 
 class ConversationSummary(BaseModel):
@@ -61,6 +64,7 @@ class RuntimeStateResponse(BaseModel):
     api_key_configured: bool = False
     api_keys: ApiKeysStatus = Field(default_factory=ApiKeysStatus)
     models: list[ModelEntry] = Field(default_factory=list)
+    conversation_cost_total: float | None = None  # Sum of assistant message costs (approx)
 
 
 class RuntimeSettings(BaseModel):

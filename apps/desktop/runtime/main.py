@@ -35,6 +35,33 @@ from .storage import RuntimeStorage
 
 chat_router = ChatRouter()
 
+
+def _format_assistant_meta(
+    model_id: str,
+    created_at: str,
+    cost: float,
+    prompt_tokens: int,
+    completion_tokens: int,
+) -> str:
+    """
+    Format message meta for display. Per T-0040: show tokens and approximate cost (~$X.XXX).
+    When usage unavailable (total 0), show minimal meta without cost to avoid broken UI.
+    """
+    total = prompt_tokens + completion_tokens
+    if total == 0:
+        return f"{model_id} | {created_at}"
+    token_str = f"{prompt_tokens:,} prompt + {completion_tokens:,} completion"
+    if cost >= 0.01:
+        cost_str = f"~${cost:.2f}"
+    elif cost >= 0.001:
+        cost_str = f"~${cost:.3f}"
+    elif cost > 0:
+        cost_str = f"~${cost:.4f}"
+    else:
+        cost_str = "~$0"
+    return f"{model_id} | {token_str} · {cost_str} (est.)"
+
+
 app = FastAPI(title="Evolving AI Chat Runtime", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
@@ -57,6 +84,7 @@ def state() -> RuntimeStateResponse:
     state_data["api_key_configured"] = chat_router.has_any_key()
     state_data["api_keys"] = ApiKeysStatus(**chat_router.get_api_keys_status())
     state_data["models"] = [ModelEntry(**m) for m in list_models()]
+    # conversation_cost_total is already in state_data from storage.get_state()
     return RuntimeStateResponse(**state_data)
 
 
@@ -176,18 +204,22 @@ def _chat_json(payload: ChatRequest) -> ChatResponse | JSONResponse:
                 {"role": m.role, "content": m.content}
                 for m in payload.history
             ]
-        reply, model_id, cost = chat_router.chat(
+        reply, model_id, cost, prompt_tokens, completion_tokens = chat_router.chat(
             message=request_text,
             model_id=payload.model_id,
             history=history_dicts,
         )
         created_at = datetime.now(timezone.utc).isoformat()
+        total_tokens = prompt_tokens + completion_tokens
         response = ChatResponse(
             conversation_id=conversation_id,
             reply=reply,
             model_id=model_id,
             created_at=created_at,
             cost=cost,
+            prompt_tokens=prompt_tokens if total_tokens > 0 else None,
+            completion_tokens=completion_tokens if total_tokens > 0 else None,
+            total_tokens=total_tokens if total_tokens > 0 else None,
         )
 
         storage.append_message(conversation_id, role="user", text=request_text)
@@ -196,7 +228,13 @@ def _chat_json(payload: ChatRequest) -> ChatResponse | JSONResponse:
             {"conversation_id": conversation_id, "role": "user", "text_length": len(request_text)},
         )
 
-        assistant_meta = f"{response.model_id} | {response.created_at} | ${response.cost:.2f}"
+        assistant_meta = _format_assistant_meta(
+            model_id=model_id,
+            created_at=created_at,
+            cost=cost,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+        )
         storage.append_message(conversation_id, role="assistant", text=response.reply, meta=assistant_meta)
         storage.append_event(
             "message_received",
@@ -280,9 +318,17 @@ async def _stream_chat_sse(payload: ChatRequest) -> AsyncIterator[str]:
         if event.get("done"):
             model_id = event.get("model_id", "gpt-4o-mini")
             cost = event.get("cost", 0.0)
+            prompt_tokens = event.get("prompt_tokens", 0)
+            completion_tokens = event.get("completion_tokens", 0)
             reply = "".join(accumulated)
             created_at = datetime.now(timezone.utc).isoformat()
-            assistant_meta = f"{model_id} | {created_at} | ${cost:.2f}"
+            assistant_meta = _format_assistant_meta(
+                model_id=model_id,
+                created_at=created_at,
+                cost=cost,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+            )
             storage.append_message(conversation_id, role="assistant", text=reply, meta=assistant_meta)
             storage.append_event(
                 "message_received",

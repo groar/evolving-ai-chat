@@ -122,7 +122,7 @@ class AnthropicAdapter:
         prompt_tokens = usage.input_tokens if usage else 0
         completion_tokens = usage.output_tokens if usage else 0
         cost = _compute_cost(model, prompt_tokens, completion_tokens)
-        return reply, model, cost
+        return reply, model, cost, prompt_tokens, completion_tokens
 
     async def chat_stream(
         self,
@@ -161,7 +161,7 @@ class AnthropicAdapter:
                 prompt_tokens = usage.input_tokens if usage else 0
                 completion_tokens = usage.output_tokens if usage else 0
                 cost = _compute_cost(model, prompt_tokens, completion_tokens)
-                yield {"done": True, "model_id": model, "cost": cost}
+                yield {"done": True, "model_id": model, "cost": cost, "prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens}
         except Exception as error:
             err_str = str(error).lower()
             if "authentication" in err_str or "401" in err_str or "invalid" in err_str:

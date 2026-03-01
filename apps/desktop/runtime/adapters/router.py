@@ -64,8 +64,8 @@ class ChatRouter:
         message: str,
         model_id: str | None = None,
         history: list[dict[str, str]] | None = None,
-    ) -> tuple[str, str, float]:
-        """Route to the appropriate adapter. Returns (reply, model_id, cost_usd)."""
+    ) -> tuple[str, str, float, int, int]:
+        """Route to the appropriate adapter. Returns (reply, model_id, cost_usd, prompt_tokens, completion_tokens)."""
         model = model_id or DEFAULT_MODEL_ID
         adapter = self.get_adapter_for_model(model)
         return adapter.chat(message=message, model_id=model, history=history)

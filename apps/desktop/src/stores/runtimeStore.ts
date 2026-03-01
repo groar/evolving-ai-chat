@@ -20,6 +20,7 @@ type RuntimeStore = {
   selectedModelId: string;
   apiKeyError: string | null;
   isSavingApiKey: boolean;
+  conversationCostTotal: number | null;
   setRuntimeIssue: (issue: RuntimeIssue | null) => void;
   setIsBooting: (value: boolean) => void;
   setIsResetting: (value: boolean) => void;
@@ -30,6 +31,7 @@ type RuntimeStore = {
   setSelectedModelId: (value: string) => void;
   setApiKeyError: (value: string | null) => void;
   setIsSavingApiKey: (value: boolean) => void;
+  setConversationCostTotal: (value: number | null) => void;
 };
 
 export const useRuntimeStore = create<RuntimeStore>((set) => ({
@@ -43,6 +45,7 @@ export const useRuntimeStore = create<RuntimeStore>((set) => ({
   selectedModelId: "gpt-4o-mini",
   apiKeyError: null,
   isSavingApiKey: false,
+  conversationCostTotal: null,
   setRuntimeIssue: (issue) => set({ runtimeIssue: issue }),
   setIsBooting: (value) => set({ isBooting: value }),
   setIsResetting: (value) => set({ isResetting: value }),
@@ -52,5 +55,6 @@ export const useRuntimeStore = create<RuntimeStore>((set) => ({
   setModels: (value) => set({ models: value }),
   setSelectedModelId: (value) => set({ selectedModelId: value }),
   setApiKeyError: (value) => set({ apiKeyError: value }),
-  setIsSavingApiKey: (value) => set({ isSavingApiKey: value })
+  setIsSavingApiKey: (value) => set({ isSavingApiKey: value }),
+  setConversationCostTotal: (value) => set({ conversationCostTotal: value })
 }));

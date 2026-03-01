@@ -100,9 +100,10 @@ class OpenAIAdapter:
         message: str,
         model_id: str | None = None,
         history: list[dict[str, str]] | None = None,
-    ) -> tuple[str, str, float]:
+    ) -> tuple[str, str, float, int, int]:
         """
-        Send a message with optional conversation history. Returns (reply, model_id, cost_usd).
+        Send a message with optional conversation history.
+        Returns (reply, model_id, cost_usd, prompt_tokens, completion_tokens).
         model_id defaults to gpt-4o-mini.
         history: list of {"role": "user"|"assistant", "content": "..."}; oldest first.
         """
@@ -120,7 +121,7 @@ class OpenAIAdapter:
         prompt_tokens = usage.prompt_tokens if usage else 0
         completion_tokens = usage.completion_tokens if usage else 0
         cost = _compute_cost(model, prompt_tokens, completion_tokens)
-        return reply, model, cost
+        return reply, model, cost, prompt_tokens, completion_tokens
 
     async def chat_stream(
         self,
@@ -159,7 +160,7 @@ class OpenAIAdapter:
             prompt_tokens = usage.prompt_tokens if usage else 0
             completion_tokens = usage.completion_tokens if usage else 0
             cost = _compute_cost(model, prompt_tokens, completion_tokens)
-            yield {"done": True, "model_id": model, "cost": cost}
+            yield {"done": True, "model_id": model, "cost": cost, "prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens}
         except AuthenticationError:
             yield {"error": "api_key_invalid"}
         except RateLimitError:

@@ -41,6 +41,7 @@ export function App() {
   const apiKeyConfigured = useRuntimeStore((s) => s.apiKeyConfigured);
   const apiKeys = useRuntimeStore((s) => s.apiKeys);
   const models = useRuntimeStore((s) => s.models);
+  const conversationCostTotal = useRuntimeStore((s) => s.conversationCostTotal);
   const selectedModelId = useRuntimeStore((s) => s.selectedModelId);
   const apiKeyError = useRuntimeStore((s) => s.apiKeyError);
   const isSavingApiKey = useRuntimeStore((s) => s.isSavingApiKey);
@@ -333,6 +334,11 @@ export function App() {
             <PanelLeftIcon className="size-5" />
           </button>
           <h1 className="m-0 flex-1 text-base font-bold truncate">{topBarTitle}</h1>
+          {typeof conversationCostTotal === "number" && conversationCostTotal > 0 && (
+            <span className="shrink-0 text-xs text-muted-foreground" title="Approximate conversation cost">
+              ~${conversationCostTotal >= 0.01 ? conversationCostTotal.toFixed(2) : conversationCostTotal.toFixed(4)}
+            </span>
+          )}
           <button
             type="button"
             onClick={() => setSettingsOpen(true)}

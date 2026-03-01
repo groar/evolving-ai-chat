@@ -63,6 +63,7 @@ type RuntimeStatePayload = {
   api_key_configured?: boolean;
   api_keys?: { openai?: boolean; anthropic?: boolean };
   models?: Array<{ provider: string; model_id: string; display_name: string }>;
+  conversation_cost_total?: number | null;
 };
 
 function applyState(
@@ -98,6 +99,9 @@ function applyState(
   if (payload.models && payload.models.length > 0) {
     runtimeStore.setModels(payload.models);
   }
+  runtimeStore.setConversationCostTotal(
+    typeof payload.conversation_cost_total === "number" ? payload.conversation_cost_total : null
+  );
   runtimeStore.setRuntimeIssue(null);
 }
 
