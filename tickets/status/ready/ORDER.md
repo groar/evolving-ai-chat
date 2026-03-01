@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| — | _(empty)_ | | T-0040 moved to review. |
+| — | _(empty)_ | | M5 (E-0006) complete. No tickets in backlog. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -24,4 +24,4 @@ This file is the source of truth for ready-ticket pickup order.
 ## Next Up (Backlog)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| — | _(empty)_ | | | E-0006 remaining work now in ready queue. |
+| — | _(empty)_ | | | M6 (First Agent-Proposed Change) not yet scoped. PM to create epic + scope tickets before replenishment. |

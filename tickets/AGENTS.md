@@ -76,6 +76,7 @@ This guide defines periodic Product Manager (PM) workflow runs in `tickets/`.
 8. Epic management:
    - Create/update files in `tickets/meta/epics/`.
    - Keep linked tickets and epic goals aligned.
+   - When the current in-progress epic completes, if the next epic/milestone is not scoped, create or update the epic file with goal, DoD, and at least one scoping ticket or candidate tickets before replenishing ready from backlog.
 9. Process improvement:
    - Propose one concrete PM process improvement per checkpoint.
    - Update docs if adopted.

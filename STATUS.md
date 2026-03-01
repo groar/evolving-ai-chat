@@ -96,15 +96,14 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- Most recent milestone: M4 — “UI Simplification & Chat-First Redesign” (E-0005) (completed 2026-03-01)
-  - Completed scope: T-0031 (Tailwind + shadcn/ui), T-0032 (Zustand + hooks), T-0033 (chat-first layout), T-0034 (Settings modal/drawer), T-0035 (copy rewrite), T-0041 (feedback scope). Tier-2 validation 2/3 passed.
-- In progress: M5 — “Conversational UX Table Stakes” (E-0006)
-  - Goal: make the base chat experience excellent enough for daily use — prerequisite for self-evolution to generate meaningful signal.
-  - Done: T-0036 (Markdown rendering), T-0038 (conversation renaming).
-  - Backlog: T-0037 (code block highlighting), T-0039 (model selector).
+- Most recent milestone: M5 — “Conversational UX Table Stakes” (E-0006) (completed 2026-03-01)
+  - Completed scope: T-0036 (Markdown rendering), T-0037 (code blocks), T-0038 (conversation renaming), T-0039 (model selector), T-0040 (token/cost display). All M5 tickets shipped.
+  - Pending: tier-3 external validation per E-0006 Validation Plan (5-minute guided session, 1–2 users, decision: is chat good enough for daily use?).
+- Previous milestone: M4 — “UI Simplification & Chat-First Redesign” (E-0005) (completed 2026-03-01)
+  - Completed scope: T-0031–T-0035, T-0041. Tier-2 validation 2/3 passed.
 - Future: M6 — “First Agent-Proposed Change” (epic TBD)
   - Goal: the system observes a real usage pattern and proposes a concrete change autonomously. This is the moment the product thesis is validated.
-  - Not yet scoped — depends on M3–M5 establishing real, sustained usage.
+  - Not yet scoped — depends on M5 tier-3 validation and sustained usage signal.
 
 ## Decisions (Draft; confirm/adjust as we start)
 Record important decisions so future agents do not re-litigate context.

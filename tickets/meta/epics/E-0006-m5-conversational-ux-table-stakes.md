@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: E-0006
-- Status: in-progress
+- Status: done
 - Owner: pm-agent
 - Created: 2026-03-01
 - Updated: 2026-03-01
@@ -37,9 +37,9 @@ Product & design review (F-20260301-002) identified that after M3 (real chat) an
 - T-0040 Token/cost display per message
 
 ## Progress (Ticket Status)
-- Done: T-0036 (Markdown rendering), T-0037 (code blocks), T-0038 (conversation renaming), T-0040 (token/cost display).
-- Ready: T-0039 (model selector).
-- Backlog: _(empty)_
+- Done: T-0036 (Markdown rendering), T-0037 (code blocks), T-0038 (conversation renaming), T-0039 (model selector), T-0040 (token/cost display). All M5 tickets shipped.
+- Ready: _(none)_
+- Backlog: _(none)_
 
 ## Validation Plan
 - Tier-3 external validation after all tickets ship:
