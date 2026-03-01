@@ -118,11 +118,19 @@ export function App() {
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [isSavingApiKey, setIsSavingApiKey] = useState(false);
   const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (streamingText.length > 0) {
+      transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [streamingText]);
 
   useEffect(() => {
     void refreshState();
@@ -513,12 +521,22 @@ export function App() {
     const nextText = composer.trim();
     setComposer("");
     setIsSending(true);
+    setStreamingText("");
+
+    const body = JSON.stringify({
+      message: nextText,
+      conversation_id: activeConversationId,
+      history: messages.map((m) => ({ role: m.role, content: m.text }))
+    });
 
     try {
       const response = await fetch(`${runtimeBase}/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: nextText, conversation_id: activeConversationId })
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream"
+        },
+        body
       });
 
       if (!response.ok) {
@@ -531,18 +549,60 @@ export function App() {
         return;
       }
 
-      const payload = (await response.json()) as {
-        conversation_id?: string;
-        reply?: string;
-        model_id?: string;
-        created_at?: string;
-        cost?: number;
-      };
-      await refreshState(payload.conversation_id);
+      const contentType = response.headers.get("content-type") ?? "";
+      if (contentType.includes("text/event-stream") && response.body) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let accumulated = "";
+        let streamEnded = false;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const raw = line.slice(6);
+              if (raw === "[DONE]" || raw.trim() === "") continue;
+              try {
+                const event = JSON.parse(raw) as
+                  | { delta?: string; done?: boolean; error?: string; detail?: string };
+                if (event.error) {
+                  setRuntimeIssue({ kind: "error", detail: event.detail ?? event.error });
+                  streamEnded = true;
+                  break;
+                }
+                if (event.delta) {
+                  accumulated += event.delta;
+                  setStreamingText(accumulated);
+                }
+                if (event.done) streamEnded = true;
+              } catch {
+                // Skip malformed JSON
+              }
+            }
+          }
+          if (streamEnded) break;
+        }
+        await refreshState(activeConversationId);
+      } else {
+        const payload = (await response.json()) as {
+          conversation_id?: string;
+          reply?: string;
+          model_id?: string;
+          created_at?: string;
+          cost?: number;
+        };
+        await refreshState(payload.conversation_id);
+      }
     } catch {
       setRuntimeIssue({ kind: "offline" });
     } finally {
       setIsSending(false);
+      setStreamingText("");
       inputRef.current?.focus();
     }
   }
@@ -798,6 +858,16 @@ export function App() {
               {message.meta && <p className="message-meta">{message.meta}</p>}
             </article>
           ))}
+          {streamingText.length > 0 && (
+            <article className="message assistant streaming">
+              <p className="message-role">Assistant</p>
+              <p>
+                {streamingText}
+                <span className="streaming-cursor" aria-hidden="true" />
+              </p>
+            </article>
+          )}
+          <div ref={transcriptEndRef} aria-hidden="true" />
         </div>
 
         <footer className="composer-wrap">

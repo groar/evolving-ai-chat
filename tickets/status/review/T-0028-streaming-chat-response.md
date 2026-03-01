@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0028
-- Status: ready
+- Status: review
 - Priority: P2
 - Type: feature
 - Area: core
@@ -70,35 +70,36 @@ T-0027 ships a real response but blocks the UI until the full response is return
 - Sequencing notes: T-0029 (conversation context) is independent of streaming and can land in either order.
 
 ## Acceptance Criteria
-- [ ] `POST /chat` with `Accept: text/event-stream` returns an SSE stream of `{"delta": "..."}` events followed by a `{"done": true, "model_id": "...", "cost": ...}` closing event.
-- [ ] The desktop UI shows incoming tokens progressively in the chat bubble (no full-page waiting).
-- [ ] A blinking cursor appears during streaming and disappears when done.
-- [ ] The chat pane auto-scrolls to keep the active bubble in view while streaming.
-- [ ] If the runtime does not support SSE (Node stub), the UI falls back to non-streaming without error.
-- [ ] On stream error, the existing error/retry UI appears (no unhandled exception).
-- [ ] Unit test: mock SSE stream from FastAPI and assert deltas are accumulated correctly on the frontend.
-- [ ] Smoke test updated to verify streaming endpoint returns valid SSE format.
+- [x] `POST /chat` with `Accept: text/event-stream` returns an SSE stream of `{"delta": "..."}` events followed by a `{"done": true, "model_id": "...", "cost": ...}` closing event.
+- [x] The desktop UI shows incoming tokens progressively in the chat bubble (no full-page waiting).
+- [x] A blinking cursor appears during streaming and disappears when done.
+- [x] The chat pane auto-scrolls to keep the active bubble in view while streaming.
+- [x] If the runtime does not support SSE (Node stub), the UI falls back to non-streaming without error.
+- [x] On stream error, the existing error/retry UI appears (no unhandled exception).
+- [x] Unit test: mock SSE stream from FastAPI and assert deltas are accumulated correctly on the frontend.
+- [x] Smoke test updated to verify streaming endpoint returns valid SSE format.
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
-- QA checkpoint: (to be filled)
-- Screenshots/artifacts: (to be filled)
+- QA checkpoint: `tickets/meta/qa/2026-03-01-qa-checkpoint-t0028.md`
+- Screenshots/artifacts: (manual streaming smoke pending)
 
 ## Evidence (Verification)
-- Tests run: (to be filled)
-- Manual checks performed: (to be filled)
+- Tests run: `uv run ... python3 -m unittest runtime.test_chat runtime.test_proposals` — 20 tests PASS. Build OK.
+- Manual checks performed: Pending QA.
 
 ## Subtasks
-- [ ] Add SSE streaming to `openai_adapter.py` using `openai` stream mode
-- [ ] Add streaming route variant to FastAPI (`StreamingResponse`)
-- [ ] Update frontend send handler to consume SSE stream
-- [ ] Implement streaming cursor UI state
-- [ ] Implement auto-scroll during streaming
-- [ ] Add fallback for non-SSE runtime
-- [ ] Write unit tests (mocked stream)
-- [ ] Update smoke script for SSE format validation
+- [x] Add SSE streaming to `openai_adapter.py` using `openai` stream mode
+- [x] Add streaming route variant to FastAPI (`StreamingResponse`)
+- [x] Update frontend send handler to consume SSE stream
+- [x] Implement streaming cursor UI state
+- [x] Implement auto-scroll during streaming
+- [x] Add fallback for non-SSE runtime
+- [x] Write unit tests (mocked stream)
+- [x] Update smoke script for SSE format validation
 
 ## Notes
 FastAPI streaming with `openai`'s async streaming API is well-documented. Use `openai.AsyncOpenAI` with `stream=True` and yield chunks. The frontend uses `fetch` + `ReadableStream` to consume the SSE without a library dependency.
 
 ## Change Log
 - 2026-03-01: Ticket created by PM.
+- 2026-03-01: Implemented SSE streaming in adapter and FastAPI, frontend stream consumer, blinking cursor, auto-scroll. Unit test + smoke. Moved to review.

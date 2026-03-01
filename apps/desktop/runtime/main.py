@@ -1,8 +1,10 @@
+import json
 from datetime import datetime, timezone
+from typing import AsyncIterator
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from openai import AuthenticationError, RateLimitError
 
 from .adapters import OpenAIAdapter
@@ -147,8 +149,8 @@ def update_proposal_decision(proposal_id: str, payload: UpdateProposalDecisionRe
         raise HTTPException(status_code=400, detail=detail) from error
 
 
-@app.post("/chat", response_model=ChatResponse)
-def chat(payload: ChatRequest) -> ChatResponse | JSONResponse:
+def _chat_json(payload: ChatRequest) -> ChatResponse | JSONResponse:
+    """Non-streaming chat path. Returns JSON response."""
     request_text = payload.message.strip()
     if not request_text:
         raise HTTPException(status_code=422, detail="Message is required.")
@@ -158,9 +160,16 @@ def chat(payload: ChatRequest) -> ChatResponse | JSONResponse:
         conversation_id = payload.conversation_id or active_id
         storage.set_active_conversation(conversation_id)
 
+        history_dicts: list[dict[str, str]] = []
+        if payload.history:
+            history_dicts = [
+                {"role": m.role, "content": m.content}
+                for m in payload.history
+            ]
         reply, model_id, cost = chat_adapter.chat(
             message=request_text,
             model_id=payload.model_id,
+            history=history_dicts,
         )
         created_at = datetime.now(timezone.utc).isoformat()
         response = ChatResponse(
@@ -204,6 +213,83 @@ def chat(payload: ChatRequest) -> ChatResponse | JSONResponse:
             status_code=502,
             content={"error": "model_error", "detail": str(error)},
         )
+
+
+async def _stream_chat_sse(payload: ChatRequest) -> AsyncIterator[str]:
+    """Yield SSE-formatted events for streaming chat."""
+    request_text = payload.message.strip()
+    if not request_text:
+        yield f"data: {json.dumps({'error': 'message_required'})}\n\n"
+        return
+
+    try:
+        active_id = storage.get_state()["active_conversation_id"]
+        conversation_id = payload.conversation_id or active_id
+        storage.set_active_conversation(conversation_id)
+        storage.append_message(conversation_id, role="user", text=request_text)
+        storage.append_event(
+            "message_sent",
+            {"conversation_id": conversation_id, "role": "user", "text_length": len(request_text)},
+        )
+    except Exception as error:
+        storage.append_event("runtime_error", {"detail": str(error), "endpoint": "/chat"})
+        yield f"data: {json.dumps({'error': 'model_error', 'detail': str(error)})}\n\n"
+        return
+
+    history_dicts: list[dict[str, str]] = []
+    if payload.history:
+        history_dicts = [{"role": m.role, "content": m.content} for m in payload.history]
+
+    accumulated = []
+    model_id = "gpt-4o-mini"
+    cost = 0.0
+
+    async for event in chat_adapter.chat_stream(
+        message=request_text,
+        model_id=payload.model_id,
+        history=history_dicts,
+    ):
+        if "error" in event:
+            err_code = event["error"]
+            storage.append_event("runtime_error", {"error": err_code, "endpoint": "/chat"})
+            reply_so_far = "".join(accumulated)
+            if reply_so_far:
+                created_at = datetime.now(timezone.utc).isoformat()
+                assistant_meta = f"stream_error | {created_at}"
+                storage.append_message(
+                    conversation_id, role="assistant", text=reply_so_far, meta=assistant_meta
+                )
+            yield f"data: {json.dumps(event)}\n\n"
+            return
+        if "delta" in event:
+            accumulated.append(event["delta"])
+            yield f"data: {json.dumps(event)}\n\n"
+        if event.get("done"):
+            model_id = event.get("model_id", "gpt-4o-mini")
+            cost = event.get("cost", 0.0)
+            reply = "".join(accumulated)
+            created_at = datetime.now(timezone.utc).isoformat()
+            assistant_meta = f"{model_id} | {created_at} | ${cost:.2f}"
+            storage.append_message(conversation_id, role="assistant", text=reply, meta=assistant_meta)
+            storage.append_event(
+                "message_received",
+                {"conversation_id": conversation_id, "role": "assistant", "model_id": model_id},
+            )
+            yield f"data: {json.dumps(event)}\n\n"
+            return
+
+
+@app.post("/chat", response_model=ChatResponse)
+def chat(request: Request, payload: ChatRequest) -> ChatResponse | JSONResponse | StreamingResponse:
+    """Chat endpoint. Returns JSON by default; returns SSE stream when Accept: text/event-stream."""
+    accept = request.headers.get("accept", "")
+    if "text/event-stream" in accept.lower():
+        return StreamingResponse(
+            _stream_chat_sse(payload),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
+        )
+    return _chat_json(payload)
 
 
 @app.post("/conversations", response_model=NewConversationResponse)

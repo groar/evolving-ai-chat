@@ -4,10 +4,16 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
+class HistoryMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(default="", max_length=16000)
+
+
 class ChatRequest(BaseModel):
     conversation_id: str | None = None
     message: str = Field(default="", max_length=4000)
     model_id: str | None = None  # Overrides default gpt-4o-mini when set
+    history: list[HistoryMessage] | None = None  # Prior turns for multi-turn context
 
 
 class ChatResponse(BaseModel):

@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0029
-- Status: ready
+- Status: review
 - Priority: P2
 - Type: feature
 - Area: core
@@ -54,29 +54,29 @@ T-0027 will produce single-turn responses (no memory). For any meaningful use �
 - Sequencing notes: Can land in either order relative to T-0028 (streaming); both touch different code paths.
 
 ## Acceptance Criteria
-- [ ] `POST /chat` payload accepts an optional `history` field: list of `{role, content}` objects.
-- [ ] The backend includes `history` messages in the OpenAI `messages` array (oldest first, current message last).
-- [ ] When `history` is empty or absent, the call behaves identically to T-0027 (backward compatible).
-- [ ] Token budget enforcement: if estimated tokens exceed 80% of the model's context limit, oldest messages are silently dropped until under budget; the request still completes.
-- [ ] Frontend sends the current conversation's `messages` array as `history` with each new message.
-- [ ] Unit test: history is correctly formatted into the OpenAI messages array (mocked adapter).
-- [ ] Unit test: context budget truncation removes the correct (oldest) messages.
+- [x] `POST /chat` payload accepts an optional `history` field: list of `{role, content}` objects.
+- [x] The backend includes `history` messages in the OpenAI `messages` array (oldest first, current message last).
+- [x] When `history` is empty or absent, the call behaves identically to T-0027 (backward compatible).
+- [x] Token budget enforcement: if estimated tokens exceed 80% of the model's context limit, oldest messages are silently dropped until under budget; the request still completes.
+- [x] Frontend sends the current conversation's `messages` array as `history` with each new message.
+- [x] Unit test: history is correctly formatted into the OpenAI messages array (mocked adapter).
+- [x] Unit test: context budget truncation removes the correct (oldest) messages.
 - [ ] Manual verification: in a live session, the model can answer "What did I say first?" correctly.
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
-- QA checkpoint: (to be filled)
-- Screenshots/artifacts: (to be filled)
+- QA checkpoint: `tickets/meta/qa/2026-03-01-qa-checkpoint-t0029.md`
+- Screenshots/artifacts: (manual multi-turn smoke pending)
 
 ## Evidence (Verification)
-- Tests run: (to be filled)
-- Manual checks performed: (to be filled)
+- Tests run: `uv run --with-requirements runtime/requirements.txt python3 -m unittest runtime.test_chat runtime.test_proposals` — 19 tests PASS.
+- Manual checks performed: Pending QA smoke.
 
 ## Subtasks
-- [ ] Update `ChatRequest` pydantic model to include optional `history: list[Message]`
-- [ ] Update `OpenAIAdapter.chat()` to prepend history to messages array
-- [ ] Implement token budget guard (truncate oldest messages)
-- [ ] Update frontend `POST /chat` call to include current conversation history
-- [ ] Write unit tests: history formatting + truncation logic
+- [x] Update `ChatRequest` pydantic model to include optional `history: list[Message]`
+- [x] Update `OpenAIAdapter.chat()` to prepend history to messages array
+- [x] Implement token budget guard (truncate oldest messages)
+- [x] Update frontend `POST /chat` call to include current conversation history
+- [x] Write unit tests: history formatting + truncation logic
 - [ ] Manual smoke: multi-turn conversation with context reference
 
 ## Notes
@@ -84,3 +84,4 @@ Token estimation via word-count × 1.3 is a rough proxy. The `tiktoken` library 
 
 ## Change Log
 - 2026-03-01: Ticket created by PM.
+- 2026-03-01: Implemented history in ChatRequest, OpenAIAdapter truncation, frontend history payload. Unit tests added. Moved to review.

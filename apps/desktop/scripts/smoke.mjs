@@ -40,6 +40,28 @@ const checks = [
         typeof payload.cost === "number"
       );
     }
+  },
+  {
+    name: "Streaming chat returns SSE format",
+    run: async () => {
+      const response = await fetch(`${base}/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream"
+        },
+        body: JSON.stringify({ message: "hi" })
+      });
+      if (!response.ok) {
+        return false;
+      }
+      const ct = response.headers.get("content-type") ?? "";
+      if (!ct.includes("text/event-stream")) {
+        return false;
+      }
+      const text = await response.text();
+      return text.includes("data: ");
+    }
   }
 ];
 

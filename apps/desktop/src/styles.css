@@ -709,6 +709,22 @@ body {
   background: #f8fff5;
 }
 
+.streaming-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  background: var(--accent);
+  animation: streaming-blink 0.8s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes streaming-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 .composer-wrap {
   border-top: 1px solid var(--border);
   padding: 12px 16px 16px;
