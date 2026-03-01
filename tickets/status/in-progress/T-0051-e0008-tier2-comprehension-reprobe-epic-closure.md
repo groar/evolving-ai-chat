@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0051
-- Status: ready
+- Status: in-progress
 - Priority: P1
 - Type: validation
 - Area: core
@@ -63,5 +63,33 @@ _(to be filled in when probe is run)_
 3. Proposal form simplified — ✓ (T-0050 done)
 4. Comprehension gate re-passed (tier-2) — _(pending this ticket)_
 
+## Handoff — Project Sponsor Action Required
+
+**This ticket cannot be completed by the AI agent.** The tier-2 probe must be run by you (the project sponsor) with the shipped app.
+
+### What to do
+
+1. **Run the app** (if not already running):
+   ```bash
+   cd apps/desktop && npx tauri dev
+   ```
+2. **Interact with the app**: Send a message, get an AI response, then locate the feedback button next to the answer.
+3. **Answer this probe** (verbatim or in your own words; aim for ~10 seconds):
+   > "You see a feedback button next to an AI answer. What do you think clicking it does? And once you're in the suggestions area, what do you think happens next?"
+4. **Report back** in this chat:
+   - Your answer (verbatim or close paraphrase)
+   - Your verdict: **PASS** (you could describe the loop in plain terms within ~10 seconds) or **FAIL** (you couldn't)
+
+### After you report
+
+Once you provide the probe result, I will:
+- Record it in this ticket's Evidence section
+- Update E-0008 epic (close on pass; scope follow-up on fail)
+- Create the PM checkpoint
+- Move this ticket to review → doc review → PM acceptance → done
+
+---
+
 ## Change Log
 - 2026-03-01: Ticket created by PM checkpoint-29. M6.1 batch done; tier-2 re-probe is remaining E-0008 gate. Moved to ready.
+- 2026-03-01: Implementation agent pickup. Moved to in-progress. **Blocker: probe requires project sponsor.** See handoff section above.

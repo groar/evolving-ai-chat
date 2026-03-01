@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0051 | P1 | E-0008 tier-2 comprehension re-probe + epic closure. Requires project sponsor to run probe on shipped app. Pass → unblocks M7. |
+| — | _(empty)_ | | T-0051 in-progress: awaiting project sponsor to run tier-2 probe. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
