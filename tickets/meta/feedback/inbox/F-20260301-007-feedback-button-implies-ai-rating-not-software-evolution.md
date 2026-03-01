@@ -2,11 +2,11 @@
 
 ## Metadata
 - ID: F-20260301-007
-- Status: triaged
+- Status: ticketed
 - Source: sponsor-review
 - Theme: direction
 - Severity: S2
-- Linked Tickets: T-0051
+- Linked Tickets: T-0051, T-0054
 - Received: 2026-03-01
 - Updated: 2026-03-01
 
@@ -33,3 +33,9 @@ The "Feedback" button placed on each AI assistant message carries the wrong ment
 - Decision: triaged → context for T-0051 probe; feeds M7 scoping if T-0051 fails on mental-model dimension.
 - Rationale: T-0051's probe is designed to surface this exact question. If it passes, the concern is resolved by the current fixes. If it fails (user describes AI-rating intent), this feedback item becomes an M7 P1 input: the entry point needs a software-improvement identity distinct from per-message AI quality feedback. No new ticket is warranted until T-0051 results are known.
 - Revisit Trigger: After T-0051 is run. If probe answer reflects "AI rating" mental model → create a dedicated M7 entry-point-redesign ticket linking this feedback item.
+
+## Resolution (2026-03-01)
+- T-0051 probe result: PASS (comprehension gate satisfied) but sponsor's first instinct was "quality of the answer / tone of the answer" (AI-rating framing) before recovering to the software-evolution mental model.
+- The gate passed, meaning the fix was sufficient for comprehension, but the entry point still primes an AI-rating frame on first contact.
+- Decision: ticketed → T-0054 (M7: reframe feedback entry point copy to signal software evolution, not AI model quality).
+- F-20260301-007 status → ticketed.

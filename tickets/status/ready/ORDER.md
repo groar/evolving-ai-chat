@@ -15,7 +15,11 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| — | _(empty)_ | | T-0051 done (2026-03-01). M7 scope to be defined; PM replenish queue. |
+| 1 | T-0052-m7-design-spec-improvement-class-expansion.md | P1 | Design spec gates T-0053 and T-0055; pick up first. |
+| 2 | T-0054-feedback-entry-point-copy-software-evolution-framing.md | P2 | UI copy only; independent of spec; can overlap with T-0052 implementation. |
+| 3 | T-0053-proposal-generation-quality-concrete-not-echo.md | P1 | Depends on T-0052 spec being complete. |
+| 4 | T-0055-system-prompt-persona-tuning-improvement-class.md | P1 | Depends on T-0052 and T-0053 (at least in review). |
+| 5 | T-0056-e0009-m7-tier2-validation-epic-closure.md | P1 | Validation; pick up only after T-0052–T-0055 are all done. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -24,4 +28,4 @@ This file is the source of truth for ready-ticket pickup order.
 ## Next Up (Backlog)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| — | _(empty)_ | | | M7 scope to be defined; E-0008 tier-2 gate passed (T-0051). |
+| — | _(empty)_ | | | M8 scope to be defined after E-0009 tier-2 gate passes (T-0056). |

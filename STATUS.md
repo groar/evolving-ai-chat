@@ -96,9 +96,10 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- Active milestone: M7 — scope to be defined (2026-03-01)
+- Active milestone: M7 — "Improvement Class Expansion" (E-0009, scoped 2026-03-01)
   - E-0008 (M6.1 loop legibility) closed: T-0051 tier-2 comprehension re-probe **PASS**. M7 expansion unblocked.
-  - Ready queue empty; PM to scope M7 (improvement class expansion) and replenish.
+  - M7 scope: proposal generation quality (T-0053), feedback entry point copy reframe (T-0054), system prompt / persona tuning improvement class (T-0055), design spec first (T-0052), tier-2 validation + closure last (T-0056).
+  - Ready queue replenished: T-0052 (rank 1) → T-0054 → T-0053 → T-0055 → T-0056.
 - Previous: M6.1 — "Loop Legibility and UX Clarity" (E-0008) (completed 2026-03-01)
   - T-0048, T-0049, T-0050 (M6.1 batch), T-0051 (tier-2 re-probe). Comprehension gate passed.
 - Previous: M6 — "First Agent-Proposed Change" (E-0007) (completed 2026-03-01; comprehension gate failed → E-0008 scoped)

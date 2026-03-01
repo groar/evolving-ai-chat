@@ -23,4 +23,4 @@ Tracks all feedback intake items for easy triage, deferral, and ticket linkage.
 | F-20260301-004 | ticketed | ux | S3 | T-0043 | 2026-03-01 |
 | F-20260301-005 | ticketed | ux | S2 | T-0044 | 2026-03-01 |
 | F-20260301-006 | ticketed | ux | S1 | T-0047, T-0048, T-0049, T-0050 | 2026-03-01 |
-|| F-20260301-007 | triaged | direction | S2 | T-0051 | 2026-03-01 |
+| F-20260301-007 | ticketed | direction | S2 | T-0051, T-0054 | 2026-03-01 |
