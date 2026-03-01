@@ -41,6 +41,7 @@ In this mode work progresses through a deterministic agent sequence with clear h
 4. PM agent accepts and moves the ticket to `done/`, or re-triages if QA found issues.
 
 If the user explicitly waives a step (for example “skip QA for this ticket”), record the waiver and rationale in the ticket.
+When the user asks to "run the implementation agent" in this mode, the implementation run should **chain** into QA and then PM acceptance automatically (unless explicitly waived).
 
 ## Required Work Pattern
 1. Pick a ticket from `tickets/status/ready/` unless the user reprioritizes.
@@ -50,7 +51,7 @@ If the user explicitly waives a step (for example “skip QA for this ticket”)
 5. Move to `tickets/status/review/` when implementation/tests/docs are complete.
 6. Automatic QA phase (default): after moving to `review/`, switch roles to QA and validate the ticket using `tests/AGENTS.md` **only when changes affect software/behavior**. Do not continue implementation during this phase; record findings and create bug tickets as needed.
 7. For docs-only `.md` changes (no software/behavior impact), do not run QA; record a doc review instead.
-8. Move to `tickets/status/done/` only after required verification and acceptance are recorded.
+8. Automatic PM acceptance phase (default): after QA passes (or after a doc review for docs-only tickets), switch roles to PM, accept the ticket, and move it to `tickets/status/done/`.
 
 If blocked, move the ticket to `tickets/status/blocked/` and capture the blocker and next action.
 

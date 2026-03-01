@@ -80,6 +80,10 @@ export function App() {
         e.preventDefault();
         setSidebarOpen((o) => !o);
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === ",") {
+        e.preventDefault();
+        setSettingsOpen((o) => !o);
+      }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -93,7 +97,6 @@ export function App() {
     activeConversationId.length > 0 &&
     !isRuntimeOffline &&
     apiKeyConfigured;
-  const channelLabel = useMemo(() => (settings.channel === "experimental" ? "Experimental" : "Stable"), [settings.channel]);
   const diagnosticsEnabled = Boolean(settings.active_flags[diagnosticsFlagKey]);
   const canRetry = !isSending && !isResetting;
   const canToggleFlags = settings.channel === "experimental" && !isSending && !isResetting;
@@ -154,7 +157,7 @@ export function App() {
         </SheetContent>
       </Sheet>
 
-      {/* Settings sheet (Settings, Feedback, Advanced) */}
+      {/* Settings sheet (Settings, Feedback, Danger Zone) */}
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         <SheetContent side="right" className="w-[min(400px,90vw)] overflow-y-auto flex flex-col bg-panel border-l border-border">
           <SheetHeader className="px-5 pt-5 pb-2 shrink-0">
@@ -203,18 +206,19 @@ export function App() {
               />
             </section>
             <section className="border-t border-border pt-4">
-              <h3 className="text-sm font-semibold mb-2">Advanced</h3>
-              <div className="grid gap-2.5">
-                <p className="m-0 text-sm text-foreground">Release: {channelLabel}. Change it in Settings above.</p>
-                <button
-                  type="button"
-                  className="border border-[#cc7748] bg-[#fff1e8] text-destructive rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:bg-[#ffe4d8] hover:border-[#b85a2a] disabled:opacity-55 disabled:cursor-not-allowed"
-                  onClick={() => void runtime.deleteLocalData(inputRef, feedback.clearAll)}
-                  disabled={isSending || isResetting}
-                >
-                  {isResetting ? "Resetting..." : "Delete Local Data"}
-                </button>
-              </div>
+              <details className="group grid gap-2.5" name="settings-danger-zone">
+                <summary className="cursor-pointer text-sm font-semibold text-destructive">Danger Zone</summary>
+                <div className="grid gap-2.5 pl-0">
+                  <button
+                    type="button"
+                    className="border border-[#cc7748] bg-[#fff1e8] text-destructive rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:bg-[#ffe4d8] hover:border-[#b85a2a] disabled:opacity-55 disabled:cursor-not-allowed"
+                    onClick={() => void runtime.deleteLocalData(inputRef, feedback.clearAll)}
+                    disabled={isSending || isResetting}
+                  >
+                    {isResetting ? "Resetting..." : "Delete Local Data"}
+                  </button>
+                </div>
+              </details>
             </section>
           </div>
         </SheetContent>
@@ -236,7 +240,7 @@ export function App() {
             type="button"
             onClick={() => setSettingsOpen(true)}
             className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2"
-            aria-label="Open Settings"
+            aria-label="Open Settings (Cmd+,)"
           >
             <SettingsIcon className="size-5" />
           </button>

@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0034 Settings as modal/drawer, fold Advanced | P2 | Depends on T-0031, T-0033 (both done). Completes nav simplification. |
+| (none) | — | — | T-0034 in review. PM to replenish from Next Up. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

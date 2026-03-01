@@ -85,7 +85,7 @@ If QA is invoked as the automatic QA phase immediately after implementation move
    - For docs-only tickets, do not run QA; ensure a doc review is recorded on the ticket before PM acceptance.
 3. For each validated ticket, record evidence in the ticket (tests run, manual scenarios, notable risks).
 4. If issues are found, create bug ticket(s) and move the original ticket back to `in-progress/` (or `blocked/`) with a short summary and links.
-5. If validation passes, leave the ticket in `review/` for PM acceptance.
+5. If validation passes, leave the ticket in `review/` and trigger PM acceptance immediately after QA completes (see `tickets/AGENTS.md`, "PM Acceptance (Post-QA)").
 
 ## Bug Ticket Quality Bar
 - One bug per ticket.

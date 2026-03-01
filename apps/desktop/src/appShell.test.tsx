@@ -15,6 +15,7 @@ describe("App shell IA", () => {
     expect(markup).toContain("Toggle conversation list");
     expect(markup).toContain("Open Settings");
     expect(markup).toContain("Cmd+B");
+    expect(markup).toContain("Cmd+,");
   });
 
   it("does not render secondary-surface content by default (chat pane only)", () => {

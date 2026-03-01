@@ -80,6 +80,27 @@ This guide defines periodic Product Manager (PM) workflow runs in `tickets/`.
    - Propose one concrete PM process improvement per checkpoint.
    - Update docs if adopted.
 
+## PM Acceptance (Post-QA)
+Use this flow when a ticket is in `tickets/status/review/` and is ready to be accepted.
+
+Inputs:
+- The ticket file (acceptance criteria + evidence).
+- If software/behavior changed: the latest QA checkpoint in `tickets/meta/qa/` (or a recorded QA waiver).
+
+Acceptance steps:
+1. Verify acceptance criteria:
+   - Each criterion has observable evidence (notes, logs, screenshots, tests, links).
+2. Verify QA outcome (when required):
+   - Ensure QA findings are resolved or explicitly ticketed as follow-ups.
+3. Verify closure hygiene:
+   - Follow-ups are ticketed (no dangling TODOs).
+   - Required docs are updated.
+4. Accept:
+   - Update the ticket metadata (`Status`, `Updated`) and append to its change log.
+   - Move the ticket file from `tickets/status/review/` to `tickets/status/done/`.
+5. Record the decision:
+   - Add a dated PM checkpoint `tickets/meta/feedback/YYYY-MM-DD-pm-checkpoint.md` noting what was accepted and why it is shippable.
+
 ## Validation Ladder (External Validation Is Not Per-Ticket Default)
 External user validation is powerful, but it should not be a default requirement for every ticket. Match validation effort to risk/scope:
 

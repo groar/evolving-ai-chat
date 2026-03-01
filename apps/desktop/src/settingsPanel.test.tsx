@@ -62,7 +62,7 @@ describe("SettingsPanel", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Settings");
     expect(markup).toContain("Release Channel");
-    expect(markup).toContain("Improvements (advanced)");
+    expect(markup).toContain("Improvements");
   });
 
   it("renders changelog and proposals empty states", () => {
@@ -126,8 +126,8 @@ describe("SettingsPanel", () => {
 
   it("uses progressive disclosure for advanced concepts", () => {
     const markup = renderToStaticMarkup(renderPanel());
-    expect(markup).toContain("Early-Access Features (advanced)");
-    expect(markup).toContain("Improvements (advanced)");
+    expect(markup).toContain("Early Access");
+    expect(markup).toContain("Improvements");
     expect(markup).toContain("Change draft = local suggestion you review.");
   });
 

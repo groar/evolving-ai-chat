@@ -353,8 +353,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
       </ul>
 
       <div className="flex justify-between items-center gap-2">
-        <p className="m-0 text-sm font-semibold text-foreground">Release Channel</p>
+        <p className="m-0 text-sm font-semibold text-foreground">Updates & Safety</p>
       </div>
+      <p className="m-0 text-sm font-semibold text-foreground">Release Channel</p>
       <p className="m-0 text-sm text-foreground">Controls which features are active. Your conversations and history are never affected.</p>
 
       <div className="channel-toggle grid grid-cols-2 gap-2">
@@ -385,7 +386,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
       </div>
 
       <details className="border-t border-dashed border-border pt-2.5 grid gap-2.5">
-        <summary className="cursor-pointer text-sm font-semibold text-foreground">Early-Access Features (advanced)</summary>
+        <summary className="cursor-pointer text-sm font-semibold text-foreground">Early Access</summary>
         <p className="m-0 text-sm text-foreground">Optional beta toggles. Your data is never affected.</p>
         <label className="flex items-center gap-1.5 text-sm">
           <input
@@ -418,8 +419,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </p>
       )}
 
-      <details className="border-t border-dashed border-border pt-2.5 grid gap-2.5" name="settings-advanced">
-        <summary className="cursor-pointer text-sm font-semibold text-foreground">Improvements (advanced)</summary>
+      <details className="border-t border-dashed border-border pt-2.5 grid gap-2.5" name="settings-improvements">
+        <summary className="cursor-pointer text-sm font-semibold text-foreground">Improvements</summary>
         <p className="m-0 text-sm text-foreground">Change draft = local suggestion you review. Nothing ships automatically.</p>
         <p className="m-0 text-xs text-muted-foreground">Feedback → Draft → Run checks → Decide</p>
         <div className="flex justify-between items-center gap-2">
@@ -610,7 +611,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
       </details>
 
       <div className="border-t border-dashed border-border pt-2.5 grid gap-2.5">
-        <p className="m-0 text-sm font-semibold text-foreground">Recent Changes</p>
+        <p className="m-0 text-sm font-semibold text-foreground">Changelog</p>
         {changelog.length === 0 ? (
           <p className="m-0 text-xs text-muted-foreground">No changes recorded yet.</p>
         ) : (
