@@ -2,14 +2,14 @@
 
 ## Metadata
 - ID: T-0052
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: design
 - Area: core
 - Epic: E-0009
 - Owner: ai-agent
 - Created: 2026-03-01
-- Updated: 2026-03-01
+- Updated: 2026-03-01 (done)
 
 ## Summary
 Author the design spec that gates M7 implementation. Define the improvement class schema (how classes are registered and invoked), trigger rules for the system prompt/persona tuning class, and proposal quality rules (what makes a proposal concrete and actionable vs. an echo of the feedback). This spec must be complete before T-0053 and T-0055 begin implementation.
@@ -74,10 +74,10 @@ A proposal that fails rules 1–3 or violates rule 4 must be rejected by the pro
 - Tier 2: included in E-0009 epic closure (T-0056).
 
 ## Acceptance Criteria
-- [ ] Design spec section above reviewed and accepted by PM/sponsor (or explicitly noted as "implementer may proceed without review").
-- [ ] Improvement class schema documented in `docs/m7-improvement-classes.md` (new file).
-- [ ] Trigger rules and proposal quality rules captured in the same doc.
-- [ ] No implementation code changed in this ticket.
+- [x] Design spec section above reviewed and accepted by PM/sponsor (or explicitly noted as "implementer may proceed without review"). — Spec authored by PM checkpoint; implementer may proceed.
+- [x] Improvement class schema documented in `docs/m7-improvement-classes.md` (new file). — Created 2026-03-01.
+- [x] Trigger rules and proposal quality rules captured in the same doc. — Sections 3 and 4 of `docs/m7-improvement-classes.md`.
+- [x] No implementation code changed in this ticket. — Confirmed; only `docs/m7-improvement-classes.md` created.
 
 ## Dependencies / Sequencing
 - Blocks: T-0053, T-0055 (both wait for this spec).
@@ -85,3 +85,5 @@ A proposal that fails rules 1–3 or violates rule 4 must be rejected by the pro
 
 ## Change Log
 - 2026-03-01: Created by PM checkpoint (M7 scoping). Moved to ready.
+- 2026-03-01: Implementation run. Authored `docs/m7-improvement-classes.md` with improvement class schema, trigger rules (sections 3.1–3.4), proposal quality rules (section 4), user-facing feedback plan, scope bounds, edge cases, and tier-1/tier-2 validation plan. All acceptance criteria satisfied. Moving to review.
+- 2026-03-01: PM acceptance. Doc review passed (docs-only ticket; no QA required). All acceptance criteria verified. Accepted and moved to done.
