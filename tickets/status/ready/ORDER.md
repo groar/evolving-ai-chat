@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| _Empty — T-0032 moved to review._ | | | |
+| 1 | T-0033 Chat-first layout — hide meta-surfaces | P1 | Depends on T-0031, T-0032 (both done). Highest UX impact in E-0005. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -24,11 +24,10 @@ This file is the source of truth for ready-ticket pickup order.
 ## Next Up (Backlog — Will Move to Ready as Queue Drains)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| 3 | T-0033 Chat-first layout — hide meta-surfaces | P1 | E-0005 | Depends on T-0031, T-0032. Highest UX impact. |
-| 4 | T-0034 Settings as modal/drawer, fold Advanced | P2 | E-0005 | Depends on T-0031, T-0033. Ship alongside T-0033. |
-| 5 | T-0035 User-facing copy and empty state rewrite | P2 | E-0005 | Depends on T-0033. Quick copy pass. |
-| 6 | T-0036 Markdown rendering in assistant responses | P1 | E-0006 | Depends on T-0031 (Tailwind typography). |
-| 7 | T-0037 Code block syntax highlighting + copy | P1 | E-0006 | Depends on T-0036. |
-| 8 | T-0038 Conversation renaming | P2 | E-0006 | Independent; can ship any time. |
-| 9 | T-0039 Model selector (multi-provider) | P2 | E-0006 | Depends on T-0027, T-0030. |
-| 10 | T-0040 Token/cost display per message | P3 | E-0006 | Depends on T-0027. Lowest priority. |
+| 2 | T-0034 Settings as modal/drawer, fold Advanced | P2 | E-0005 | Depends on T-0031, T-0033. Ship alongside T-0033. |
+| 3 | T-0035 User-facing copy and empty state rewrite | P2 | E-0005 | Depends on T-0033. Quick copy pass. |
+| 4 | T-0036 Markdown rendering in assistant responses | P1 | E-0006 | Depends on T-0031 (Tailwind typography). |
+| 5 | T-0037 Code block syntax highlighting + copy | P1 | E-0006 | Depends on T-0036. |
+| 6 | T-0038 Conversation renaming | P2 | E-0006 | Independent; can ship any time. |
+| 7 | T-0039 Model selector (multi-provider) | P2 | E-0006 | Depends on T-0027, T-0030. |
+| 8 | T-0040 Token/cost display per message | P3 | E-0006 | Depends on T-0027. Lowest priority. |

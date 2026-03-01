@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0033
-- Status: backlog
+- Status: ready
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -91,3 +91,4 @@ Consider a command palette (Cmd+K) for power-user navigation — search conversa
 
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
+- 2026-03-01: Promoted to ready. T-0031 and T-0032 complete; dependencies satisfied.

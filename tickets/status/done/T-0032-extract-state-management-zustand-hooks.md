@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0032
-- Status: review
+- Status: done
 - Priority: P1
 - Type: refactor
 - Area: core
@@ -60,6 +60,7 @@ Keep the store boundaries aligned with backend resources: runtime state, convers
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
 - 2026-03-01: Implementation complete. Added runtimeStore, conversationStore, settingsStore; useRuntime(), useConversations(), useFeedback() hooks; App.tsx refactored to layout-only. All 21 tests pass.
+- 2026-03-01: PM acceptance. QA checkpoint passed; moved to done.
 
 ## Evidence
 - `apps/desktop/src/stores/runtimeStore.ts`, `conversationStore.ts`, `settingsStore.ts`
