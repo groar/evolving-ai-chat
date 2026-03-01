@@ -409,6 +409,26 @@ body {
   padding: 8px 10px;
 }
 
+.api-key-form {
+  display: grid;
+  gap: 8px;
+}
+
+.api-key-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.api-key-masked {
+  font-family: monospace;
+  letter-spacing: 0.15em;
+}
+
+.runtime-status.api-key-prompt .runtime-status-copy p:first-child {
+  font-weight: 600;
+}
+
 .settings-section-header {
   display: flex;
   justify-content: space-between;

@@ -72,6 +72,12 @@ type SettingsPanelProps = {
   onCreateProposal: (input: CreateProposalInput) => void;
   onAddValidationRun: (proposalId: string, input: AddValidationRunInput) => void;
   onUpdateProposalDecision: (proposalId: string, status: "accepted" | "rejected", notes: string) => void;
+  /** API key configuration (Connections subsection) */
+  apiKeySet: boolean;
+  onSaveApiKey: (key: string) => Promise<void>;
+  onRemoveApiKey: () => Promise<void>;
+  apiKeyError: string | null;
+  isSavingApiKey: boolean;
 };
 
 type ProposalEditorState = {
@@ -155,9 +161,15 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onResetExperiments,
     onCreateProposal,
     onAddValidationRun,
-    onUpdateProposalDecision
+    onUpdateProposalDecision,
+    apiKeySet,
+    onSaveApiKey,
+    onRemoveApiKey,
+    apiKeyError,
+    isSavingApiKey
   } = props;
 
+  const [apiKeyInput, setApiKeyInput] = useState("");
   const [proposalTitle, setProposalTitle] = useState("");
   const [proposalRationale, setProposalRationale] = useState("");
   const [proposalFeedbackIdsCsv, setProposalFeedbackIdsCsv] = useState("");
@@ -182,6 +194,25 @@ export function SettingsPanel(props: SettingsPanelProps) {
         }
       };
     });
+  }
+
+  async function handleSaveApiKey() {
+    const key = apiKeyInput.trim();
+    if (key.length === 0) return;
+    try {
+      await onSaveApiKey(key);
+      setApiKeyInput("");
+    } catch {
+      // Error surfaced via apiKeyError prop
+    }
+  }
+
+  async function handleRemoveApiKey() {
+    try {
+      await onRemoveApiKey();
+    } catch {
+      // Error surfaced via apiKeyError prop
+    }
   }
 
   function requestSwitchToStable() {
@@ -261,6 +292,52 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
   return (
     <section className="settings-panel" aria-label="Settings">
+      <div className="settings-section-header">
+        <p className="settings-title">Connections</p>
+      </div>
+      <p className="settings-copy">
+        {apiKeySet ? "OpenAI API key: Set ✓" : "OpenAI API key: Not configured"}
+      </p>
+      {apiKeySet ? (
+        <div className="api-key-actions">
+          <span className="api-key-masked" aria-hidden>••••••••••••</span>
+          <button
+            type="button"
+            className="rail-btn danger"
+            onClick={() => void handleRemoveApiKey()}
+            disabled={isBusy || isSavingApiKey}
+          >
+            Remove
+          </button>
+        </div>
+      ) : (
+        <div className="api-key-form">
+          <label htmlFor="api-key-input" className="sr-only">
+            OpenAI API key
+          </label>
+          <input
+            id="api-key-input"
+            className="settings-input"
+            type="password"
+            placeholder="OpenAI API key"
+            value={apiKeyInput}
+            onChange={(event) => setApiKeyInput(event.target.value)}
+            onKeyDown={(event) => event.key === "Enter" && void handleSaveApiKey()}
+            disabled={isBusy || isSavingApiKey}
+            autoComplete="off"
+          />
+          {apiKeyError && <p role="alert" className="settings-error">{apiKeyError}</p>}
+          <button
+            type="button"
+            className="rail-btn"
+            onClick={() => void handleSaveApiKey()}
+            disabled={isBusy || isSavingApiKey || apiKeyInput.trim().length === 0}
+          >
+            {isSavingApiKey ? "Saving…" : "Save"}
+          </button>
+        </div>
+      )}
+
       <div className="settings-section-header">
         <p className="settings-title">Works offline</p>
       </div>

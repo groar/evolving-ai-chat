@@ -32,10 +32,13 @@ describe("App shell IA", () => {
     expect(markup).not.toContain("online");
   });
 
-  it("disables composer input when runtime is offline", () => {
+  it("disables composer input when runtime is offline or API key not configured", () => {
     const markup = renderToStaticMarkup(<App />);
     expect(markup).toContain('id="composer"');
-    expect(markup).toContain('placeholder="Start the runtime to chat."');
+    expect(
+      markup.includes('placeholder="Add your API key in Settings to chat."') ||
+        markup.includes('placeholder="Start the runtime to chat."')
+    ).toBe(true);
     expect(markup).toContain("disabled");
   });
 

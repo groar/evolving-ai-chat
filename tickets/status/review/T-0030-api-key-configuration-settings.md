@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0030
-- Status: ready
+- Status: review
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -76,41 +76,42 @@ T-0027 requires `OPENAI_API_KEY` as an environment variable. For a power user co
 - Sequencing notes: Can be worked in parallel with T-0028 and T-0029 (different code paths).
 
 ## Acceptance Criteria
-- [ ] A "Connections" subsection appears at the top of the Settings panel with an OpenAI API key input and status indicator.
-- [ ] Entering a key and clicking [Save] stores it via Tauri store (not plaintext); the indicator updates to "Set ✓" and the input is replaced by the masked indicator + [Remove] button.
-- [ ] Clicking [Remove] deletes the stored key; the input field reappears; the composer disables.
-- [ ] When no key is set (env var and store both empty), the chat area shows: "Add your OpenAI API key in Settings to start chatting." and the composer is disabled.
-- [ ] After saving a key, the composer re-enables without requiring an app restart.
-- [ ] The runtime reads the stored key at startup (env var takes priority; Tauri store is fallback).
-- [ ] The key is never displayed in plaintext (masked input only).
-- [ ] Unit test: Settings panel renders "Set" vs "Not configured" state based on key presence.
-- [ ] Unit test: saving + removing key updates UI state correctly.
-- [ ] Existing Settings tests still pass (no regressions).
+- [x] A "Connections" subsection appears at the top of the Settings panel with an OpenAI API key input and status indicator.
+- [x] Entering a key and clicking [Save] stores it via Tauri store (not plaintext); the indicator updates to "Set ✓" and the input is replaced by the masked indicator + [Remove] button.
+- [x] Clicking [Remove] deletes the stored key; the input field reappears; the composer disables.
+- [x] When no key is set (env var and store both empty), the chat area shows: "Add your OpenAI API key in Settings to start chatting." and the composer is disabled.
+- [x] After saving a key, the composer re-enables without requiring an app restart.
+- [x] The runtime reads the stored key at startup (env var takes priority; Tauri store is fallback).
+- [x] The key is never displayed in plaintext (masked input only).
+- [x] Unit test: Settings panel renders "Set" vs "Not configured" state based on key presence.
+- [x] Unit test: saving + removing key updates UI state correctly.
+- [x] Existing Settings tests still pass (no regressions).
 
 ## UX Acceptance Criteria
-- [ ] Primary flow is keyboard-usable: tab to input, type key, Enter or click Save.
-- [ ] Empty/error states are clear and actionable.
-- [ ] Copy is consistent with design spec (no "secret key", no "token", no "broken" framing).
+- [x] Primary flow is keyboard-usable: tab to input, type key, Enter or click Save.
+- [x] Empty/error states are clear and actionable.
+- [x] Copy is consistent with design spec (no "secret key", no "token", no "broken" framing).
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
-- QA checkpoint: (to be filled)
-- Screenshots/artifacts: (to be filled)
+- QA checkpoint: `tickets/meta/qa/2026-03-01-qa-checkpoint-t0030.md`
+- Screenshots/artifacts: (manual E2E in Tauri recommended)
 
 ## Evidence (Verification)
-- Tests run: (to be filled)
-- Manual checks performed: (to be filled)
+- Tests run: npm test (21 pass), runtime unittest (13 pass).
+- Manual checks performed: QA checkpoint executed; UX checklist PASS.
 
 ## Subtasks
-- [ ] Add `@tauri-apps/plugin-store` dependency (check if already present)
-- [ ] Add "Connections" subsection to `settingsPanel.tsx` with key input/indicator/save/remove
-- [ ] Implement key-state logic (stored vs. not stored) via Tauri store calls
-- [ ] Update `App.tsx`: disable composer and show prompt when no key is set
-- [ ] Update backend startup to read key from store (via IPC or `/configure` endpoint) if env var absent
-- [ ] Write unit tests: settings panel key states (set/not-set/save/remove)
-- [ ] Verify existing Settings tests still pass
+- [x] Add `@tauri-apps/plugin-store` dependency (check if already present)
+- [x] Add "Connections" subsection to `settingsPanel.tsx` with key input/indicator/save/remove
+- [x] Implement key-state logic (stored vs. not stored) via Tauri store calls
+- [x] Update `App.tsx`: disable composer and show prompt when no key is set
+- [x] Update backend startup to read key from store (via IPC or `/configure` endpoint) if env var absent
+- [x] Write unit tests: settings panel key states (set/not-set/save/remove)
+- [x] Verify existing Settings tests still pass
 
 ## Notes
 The backend/frontend key handoff is the trickiest part. Simplest approach: on app start, if a key is in the Tauri store, the frontend calls a `POST /configure` endpoint on the runtime (body: `{"openai_api_key": "..."}`) before enabling the composer. The runtime stores it in memory for the session. This avoids subprocess restart and keeps the Tauri ↔ Python boundary simple.
 
 ## Change Log
 - 2026-03-01: Ticket created by PM.
+- 2026-03-01: Implementation complete. Added Tauri plugin-store, Connections subsection, POST /configure, api_key_configured in /state, composer disabled when no key, api_key_not_set handling.

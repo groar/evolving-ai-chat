@@ -15,9 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0030 API key configuration in Settings | P2 | Independent of T-0028/T-0029; ship next for usability. |
-| 2 | T-0029 Conversation context — multi-turn history | P2 | Depends on T-0027; independent of T-0028. |
-| 3 | T-0028 Streaming chat response | P2 | Depends on T-0027; independent of T-0029. |
+| 1 | T-0029 Conversation context — multi-turn history | P2 | Depends on T-0027; independent of T-0028. |
+| 2 | T-0028 Streaming chat response | P2 | Depends on T-0027; independent of T-0029. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

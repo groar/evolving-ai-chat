@@ -139,3 +139,28 @@ class ChatEndpointErrorTests(unittest.TestCase):
             client = _make_client(db_path)
             resp = client.post("/chat", json={"message": "   "})
         self.assertEqual(resp.status_code, 422)
+
+
+class ConfigureEndpointTests(unittest.TestCase):
+    def test_configure_accepts_key_and_returns_ok(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = str(Path(temp_dir) / "runtime.db")
+            with patch("runtime.main.chat_adapter") as mock_adapter:
+                client = _make_client(db_path)
+                resp = client.post(
+                    "/configure",
+                    json={"openai_api_key": "sk-test-key"},
+                )
+                self.assertEqual(resp.status_code, 200)
+                self.assertEqual(resp.json(), {"ok": True})
+                mock_adapter.configure.assert_called_once_with("sk-test-key")
+
+    def test_state_includes_api_key_configured(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = str(Path(temp_dir) / "runtime.db")
+            with patch("runtime.main.chat_adapter") as mock_adapter:
+                mock_adapter.has_api_key.return_value = True
+                client = _make_client(db_path)
+                resp = client.get("/state")
+                self.assertEqual(resp.status_code, 200)
+                self.assertTrue(resp.json().get("api_key_configured"))

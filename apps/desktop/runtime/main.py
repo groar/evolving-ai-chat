@@ -12,6 +12,7 @@ from .models import (
     ChangeProposal,
     ChatRequest,
     ChatResponse,
+    ConfigureRequest,
     CreateProposalRequest,
     DeleteDataResponse,
     FeatureFlagUpdateRequest,
@@ -45,7 +46,9 @@ def health() -> HealthResponse:
 
 @app.get("/state", response_model=RuntimeStateResponse)
 def state() -> RuntimeStateResponse:
-    return RuntimeStateResponse(**storage.get_state())
+    state_data = dict(storage.get_state())
+    state_data["api_key_configured"] = chat_adapter.has_api_key()
+    return RuntimeStateResponse(**state_data)
 
 
 @app.get("/settings", response_model=RuntimeSettingsResponse)
@@ -79,6 +82,13 @@ def update_feature_flag(flag_key: str, payload: FeatureFlagUpdateRequest) -> Run
 def reset_experimental_flags() -> RuntimeSettingsResponse:
     settings = storage.reset_experiments()
     return RuntimeSettingsResponse(settings=settings)
+
+
+@app.post("/configure")
+def configure(payload: ConfigureRequest) -> dict:
+    """Configure runtime (e.g. API key from in-app settings). Env var takes priority at startup."""
+    chat_adapter.configure(payload.openai_api_key or "")
+    return {"ok": True}
 
 
 @app.get("/proposals", response_model=list[ChangeProposal])

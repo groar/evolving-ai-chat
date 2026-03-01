@@ -8,6 +8,7 @@ import {
   type FeedbackItem,
   type FeedbackTag
 } from "./feedbackStore";
+import { getApiKeyFromStore, removeApiKeyFromStore, setApiKeyInStore } from "./apiKeyStore";
 import {
   SettingsPanel,
   type AddValidationRunInput,
@@ -43,6 +44,7 @@ type RuntimeStatePayload = {
   settings: RuntimeSettings;
   changelog: ChangelogEntry[];
   proposals: ChangeProposal[];
+  api_key_configured?: boolean;
 };
 
 type LeftRailSurface = "conversations" | "settings" | "feedback" | "advanced";
@@ -53,6 +55,9 @@ export type RuntimeIssue =
   | {
       kind: "error";
       detail: string;
+    }
+  | {
+      kind: "api_key_not_set";
     };
 
 const runtimeBase = "http://127.0.0.1:8787";
@@ -68,9 +73,16 @@ export function shouldAutoRetryOfflineState(runtimeIssue: RuntimeIssue | null): 
   return runtimeIssue?.kind === "offline";
 }
 
+export function isApiKeyNotSet(runtimeIssue: RuntimeIssue | null): boolean {
+  return runtimeIssue?.kind === "api_key_not_set";
+}
+
 async function readErrorDetail(response: Response): Promise<string> {
   try {
-    const payload = (await response.json()) as { detail?: string };
+    const payload = (await response.json()) as { detail?: string; error?: string };
+    if (payload.error === "api_key_not_set") {
+      return "api_key_not_set";
+    }
     if (typeof payload.detail === "string" && payload.detail.trim().length > 0) {
       return payload.detail;
     }
@@ -102,6 +114,10 @@ export function App() {
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [activeLeftRailSurface, setActiveLeftRailSurface] = useState<LeftRailSurface>("conversations");
   const [runtimeIssue, setRuntimeIssue] = useState<RuntimeIssue | null>({ kind: "offline" });
+  const [apiKeySet, setApiKeySet] = useState(false);
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+  const [isSavingApiKey, setIsSavingApiKey] = useState(false);
+  const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -121,9 +137,41 @@ export function App() {
     }
   }, []);
 
+  useEffect(() => {
+    getApiKeyFromStore().then((key) => {
+      setApiKeySet(Boolean(key));
+    });
+  }, []);
+
+  useEffect(() => {
+    if (runtimeIssue || isBooting) return;
+    let cancelled = false;
+    getApiKeyFromStore().then(async (storedKey) => {
+      if (cancelled || !storedKey) return;
+      try {
+        await fetch(`${runtimeBase}/configure`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ openai_api_key: storedKey })
+        });
+        if (!cancelled) await refreshState(activeConversationId);
+      } catch {
+        if (!cancelled) await refreshState(activeConversationId);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [runtimeIssue, isBooting]);
+
   const hasMessages = messages.length > 0;
   const isRuntimeOffline = runtimeIssue?.kind === "offline";
-  const canSend = composer.trim().length > 0 && !isSending && activeConversationId.length > 0 && !isRuntimeOffline;
+  const canSend =
+    composer.trim().length > 0 &&
+    !isSending &&
+    activeConversationId.length > 0 &&
+    !isRuntimeOffline &&
+    apiKeyConfigured;
   const channelLabel = useMemo(() => (settings.channel === "experimental" ? "Experimental" : "Stable"), [settings.channel]);
   const diagnosticsEnabled = Boolean(settings.active_flags[diagnosticsFlagKey]);
   const canRetry = !isSending && !isResetting;
@@ -155,6 +203,7 @@ export function App() {
     setSettings(payload.settings ?? defaultSettings);
     setChangelog(payload.changelog ?? []);
     setProposals(payload.proposals ?? []);
+    setApiKeyConfigured(Boolean(payload.api_key_configured));
     setRuntimeIssue(null);
   }
 
@@ -387,6 +436,46 @@ export function App() {
     }
   }
 
+  async function saveApiKey(key: string) {
+    if (isSavingApiKey || key.trim().length === 0) return;
+    setIsSavingApiKey(true);
+    setApiKeyError(null);
+    try {
+      await setApiKeyInStore(key.trim());
+      await fetch(`${runtimeBase}/configure`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ openai_api_key: key.trim() })
+      });
+      setApiKeySet(true);
+      setApiKeyConfigured(true);
+    } catch (err) {
+      setApiKeyError("Could not save API key. Please try again.");
+    } finally {
+      setIsSavingApiKey(false);
+    }
+  }
+
+  async function removeApiKey() {
+    if (isSavingApiKey) return;
+    setIsSavingApiKey(true);
+    setApiKeyError(null);
+    try {
+      await removeApiKeyFromStore();
+      await fetch(`${runtimeBase}/configure`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ openai_api_key: null })
+      });
+      setApiKeySet(false);
+      setApiKeyConfigured(false);
+    } catch (err) {
+      setApiKeyError("Could not remove API key. Please try again.");
+    } finally {
+      setIsSavingApiKey(false);
+    }
+  }
+
   async function updateProposalDecision(proposalId: string, status: "accepted" | "rejected", notes: string) {
     if (isSending || isResetting || isProposalBusy) {
       return;
@@ -434,7 +523,11 @@ export function App() {
 
       if (!response.ok) {
         const detail = await readErrorDetail(response);
-        setRuntimeIssue({ kind: "error", detail });
+        if (detail === "api_key_not_set") {
+          setRuntimeIssue({ kind: "api_key_not_set" });
+        } else {
+          setRuntimeIssue({ kind: "error", detail });
+        }
         return;
       }
 
@@ -577,6 +670,11 @@ export function App() {
                 onCreateProposal={(input) => void createProposal(input)}
                 onAddValidationRun={(proposalId, input) => void addProposalValidationRun(proposalId, input)}
                 onUpdateProposalDecision={(proposalId, status, notes) => void updateProposalDecision(proposalId, status, notes)}
+                apiKeySet={apiKeySet}
+                onSaveApiKey={(key) => void saveApiKey(key)}
+                onRemoveApiKey={() => void removeApiKey()}
+                apiKeyError={apiKeyError}
+                isSavingApiKey={isSavingApiKey}
               />
             </div>
           )}
@@ -623,7 +721,24 @@ export function App() {
             <p className="top-bar-subtitle">Local AI chat · {channelLabel} channel</p>
           </div>
         </header>
-        {runtimeIssue && (
+        {runtimeIssue && runtimeIssue.kind === "api_key_not_set" && (
+          <section role="status" className="runtime-status api-key-prompt">
+            <div className="runtime-status-copy">
+              <p className="runtime-status-title">Add your OpenAI API key in Settings to start chatting.</p>
+              <p>
+                Open Settings and add your API key in the Connections section.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="retry-btn"
+              onClick={() => setActiveLeftRailSurface("settings")}
+            >
+              Open Settings
+            </button>
+          </section>
+        )}
+        {runtimeIssue && runtimeIssue.kind !== "api_key_not_set" && (
           <section role="status" className={`runtime-status ${runtimeIssue.kind === "offline" ? "offline" : "error"}`}>
             <div className="runtime-status-copy">
               <p className="runtime-status-title">
@@ -657,7 +772,22 @@ export function App() {
             {!hasMessages && !isBooting && (
             <div className="empty-state">
               <p>Your local AI assistant.</p>
-              <p>{isRuntimeOffline ? "Start the runtime, then send your first message." : "Type your first message below."}</p>
+              <p>
+                {!apiKeyConfigured
+                  ? "Add your OpenAI API key in Settings to start chatting."
+                  : isRuntimeOffline
+                    ? "Start the runtime, then send your first message."
+                    : "Type your first message below."}
+              </p>
+              {!apiKeyConfigured && (
+                <button
+                  type="button"
+                  className="rail-btn"
+                  onClick={() => setActiveLeftRailSurface("settings")}
+                >
+                  Open Settings
+                </button>
+              )}
             </div>
           )}
 
@@ -680,9 +810,15 @@ export function App() {
               ref={inputRef}
               value={composer}
               className="composer"
-              placeholder={isRuntimeOffline ? "Start the runtime to chat." : "Type a message..."}
+              placeholder={
+                !apiKeyConfigured
+                  ? "Add your API key in Settings to chat."
+                  : isRuntimeOffline
+                    ? "Start the runtime to chat."
+                    : "Type a message..."
+              }
               rows={1}
-              disabled={isRuntimeOffline}
+              disabled={isRuntimeOffline || !apiKeyConfigured}
               onChange={(event) => setComposer(event.target.value)}
               onKeyDown={handleComposerKeyDown}
             />

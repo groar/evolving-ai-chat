@@ -41,6 +41,7 @@ class RuntimeStateResponse(BaseModel):
     settings: "RuntimeSettings"
     changelog: list["ChangelogEntry"] = Field(default_factory=list)
     proposals: list["ChangeProposal"] = Field(default_factory=list)
+    api_key_configured: bool = False
 
 
 class RuntimeSettings(BaseModel):
@@ -133,5 +134,10 @@ class AddValidationRunRequest(BaseModel):
 class UpdateProposalDecisionRequest(BaseModel):
     status: Literal["pending", "accepted", "rejected"]
     notes: str | None = Field(default=None, max_length=4000)
+
+
+class ConfigureRequest(BaseModel):
+    """Runtime configuration (e.g. API key from in-app settings)."""
+    openai_api_key: str | None = Field(default=None, max_length=4000)
 
 

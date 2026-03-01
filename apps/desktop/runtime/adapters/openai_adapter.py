@@ -34,6 +34,20 @@ class OpenAIAdapter:
         self._api_key = api_key or os.environ.get("OPENAI_API_KEY")
         self._client: OpenAI | None = None
 
+    def has_api_key(self) -> bool:
+        """Return True if a non-empty API key is configured (env or runtime)."""
+        key = self._api_key or os.environ.get("OPENAI_API_KEY")
+        return bool(key and str(key).strip())
+
+    def configure(self, api_key: str) -> None:
+        """Set API key at runtime (overrides env for this session)."""
+        if api_key and str(api_key).strip():
+            self._api_key = str(api_key).strip()
+            self._client = None  # Reset client so it uses new key
+        else:
+            self._api_key = None
+            self._client = None
+
     @property
     def _openai(self) -> OpenAI:
         if self._client is None:
