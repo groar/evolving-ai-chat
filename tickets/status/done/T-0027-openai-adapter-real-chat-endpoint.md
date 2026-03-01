@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0027
-- Status: review
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: core
@@ -99,3 +99,4 @@ These are approximate; store them in a `PRICING` dict in the adapter and documen
 ## Change Log
 - 2026-03-01: Ticket created by PM.
 - 2026-03-01: Implemented OpenAI adapter, chat handler integration, error mapping, unit tests, smoke assertion, runtime README. Moved to in-progress → review.
+- 2026-03-01: PM accepted. QA checkpoint passed (no bugs). Moved to done.
