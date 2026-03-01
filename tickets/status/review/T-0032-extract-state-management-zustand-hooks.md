@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0032
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: refactor
 - Area: core
@@ -31,13 +31,13 @@ Decompose the 500-line App.tsx monolith by extracting state into Zustand stores 
 - F-20260301-002
 
 ## Acceptance Criteria
-- [ ] Zustand is installed and used for shared app state (runtime issue, conversations, messages, settings, proposals, changelog).
-- [ ] A `useRuntime()` hook (or similar) encapsulates all backend HTTP communication (refreshState, sendMessage, createConversation, etc.).
-- [ ] A `useConversations()` hook encapsulates conversation CRUD and active conversation tracking.
-- [ ] App.tsx is reduced to layout composition — no direct fetch calls or business logic.
-- [ ] SettingsPanel and FeedbackPanel consume state from stores/hooks, not prop-drilling from App.
-- [ ] All existing Vitest tests pass (with necessary test-only adjustments for the new state layer).
-- [ ] No user-visible behavior change.
+- [x] Zustand is installed and used for shared app state (runtime issue, conversations, messages, settings, proposals, changelog).
+- [x] A `useRuntime()` hook (or similar) encapsulates all backend HTTP communication (refreshState, sendMessage, createConversation, etc.).
+- [x] A `useConversations()` hook encapsulates conversation CRUD and active conversation tracking.
+- [x] App.tsx is reduced to layout composition — no direct fetch calls or business logic.
+- [x] SettingsPanel and FeedbackPanel consume state from stores/hooks, not prop-drilling from App.
+- [x] All existing Vitest tests pass (with necessary test-only adjustments for the new state layer).
+- [x] No user-visible behavior change.
 
 ## Dependencies / Sequencing
 - Depends on: none (can start immediately after M3, parallel with T-0031).
@@ -45,17 +45,25 @@ Decompose the 500-line App.tsx monolith by extracting state into Zustand stores 
 - Sequencing notes: Can proceed in parallel with T-0031 (design system). If both are in flight, coordinate on component interfaces.
 
 ## Subtasks
-- [ ] Install Zustand
-- [ ] Create `runtimeStore` (connection state, issue tracking, boot state)
-- [ ] Create `conversationStore` (conversations, active ID, messages)
-- [ ] Create `settingsStore` (settings, changelog, proposals)
-- [ ] Extract `useRuntime()` hook for HTTP communication
-- [ ] Refactor App.tsx to layout-only composition
-- [ ] Refactor SettingsPanel and FeedbackPanel to use stores directly
-- [ ] Verify all tests pass
+- [x] Install Zustand
+- [x] Create `runtimeStore` (connection state, issue tracking, boot state)
+- [x] Create `conversationStore` (conversations, active ID, messages)
+- [x] Create `settingsStore` (settings, changelog, proposals)
+- [x] Extract `useRuntime()` hook for HTTP communication
+- [x] Refactor App.tsx to layout-only composition
+- [x] Refactor SettingsPanel and FeedbackPanel to use stores directly
+- [x] Verify all tests pass
 
 ## Notes
 Keep the store boundaries aligned with backend resources: runtime state, conversations, settings/proposals. Feedback stays in localStorage (via feedbackStore.ts) — no need to move it to Zustand unless it grows.
 
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
+- 2026-03-01: Implementation complete. Added runtimeStore, conversationStore, settingsStore; useRuntime(), useConversations(), useFeedback() hooks; App.tsx refactored to layout-only. All 21 tests pass.
+
+## Evidence
+- `apps/desktop/src/stores/runtimeStore.ts`, `conversationStore.ts`, `settingsStore.ts`
+- `apps/desktop/src/hooks/useRuntime.ts`, `useConversations.ts`, `useFeedback.ts`
+- `npm test` — 21 tests pass
+- `npm run build` — succeeds
+- QA checkpoint: `tickets/meta/qa/2026-03-01-qa-checkpoint-t0032.md`

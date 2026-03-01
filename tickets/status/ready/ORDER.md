@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0032 Extract state management (Zustand + hooks) | P1 | Parallel with T-0031; no deps. |
+| _Empty — T-0032 moved to review._ | | | |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
