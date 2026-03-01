@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0037
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -40,35 +40,43 @@ Add syntax highlighting to fenced code blocks in assistant responses and a one-c
 - F-20260301-002
 
 ## Acceptance Criteria
-- [ ] Fenced code blocks with a language tag render with syntax highlighting (at minimum: JavaScript, TypeScript, Python, Rust, HTML, CSS, JSON, Bash).
-- [ ] Fenced code blocks without a language tag render as plain monospace.
-- [ ] Each code block has a copy-to-clipboard button.
-- [ ] Clicking copy writes the code block content to the system clipboard.
-- [ ] Brief visual feedback ("Copied!" or icon change) confirms the copy action.
-- [ ] Code blocks handle horizontal overflow gracefully (scroll, no layout breakage).
-- [ ] Syntax highlighting theme is consistent with the app's color palette.
+- [x] Fenced code blocks with a language tag render with syntax highlighting (at minimum: JavaScript, TypeScript, Python, Rust, HTML, CSS, JSON, Bash).
+- [x] Fenced code blocks without a language tag render as plain monospace.
+- [x] Each code block has a copy-to-clipboard button.
+- [x] Clicking copy writes the code block content to the system clipboard.
+- [x] Brief visual feedback ("Copied!" or icon change) confirms the copy action.
+- [x] Code blocks handle horizontal overflow gracefully (scroll, no layout breakage).
+- [x] Syntax highlighting theme is consistent with the app's color palette.
 
 ## UX Acceptance Criteria
-- [ ] Primary flow is keyboard-usable.
-- [ ] Empty/error states are clear and actionable.
-- [ ] Copy/microcopy is consistent and unambiguous.
-- [ ] Layout works at common breakpoints.
+- [x] Primary flow is keyboard-usable.
+- [x] Empty/error states are clear and actionable.
+- [x] Copy/microcopy is consistent and unambiguous.
+- [x] Layout works at common breakpoints.
 
 ## Dependencies / Sequencing
 - Depends on: T-0036 (Markdown rendering must be in place).
 - Blocks: none.
 
 ## Subtasks
-- [ ] Choose syntax highlighting library (react-syntax-highlighter or shiki)
-- [ ] Integrate as custom code component in react-markdown
-- [ ] Add copy-to-clipboard button to code blocks
-- [ ] Style code blocks and highlighting to match app theme
-- [ ] Add tests for syntax highlighting and copy behavior
-- [ ] Verify non-code Markdown is unaffected
+- [x] Choose syntax highlighting library (react-syntax-highlighter or shiki)
+- [x] Integrate as custom code component in react-markdown
+- [x] Add copy-to-clipboard button to code blocks
+- [x] Style code blocks and highlighting to match app theme
+- [x] Add tests for syntax highlighting and copy behavior
+- [x] Verify non-code Markdown is unaffected
 
 ## Notes
 Consider `shiki` for build-time-safe syntax highlighting (it uses TextMate grammars and is very accurate). For a lighter option, `react-syntax-highlighter` with `Prism` is battle-tested. Choose based on bundle size constraints.
 
+## Evidence
+- `MarkdownMessage.tsx`: CodeBlock component with react-syntax-highlighter (Prism + oneLight theme), copy button (lucide Copy/Check icons), Clipboard API, "Copied!" feedback. Supports js/ts/py/rs/html/css/json/bash and aliases.
+- `MarkdownMessage.test.tsx`: 10 tests including fenced code with/without language, copy button presence, aria-labels. All pass.
+- Build and test: `npm run build`, `npm run test` — pass.
+- QA checkpoint: `tickets/meta/qa/2026-03-01-qa-checkpoint-t0037.md` — PASS.
+
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
 - 2026-03-01: Moved to ready (PM run; T-0036 done, dependency satisfied).
+- 2026-03-01: Implementation complete. react-syntax-highlighter + Prism, CodeBlock with copy, oneLight theme, Tailwind tokens. Moved to review.
+- 2026-03-01: QA checkpoint 2026-03-01-qa-checkpoint-t0037.md — PASS. PM accepted; moved to done.

@@ -41,4 +41,30 @@ describe("MarkdownMessage", () => {
     expect(markup).not.toContain("<script>");
     expect(markup).toContain("&lt;script&gt;");
   });
+
+  it("renders fenced code block with language and copy button", () => {
+    const markup = renderToStaticMarkup(
+      <MarkdownMessage text={"```javascript\nconst x = 1;\n```"} />
+    );
+    expect(markup).toContain("const"); // syntax-highlighted tokens split the string
+    expect(markup).toContain("Copy code block");
+    expect(markup).toContain("Copy");
+  });
+
+  it("renders fenced code block without language as plain monospace", () => {
+    const markup = renderToStaticMarkup(
+      <MarkdownMessage text={"```\nplain code\nno language\n```"} />
+    );
+    expect(markup).toContain("plain code");
+    expect(markup).toContain("no language");
+    expect(markup).toContain("Copy code block");
+  });
+
+  it("renders copy button with correct aria-label for code blocks", () => {
+    const markup = renderToStaticMarkup(
+      <MarkdownMessage text={"```json\n{\"key\": \"value\"}\n```"} />
+    );
+    expect(markup).toContain('aria-label="Copy code block"');
+    expect(markup).toContain("title=\"Copy code block\"");
+  });
 });

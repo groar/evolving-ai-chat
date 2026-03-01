@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0037 Code block syntax highlighting + copy | P1 | E-0006 |
-| — | _(next in backlog)_ | | T-0039, T-0040 |
+| — | _(queue empty; next from backlog)_ | | T-0037 in review; T-0039, T-0040 in backlog |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
