@@ -265,7 +265,7 @@ export function App() {
               settings={settings}
               changelog={changelog}
               proposals={proposals}
-              feedbackIds={feedback.items.map((item) => item.id)}
+              feedbackItems={feedback.items.map((item) => ({ id: item.id, text: item.text }))}
               isBusy={isSending || isResetting || isProposalBusy}
               canToggleFlags={canToggleFlags}
               configuredDiagnosticsFlag={configuredDiagnosticsFlag}

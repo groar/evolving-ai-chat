@@ -2,7 +2,7 @@
  * @vitest-environment happy-dom
  */
 import type { ComponentProps } from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -38,7 +38,7 @@ function renderPanel(overrides: Partial<ComponentProps<typeof SettingsPanel>> = 
       settings={makeSettings()}
       changelog={[]}
       proposals={[]}
-      feedbackIds={[]}
+      feedbackItems={[]}
       isBusy={false}
       canToggleFlags={true}
       configuredDiagnosticsFlag={true}
@@ -73,7 +73,7 @@ describe("SettingsPanel", () => {
   it("renders changelog and proposals empty states", () => {
     const emptyMarkup = renderToStaticMarkup(renderPanel());
     expect(emptyMarkup).toContain("No changes recorded yet.");
-    expect(emptyMarkup).toContain("No change drafts yet.");
+    expect(emptyMarkup).toContain("No suggestions yet.");
   });
 
   it("disables accept when no validation run exists", () => {
@@ -133,7 +133,7 @@ describe("SettingsPanel", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Early Access");
     expect(markup).toContain("Improvements");
-    expect(markup).toContain("Change draft = local suggestion you review.");
+    expect(markup).toContain("Suggestion = local proposal you review.");
   });
 
   it("renders Works offline section with at least 2 concrete items", () => {
@@ -165,15 +165,59 @@ describe("SettingsPanel", () => {
     expect(markup).toContain("Remove");
   });
 
+  it("renders Suggested improvements section header and Suggest an improvement button", () => {
+    const markup = renderToStaticMarkup(renderPanel());
+    expect(markup).toContain("Suggested improvements");
+    expect(markup).toContain("Suggest an improvement");
+  });
+
+  it("shows Generate from feedback dropdown when feedback exists", () => {
+    const items = [{ id: "fb-1", text: "Improvements section is confusing" }];
+    const markup = renderToStaticMarkup(renderPanel({ feedbackItems: items }));
+    expect(markup).toContain("Generate from feedback");
+    expect(markup).toContain("fb-1");
+  });
+
+  it("generate from feedback populates form with title, rationale, feedback ID, diff_summary, risk_notes", async () => {
+    const onCreateProposal = vi.fn();
+    const items = [{ id: "fb-20260301-abc", text: "Improvements section is confusing" }];
+    render(
+      renderPanel({
+        feedbackItems: items,
+        onCreateProposal
+      })
+    );
+    const select = screen.getByLabelText(/Select feedback to generate proposal from/i);
+    await userEvent.selectOptions(select, "fb-20260301-abc");
+    const titleInput = screen.getByPlaceholderText("Draft title") as HTMLInputElement;
+    expect(titleInput.value).toBe("Clarify: Improvements section is confusing");
+    const rationaleField = screen.getByPlaceholderText(/Rationale/) as HTMLTextAreaElement;
+    expect(rationaleField.value).toBe("Improvements section is confusing");
+    const feedbackIdsInput = screen.getByPlaceholderText(/Feedback IDs/) as HTMLInputElement;
+    expect(feedbackIdsInput.value).toBe("fb-20260301-abc");
+    const diffSummary = screen.getByPlaceholderText(/What changes will this proposal make/) as HTMLTextAreaElement;
+    expect(diffSummary.value).toBe(
+      "Rename 'Change Drafts' → 'Suggested improvements'; 'Draft an Improvement' → 'Suggest an improvement'; 'No change drafts yet' → 'No suggestions yet.'"
+    );
+    const riskNotes = screen.getByPlaceholderText(/Copy-only/) as HTMLTextAreaElement;
+    expect(riskNotes.value).toBe(
+      "Copy-only change; must not imply autonomous shipping or data deletion."
+    );
+  });
+
   it("Beta → Stable transition: clicking Stable when on Beta opens confirm dialog, confirming calls onSelectChannel", async () => {
     const onSelectChannel = vi.fn();
-    render(
+    const { container } = render(
       renderPanel({
         settings: makeSettings({ channel: "experimental" }),
         onSelectChannel
       })
     );
-    const stableBtn = screen.getByRole("button", { name: /Stable \(recommended\)/ });
+    const settingsSection = container.querySelector('[aria-label="Settings"]');
+    expect(settingsSection).toBeTruthy();
+    const stableBtn = within(settingsSection as HTMLElement).getByRole("button", {
+      name: /Stable \(recommended\)/
+    });
     await userEvent.click(stableBtn);
     const confirmBtn = screen.getByRole("button", { name: /Switch to Stable/ });
     await userEvent.click(confirmBtn);

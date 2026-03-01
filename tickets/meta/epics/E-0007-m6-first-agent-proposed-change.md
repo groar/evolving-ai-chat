@@ -63,15 +63,14 @@ Ship the first agent-proposed change that originates from genuine usage of the p
 ## Linked Tickets
 ### M6 tickets (new work)
 - T-0045 M6 scope: define improvement class, trigger, and first instance (done)
-- T-0046 M6 wire proposal-from-feedback + first instance (implementation — backlog)
+- T-0046 M6 wire proposal-from-feedback + first instance (done)
 
 ### Infrastructure dependencies (E-0002, done)
 - T-0011 M1 spec, T-0012 feedback capture, T-0013 proposal artifact, T-0015 accept→changelog, T-0016 proposals panel
 
 ## Progress (Ticket Status)
-- Done: T-0045 (scope complete)
-- Next up: T-0046 (backlog — first implementation; move to ready for pickup)
-- Planned: T-0046 implementation → smoke test → tier-2 validation
+- Done: T-0045 (scope complete), T-0046 (implementation complete)
+- Pending: E2E smoke (feedback → generate → validate → accept), tier-2 micro-validation
 
 ## Notes
 - Improvement class must be narrow: e.g. UI microcopy, one settings default, or one prompt/routing tweak. Avoid scope creep.

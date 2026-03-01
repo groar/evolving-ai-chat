@@ -350,8 +350,8 @@ export function useRuntime() {
             title: input.title,
             rationale: input.rationale,
             source_feedback_ids: input.source_feedback_ids,
-            diff_summary: "",
-            risk_notes: ""
+            diff_summary: input.diff_summary ?? "",
+            risk_notes: input.risk_notes ?? ""
           })
         });
         if (!response.ok) throw new Error(await readErrorDetail(response));

@@ -57,6 +57,8 @@ type CreateProposalInput = {
   title: string;
   rationale: string;
   source_feedback_ids: string[];
+  diff_summary?: string;
+  risk_notes?: string;
 };
 
 type AddValidationRunInput = {
@@ -69,7 +71,8 @@ type SettingsPanelProps = {
   settings: RuntimeSettings;
   changelog: ChangelogEntry[];
   proposals: ChangeProposal[];
-  feedbackIds: string[];
+  /** Feedback items for Generate-from-feedback and proposal form datalist */
+  feedbackItems: Array<{ id: string; text: string }>;
   isBusy: boolean;
   canToggleFlags: boolean;
   configuredDiagnosticsFlag: boolean;
@@ -159,7 +162,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     settings,
     changelog,
     proposals,
-    feedbackIds,
+    feedbackItems,
     isBusy,
     canToggleFlags,
     configuredDiagnosticsFlag,
@@ -185,11 +188,16 @@ export function SettingsPanel(props: SettingsPanelProps) {
   const [proposalTitle, setProposalTitle] = useState("");
   const [proposalRationale, setProposalRationale] = useState("");
   const [proposalFeedbackIdsCsv, setProposalFeedbackIdsCsv] = useState("");
+  const [proposalDiffSummary, setProposalDiffSummary] = useState("");
+  const [proposalRiskNotes, setProposalRiskNotes] = useState("");
   const [proposalFormError, setProposalFormError] = useState<string | null>(null);
   const [proposalEditors, setProposalEditors] = useState<Record<string, ProposalEditorState>>({});
   const [isCreateDraftOpen, setIsCreateDraftOpen] = useState(false);
 
-  const sortedFeedbackIds = useMemo(() => [...feedbackIds].sort((a, b) => b.localeCompare(a)), [feedbackIds]);
+  const sortedFeedbackItems = useMemo(
+    () => [...feedbackItems].sort((a, b) => b.id.localeCompare(a.id)),
+    [feedbackItems]
+  );
 
   function editorFor(proposalId: string): ProposalEditorState {
     return proposalEditors[proposalId] ?? defaultProposalEditorState;
@@ -264,13 +272,32 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onCreateProposal({
       title,
       rationale,
-      source_feedback_ids: sourceFeedbackIds
+      source_feedback_ids: sourceFeedbackIds,
+      diff_summary: proposalDiffSummary.trim() || undefined,
+      risk_notes: proposalRiskNotes.trim() || undefined
     });
     setProposalTitle("");
     setProposalRationale("");
     setProposalFeedbackIdsCsv("");
+    setProposalDiffSummary("");
+    setProposalRiskNotes("");
     setProposalFormError(null);
     setIsCreateDraftOpen(false);
+  }
+
+  const COPY_ONLY_RISK_NOTES = "Copy-only change; must not imply autonomous shipping or data deletion.";
+  const FIRST_INSTANCE_DIFF_SUMMARY =
+    "Rename 'Change Drafts' → 'Suggested improvements'; 'Draft an Improvement' → 'Suggest an improvement'; 'No change drafts yet' → 'No suggestions yet.'";
+
+  function generateFromFeedback(feedback: { id: string; text: string }) {
+    const title = feedback.text.trim().length > 0 ? `Clarify: ${feedback.text}` : "Clarify feedback";
+    setProposalTitle(title);
+    setProposalRationale(feedback.text);
+    setProposalFeedbackIdsCsv(feedback.id);
+    setProposalDiffSummary(FIRST_INSTANCE_DIFF_SUMMARY);
+    setProposalRiskNotes(COPY_ONLY_RISK_NOTES);
+    setProposalFormError(null);
+    setIsCreateDraftOpen(true);
   }
 
   function submitValidationRun(proposal: ChangeProposal) {
@@ -439,22 +466,52 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
       <details className="border-t border-dashed border-border pt-2.5 grid gap-2.5" name="settings-improvements">
         <summary className="cursor-pointer text-sm font-semibold text-foreground">Improvements</summary>
-        <p className="m-0 text-sm text-foreground">Change draft = local suggestion you review. Nothing ships automatically.</p>
+        <p className="m-0 text-sm text-foreground">Suggestion = local proposal you review. Nothing ships automatically.</p>
         <p className="m-0 text-xs text-muted-foreground">Feedback → Draft → Run checks → Decide</p>
         <div className="flex justify-between items-center gap-2">
-          <p className="m-0 text-sm font-semibold text-foreground">Change Drafts</p>
+          <p className="m-0 text-sm font-semibold text-foreground">Suggested improvements</p>
           <button type="button" className={railBtn} onClick={onRefresh} disabled={isBusy}>
             Refresh
           </button>
         </div>
+        {sortedFeedbackItems.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <label htmlFor="generate-from-feedback-select" className="text-sm font-medium text-foreground">
+              Generate from feedback:
+            </label>
+            <select
+              id="generate-from-feedback-select"
+              className={settingsInput}
+              value=""
+              onChange={(e) => {
+                const id = e.target.value;
+                if (id) {
+                  const item = sortedFeedbackItems.find((f) => f.id === id);
+                  if (item) generateFromFeedback(item);
+                  e.target.value = "";
+                }
+              }}
+              disabled={isBusy}
+              aria-label="Select feedback to generate proposal from"
+            >
+              <option value="">Select…</option>
+              {sortedFeedbackItems.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.id}: {f.text.slice(0, 40)}
+                  {f.text.length > 40 ? "…" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <button type="button" className={railBtn} onClick={() => setIsCreateDraftOpen((current) => !current)} disabled={isBusy}>
-          {isCreateDraftOpen ? "Hide Draft Form" : "Draft an Improvement"}
+          {isCreateDraftOpen ? "Hide form" : "Suggest an improvement"}
         </button>
 
         {isCreateDraftOpen && (
           <div className="border border-border rounded-lg bg-white p-2.5 grid gap-2">
             <label className="text-sm font-semibold text-foreground" htmlFor="proposal-title-input">
-              Draft an Improvement
+              Suggest an improvement
             </label>
             <input
               id="proposal-title-input"
@@ -483,10 +540,38 @@ export function SettingsPanel(props: SettingsPanelProps) {
               disabled={isBusy}
             />
             <datalist id="feedback-id-options">
-              {sortedFeedbackIds.map((feedbackId) => (
-                <option key={feedbackId} value={feedbackId} />
+              {sortedFeedbackItems.map((f) => (
+                <option key={f.id} value={f.id} />
               ))}
             </datalist>
+            {(proposalDiffSummary.length > 0 || proposalRiskNotes.length > 0) && (
+              <>
+                <label className="text-sm font-medium text-foreground" htmlFor="proposal-diff-summary-input">
+                  Diff summary (optional)
+                </label>
+                <textarea
+                  id="proposal-diff-summary-input"
+                  className={settingsTextarea}
+                  placeholder="What changes will this proposal make?"
+                  rows={2}
+                  value={proposalDiffSummary}
+                  onChange={(e) => setProposalDiffSummary(e.target.value)}
+                  disabled={isBusy}
+                />
+                <label className="text-sm font-medium text-foreground" htmlFor="proposal-risk-notes-input">
+                  Risk notes (optional)
+                </label>
+                <textarea
+                  id="proposal-risk-notes-input"
+                  className={settingsTextarea}
+                  placeholder="Copy-only; must not imply…"
+                  rows={2}
+                  value={proposalRiskNotes}
+                  onChange={(e) => setProposalRiskNotes(e.target.value)}
+                  disabled={isBusy}
+                />
+              </>
+            )}
             {proposalFormError && (
               <p className="m-0 border border-[#f4a58b] rounded-lg bg-[#fff0ea] text-destructive text-xs py-2 px-2.5">
                 {proposalFormError}
@@ -499,7 +584,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
         )}
 
         {proposals.length === 0 ? (
-          <p className="m-0 text-xs text-muted-foreground">No change drafts yet.</p>
+          <p className="m-0 text-xs text-muted-foreground">No suggestions yet.</p>
         ) : (
           <ul className="list-none m-0 p-0 grid gap-2">
             {proposals.map((proposal) => {

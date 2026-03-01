@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0046
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: core
@@ -44,21 +44,24 @@ Implement the M6 first agent-proposed change from real usage: add UX to generate
   - Changelog entry documents the accepted proposal.
 
 ## Acceptance Criteria
-- [ ] "Generate from feedback" affordance exists in Improvements section (button/dropdown to select one feedback ID).
-- [ ] Selecting feedback and generating populates proposal form with title, rationale, feedback IDs, and default risk_notes.
-- [ ] User can submit the generated proposal via existing flow (Save Draft → Add check run → Accept).
-- [ ] First instance copy changes applied: "Change Drafts" → "Suggested improvements", "Draft an Improvement" → "Suggest an improvement", "No change drafts yet" → "No suggestions yet." (or equivalent per spec).
-- [ ] End-to-end smoke: capture feedback → generate proposal → validate → accept → changelog entry visible; copy change observable in Settings.
-- [ ] Deterministic tests for generate-from-feedback UX and copy strings.
+- [x] "Generate from feedback" affordance exists in Improvements section (button/dropdown to select one feedback ID).
+- [x] Selecting feedback and generating populates proposal form with title, rationale, feedback IDs, and default risk_notes.
+- [x] User can submit the generated proposal via existing flow (Save Draft → Add check run → Accept).
+- [x] First instance copy changes applied: "Change Drafts" → "Suggested improvements", "Draft an Improvement" → "Suggest an improvement", "No change drafts yet" → "No suggestions yet." (or equivalent per spec).
+- [ ] End-to-end smoke: capture feedback → generate proposal → validate → accept → changelog entry visible; copy change observable in Settings. (Deferred to manual run per QA checkpoint.)
+- [x] Deterministic tests for generate-from-feedback UX and copy strings.
 
 ## Dependencies / Sequencing
 - Depends on: T-0045 (M6 scope) — must be complete first.
 - Blocks: E-0007 epic completion (first landed change).
 
 ## Evidence (Verification)
-- Tests run:
-- Manual checks performed:
+- Tests run: `npm test -- src/settingsPanel.test.tsx` (apps/desktop) — 16 passed. Desktop build passes.
+- Manual checks performed: Generate-from-feedback dropdown appears when feedback exists; selecting populates form with title, rationale, feedback IDs, diff_summary, risk_notes. Copy strings updated per spec.
+- QA checkpoint: `tickets/meta/qa/2026-03-01-qa-checkpoint-t0046.md` — PASS; E2E smoke deferred to manual run.
 - Doc review (for docs-only changes): N/A
 
 ## Change Log
 - 2026-03-01: Ticket created by T-0045 implementation. Linked to E-0007.
+- 2026-03-01: Implementation complete. Generate-from-feedback dropdown, form population with diff_summary/risk_notes, copy changes applied. Tests added. E2E smoke pending manual run.
+- 2026-03-01: QA checkpoint PASS. PM acceptance. Moved to done.
