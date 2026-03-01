@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0029
-- Status: review
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: core
@@ -85,3 +85,4 @@ Token estimation via word-count × 1.3 is a rough proxy. The `tiktoken` library 
 ## Change Log
 - 2026-03-01: Ticket created by PM.
 - 2026-03-01: Implemented history in ChatRequest, OpenAIAdapter truncation, frontend history payload. Unit tests added. Moved to review.
+- 2026-03-01: PM acceptance. QA checkpoint passed (no bugs). Unit tests cover history formatting and truncation; manual multi-turn probe deferred to post-acceptance. M3 complete.

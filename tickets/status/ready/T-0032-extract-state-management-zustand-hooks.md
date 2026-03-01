@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0032
-- Status: backlog
+- Status: ready
 - Priority: P1
 - Type: refactor
 - Area: core

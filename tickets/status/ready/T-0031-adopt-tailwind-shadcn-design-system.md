@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0031
-- Status: backlog
+- Status: ready
 - Priority: P1
 - Type: refactor
 - Area: ui

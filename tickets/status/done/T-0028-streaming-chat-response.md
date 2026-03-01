@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0028
-- Status: review
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: core
@@ -103,3 +103,4 @@ FastAPI streaming with `openai`'s async streaming API is well-documented. Use `o
 ## Change Log
 - 2026-03-01: Ticket created by PM.
 - 2026-03-01: Implemented SSE streaming in adapter and FastAPI, frontend stream consumer, blinking cursor, auto-scroll. Unit test + smoke. Moved to review.
+- 2026-03-01: PM acceptance. QA checkpoint passed (no bugs). All AC met. M3 complete.

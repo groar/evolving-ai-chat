@@ -82,8 +82,8 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - UX/UI design refresh: copy, typography, hover states, tab bar, modern composer (T-0026).
   - FastAPI runtime skeleton with stub responses + smoke verification (T-0004, T-0010).
   - In-app API key configuration in Settings → Connections (T-0030); key stored via Tauri plugin-store; composer disabled when no key.
+  - Real AI chat: OpenAI adapter (T-0027), streaming (T-0028), multi-turn context (T-0029). Full end-to-end chat when API key is set.
 - Known gaps:
-  - **Real AI responses** — T-0027, T-0030 shipped; chat calls OpenAI when key is set (env or in-app Settings → Connections). Remaining M3: streaming (T-0028), multi-turn context (T-0029).
   - **UI is system-centric** — meta-surfaces (Settings, proposals, flags) dominate over chat (M4 addresses this).
   - **Tech stack mismatch** — STATUS.md declares Tailwind + shadcn/ui + Zustand; code uses plain CSS + useState (M4 addresses this).
   - **No Markdown rendering** — assistant responses are plain text; no code highlighting or copy (M5 addresses this).
@@ -96,24 +96,10 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- Most recent milestone: M2 — “Desktop UX clarity and hierarchy” (completed 2026-03-01)
+- Most recent milestone: M3 — “Real AI Chat / First Live Message” (completed 2026-03-01)
   - Completed scope:
-    - Nav hierarchy + progressive disclosure (T-0019).
-    - Runtime offline UX — single actionable state (T-0020).
-    - Empty state + copy cleanup (T-0021).
-    - Micro-validation probes passed (T-0022).
-    - Runtime offline banner bug fix (T-0023).
-    - Settings controls clarity (T-0024).
-    - Offline safety copy + settings layout (T-0025).
-    - UX/UI design refresh — copy, typography, visual polish (T-0026).
-- Next milestone: M3 — “Real AI Chat / First Live Message” (E-0004) **[TOP PRIORITY]**
-  - Goal: replace the stub response with a real OpenAI API call; full end-to-end chat.
-  - Scope:
-    - T-0027 OpenAI adapter + real chat endpoint (P1, first pickup).
-    - T-0030 API key configuration in Settings (P2).
-    - T-0029 Conversation context / multi-turn history (P2).
-    - T-0028 Streaming chat response (P2).
-- Following milestone: M4 — “UI Simplification & Chat-First Redesign” (E-0005)
+    - T-0027 (OpenAI adapter), T-0030 (API key config), T-0028 (streaming), T-0029 (multi-turn context).
+- Next milestone: M4 — “UI Simplification & Chat-First Redesign” (E-0005) **[TOP PRIORITY]**
   - Goal: strip back to a chat-first experience; adopt Tailwind + shadcn/ui; decompose the frontend monolith.
   - Rationale: product & design review (F-20260301-002) found the UI is designed from the system’s perspective (meta-surfaces dominate) rather than the user’s perspective (chat should be 95% of the experience).
   - Scope:
