@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0035
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -79,3 +79,4 @@ This ticket should be quick — it's a copy pass, not a structural change. But i
 
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
+- 2026-03-01: Promoted to ready. T-0033 complete; dependency satisfied. PM replenished queue after T-0034 acceptance.

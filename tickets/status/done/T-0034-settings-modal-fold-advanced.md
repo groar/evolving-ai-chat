@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0034
-- Status: review
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -87,3 +87,4 @@ Consider using shadcn/ui Sheet (slide-out from right) rather than Dialog for Set
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
 - 2026-03-01: Promoted to ready. T-0031 and T-0033 complete; dependencies satisfied. Ship alongside T-0033 (layout) — T-0033 done.
 - 2026-03-01: Implementation complete. Added Cmd+, shortcut; replaced Advanced with Danger Zone (collapsed); reorganized sections (Updates & Safety, Early Access, Improvements); tests updated.
+- 2026-03-01: PM acceptance. QA checkpoint passed (2026-03-01-qa-checkpoint-t0034); all AC verified; no bugs. Shippable.
