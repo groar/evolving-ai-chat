@@ -15,7 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| — | _(empty)_ | | T-0042, T-0043 shipped 2026-03-01. M6 not yet scoped. |
+| 1 | T-0044 | P2 | Beta → Stable channel switch regression (S2). |
+| 2 | T-0045 | P1 | M6 scope: define improvement class, trigger, first instance. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -24,4 +25,4 @@ This file is the source of truth for ready-ticket pickup order.
 ## Next Up (Backlog)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| — | _(empty)_ | | | M6 not yet scoped. T-0042/T-0043 unblock tier-3 validation. |
+| — | _(empty)_ | | | E-0007 (M6) scoped. Ready replenished. |

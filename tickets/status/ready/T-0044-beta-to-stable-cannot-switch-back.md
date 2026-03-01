@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0044
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: bug
 - Area: ui
@@ -37,3 +37,4 @@ After switching to Beta (early access) in Settings, the user cannot switch back 
 
 ## Change Log
 - 2026-03-01: Ticket created from F-20260301-005 (user report: cannot click back on Stable after selecting Beta).
+- 2026-03-01: Moved to ready (rank 1). PM run 24.
