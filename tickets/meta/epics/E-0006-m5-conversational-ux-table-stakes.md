@@ -38,7 +38,8 @@ Product & design review (F-20260301-002) identified that after M3 (real chat) an
 
 ## Progress (Ticket Status)
 - Done: T-0036 (Markdown rendering), T-0037 (code blocks), T-0038 (conversation renaming), T-0039 (model selector), T-0040 (token/cost display). All M5 tickets shipped.
-- Ready: _(none)_
+- Follow-up (from tier-3 validation blockers): T-0042 (model selector default), T-0043 (new conversation button at top).
+- Ready: T-0042 (rank 1), T-0043 (rank 2)
 - Backlog: _(none)_
 
 ## Validation Plan

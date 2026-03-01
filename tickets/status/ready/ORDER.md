@@ -15,7 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| — | _(empty)_ | | M5 (E-0006) complete. No tickets in backlog. |
+| 1 | T-0042 | P1 | Model selector default to first model with API key (blocks tier-3 validation) |
+| 2 | T-0043 | P2 | New conversation button at top of sidebar |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -24,4 +25,4 @@ This file is the source of truth for ready-ticket pickup order.
 ## Next Up (Backlog)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| — | _(empty)_ | | | M6 (First Agent-Proposed Change) not yet scoped. PM to create epic + scope tickets before replenishment. |
+| — | _(empty)_ | | | M6 not yet scoped. T-0042/T-0043 unblock tier-3 validation. |
