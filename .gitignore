@@ -46,3 +46,9 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+
+# Rust/Tauri build artifacts
+apps/desktop/src-tauri/target/
+
+# Local runtime database
+apps/desktop/runtime/data/
