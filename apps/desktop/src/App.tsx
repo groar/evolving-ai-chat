@@ -1,14 +1,22 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { PanelLeftIcon, SettingsIcon } from "lucide-react";
 import { FeedbackPanel } from "./feedbackPanel";
 import { SettingsPanel } from "./settingsPanel";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle
+} from "./components/ui/sheet";
 import { useConversationStore } from "./stores/conversationStore";
 import { useRuntimeStore } from "./stores/runtimeStore";
-import { defaultSettings, useSettingsStore } from "./stores/settingsStore";
+import { useSettingsStore } from "./stores/settingsStore";
 import { useFeedback } from "./hooks/useFeedback";
 import { useRuntime, offlineStateRetryIntervalMs, shouldAutoRetryOfflineState } from "./hooks/useRuntime";
 import { useConversations } from "./hooks/useConversations";
 import type { RuntimeIssue } from "./stores/runtimeStore";
 
+const appName = "Evolving AI Chat";
 const diagnosticsFlagKey = "show_runtime_diagnostics";
 
 export { offlineStateRetryIntervalMs, shouldAutoRetryOfflineState };
@@ -16,8 +24,6 @@ export { offlineStateRetryIntervalMs, shouldAutoRetryOfflineState };
 export function isApiKeyNotSet(runtimeIssue: RuntimeIssue | null): boolean {
   return runtimeIssue?.kind === "api_key_not_set";
 }
-
-type LeftRailSurface = "conversations" | "settings" | "feedback" | "advanced";
 
 export function App() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -49,7 +55,14 @@ export function App() {
   const isFeedbackBusy = isSending || isResetting;
   const feedback = useFeedback(isFeedbackBusy);
 
-  const [activeLeftRailSurface, setActiveLeftRailSurface] = useState<LeftRailSurface>("conversations");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const activeConversation = useMemo(
+    () => conversations.find((c) => c.conversation_id === activeConversationId),
+    [conversations, activeConversationId]
+  );
+  const topBarTitle = activeConversation?.title ?? appName;
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -60,6 +73,17 @@ export function App() {
       transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [streamingText]);
+
+  useEffect(() => {
+    function handleKeyDown(e: globalThis.KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "b") {
+        e.preventDefault();
+        setSidebarOpen((o) => !o);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const hasMessages = messages.length > 0;
   const isRuntimeOffline = runtimeIssue?.kind === "offline";
@@ -75,6 +99,10 @@ export function App() {
   const canToggleFlags = settings.channel === "experimental" && !isSending && !isResetting;
   const configuredDiagnosticsFlag = Boolean(settings.experimental_flags[diagnosticsFlagKey]);
 
+  function openSettings() {
+    setSettingsOpen(true);
+  }
+
   function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
@@ -83,111 +111,82 @@ export function App() {
   }
 
   return (
-    <main className="app-shell grid grid-cols-[minmax(300px,360px)_1fr] gap-4 h-screen p-4">
-      <aside className="border border-border rounded-2xl bg-panel shadow-sm p-3.5 flex flex-col gap-3 min-h-0 overflow-hidden">
-        <header>
-          <h1 className="m-0 text-[1.35rem]">Evolving AI Chat</h1>
-        </header>
-        <nav className="flex gap-0.5 border-b border-border pb-0" aria-label="Left rail surfaces">
-          <button
-            type="button"
-            className={`flex-1 border-b-2 border-transparent rounded-none bg-transparent text-muted-foreground py-2 px-1 -mb-px text-sm text-center cursor-pointer transition-colors ${
-              activeLeftRailSurface === "conversations" ? "text-primary border-b-primary font-semibold" : "hover:text-foreground"
-            }`}
-            onClick={() => setActiveLeftRailSurface("conversations")}
-          >
-            Conversations
-          </button>
-          <button
-            type="button"
-            className={`flex-1 border-b-2 border-transparent rounded-none bg-transparent text-muted-foreground py-2 px-1 -mb-px text-sm text-center cursor-pointer transition-colors ${
-              activeLeftRailSurface === "settings" ? "text-primary border-b-primary font-semibold" : "hover:text-foreground"
-            }`}
-            onClick={() => setActiveLeftRailSurface("settings")}
-          >
-            Settings
-          </button>
-          <button
-            type="button"
-            className={`flex-1 border-b-2 border-transparent rounded-none bg-transparent text-muted-foreground py-2 px-1 -mb-px text-sm text-center cursor-pointer transition-colors ${
-              activeLeftRailSurface === "feedback" ? "text-primary border-b-primary font-semibold" : "hover:text-foreground"
-            }`}
-            onClick={() => setActiveLeftRailSurface("feedback")}
-          >
-            Feedback
-          </button>
-          <button
-            type="button"
-            className={`flex-1 border-b-2 border-transparent rounded-none bg-transparent text-muted-foreground py-2 px-1 -mb-px text-sm text-center cursor-pointer transition-colors ${
-              activeLeftRailSurface === "advanced" ? "text-primary border-b-primary font-semibold" : "hover:text-foreground"
-            }`}
-            onClick={() => setActiveLeftRailSurface("advanced")}
-          >
-            Advanced
-          </button>
-        </nav>
-        <section className="min-h-0 overflow-auto grid" aria-live="polite">
-          {activeLeftRailSurface === "conversations" && (
-            <>
-              <ul className="m-0 p-0 list-none grid gap-2">
-                {conversations.map((conversation) => (
-                  <li key={conversation.conversation_id}>
-                    <button
-                      type="button"
-                      className={`w-full text-left border rounded-xl py-2.5 px-3 cursor-pointer font-inherit transition-all ${
-                        conversation.conversation_id === activeConversationId
-                          ? "border-primary bg-[#fff2e6] text-foreground shadow-[inset_0_0_0_1px_#efbe91]"
-                          : "border-border bg-white text-muted-foreground hover:border-[#efbe91] hover:text-foreground"
-                      }`}
-                      onClick={() => void activateConversation(conversation.conversation_id)}
-                    >
-                      {conversation.title}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              <div className="grid gap-2">
-                <button
-                  type="button"
-                  className="border border-border bg-white text-foreground rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:border-[#efbe91] hover:bg-[#fff8f2] disabled:opacity-55 disabled:cursor-not-allowed"
-                  onClick={() => void createConversation()}
-                  disabled={isSending || isResetting}
-                >
-                  + New Conversation
-                </button>
-              </div>
-            </>
-          )}
-          {activeLeftRailSurface === "settings" && (
-            <div className="grid gap-2.5 min-h-0">
-              <SettingsPanel
-                settings={settings}
-                changelog={changelog}
-                proposals={proposals}
-                feedbackIds={feedback.items.map((item) => item.id)}
-                isBusy={isSending || isResetting || isProposalBusy}
-                canToggleFlags={canToggleFlags}
-                configuredDiagnosticsFlag={configuredDiagnosticsFlag}
-                notice={settingsNotice}
-                error={settingsError}
-                confirmAction={(prompt) => window.confirm(prompt)}
-                onRefresh={() => void runtime.refreshState(activeConversationId)}
-                onSelectChannel={(channel) => void runtime.updateChannel(channel)}
-                onToggleDiagnostics={(enabled) => void runtime.updateExperimentalFlag(enabled)}
-                onResetExperiments={() => void runtime.resetExperiments()}
-                onCreateProposal={(input) => void runtime.createProposal(input)}
-                onAddValidationRun={(proposalId, input) => void runtime.addProposalValidationRun(proposalId, input)}
-                onUpdateProposalDecision={(proposalId, status, notes) => void runtime.updateProposalDecision(proposalId, status, notes)}
-                apiKeySet={apiKeySet}
-                onSaveApiKey={(key) => void runtime.saveApiKey(key)}
-                onRemoveApiKey={() => void runtime.removeApiKey()}
-                apiKeyError={apiKeyError}
-                isSavingApiKey={isSavingApiKey}
-              />
-            </div>
-          )}
-          {activeLeftRailSurface === "feedback" && (
-            <div className="grid gap-2.5 min-h-0">
+    <main className="app-shell grid grid-cols-1 gap-0 h-screen min-h-screen">
+      {/* Conversation sidebar (collapsible) */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="w-[min(360px,85vw)] p-0 flex flex-col" showCloseButton={true}>
+          <SheetHeader className="px-4 pt-4 pb-2 border-b border-border">
+            <SheetTitle>Conversations</SheetTitle>
+          </SheetHeader>
+          <section className="min-h-0 overflow-auto p-4 grid gap-2" aria-live="polite">
+            <ul className="m-0 p-0 list-none grid gap-2">
+              {conversations.map((conversation) => (
+                <li key={conversation.conversation_id}>
+                  <button
+                    type="button"
+                    className={`w-full text-left border rounded-xl py-2.5 px-3 cursor-pointer font-inherit transition-all ${
+                      conversation.conversation_id === activeConversationId
+                        ? "border-primary bg-[#fff2e6] text-foreground shadow-[inset_0_0_0_1px_#efbe91]"
+                        : "border-border bg-white text-muted-foreground hover:border-[#efbe91] hover:text-foreground"
+                    }`}
+                    onClick={() => {
+                      void activateConversation(conversation.conversation_id);
+                      setSidebarOpen(false);
+                    }}
+                  >
+                    {conversation.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className="border border-border bg-white text-foreground rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:border-[#efbe91] hover:bg-[#fff8f2] disabled:opacity-55 disabled:cursor-not-allowed"
+              onClick={() => {
+                void createConversation();
+                setSidebarOpen(false);
+              }}
+              disabled={isSending || isResetting}
+            >
+              + New Conversation
+            </button>
+          </section>
+        </SheetContent>
+      </Sheet>
+
+      {/* Settings sheet (Settings, Feedback, Advanced) */}
+      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <SheetContent side="right" className="w-[min(400px,90vw)] overflow-y-auto">
+          <SheetHeader className="pb-2">
+            <SheetTitle>Settings</SheetTitle>
+          </SheetHeader>
+          <div className="grid gap-4 pb-8">
+            <SettingsPanel
+              settings={settings}
+              changelog={changelog}
+              proposals={proposals}
+              feedbackIds={feedback.items.map((item) => item.id)}
+              isBusy={isSending || isResetting || isProposalBusy}
+              canToggleFlags={canToggleFlags}
+              configuredDiagnosticsFlag={configuredDiagnosticsFlag}
+              notice={settingsNotice}
+              error={settingsError}
+              confirmAction={(prompt) => window.confirm(prompt)}
+              onRefresh={() => void runtime.refreshState(activeConversationId)}
+              onSelectChannel={(channel) => void runtime.updateChannel(channel)}
+              onToggleDiagnostics={(enabled) => void runtime.updateExperimentalFlag(enabled)}
+              onResetExperiments={() => void runtime.resetExperiments()}
+              onCreateProposal={(input) => void runtime.createProposal(input)}
+              onAddValidationRun={(proposalId, input) => void runtime.addProposalValidationRun(proposalId, input)}
+              onUpdateProposalDecision={(proposalId, status, notes) => void runtime.updateProposalDecision(proposalId, status, notes)}
+              apiKeySet={apiKeySet}
+              onSaveApiKey={(key) => void runtime.saveApiKey(key)}
+              onRemoveApiKey={() => void runtime.removeApiKey()}
+              apiKeyError={apiKeyError}
+              isSavingApiKey={isSavingApiKey}
+            />
+            <section className="border-t border-border pt-4">
+              <h3 className="text-sm font-semibold mb-2">Feedback</h3>
               <FeedbackPanel
                 isOpen={feedback.isOpen}
                 isBusy={isFeedbackBusy}
@@ -202,12 +201,11 @@ export function App() {
                 onToggleTag={feedback.toggleTag}
                 onSubmitFeedback={feedback.submitFeedback}
               />
-            </div>
-          )}
-          {activeLeftRailSurface === "advanced" && (
-            <div className="grid gap-2.5 min-h-0">
+            </section>
+            <section className="border-t border-border pt-4">
+              <h3 className="text-sm font-semibold mb-2">Advanced</h3>
               <div className="grid gap-2.5">
-                <p className="m-0 text-sm text-foreground">Release channel: {channelLabel}. Change it in Settings.</p>
+                <p className="m-0 text-sm text-foreground">Release: {channelLabel}. Change it in Settings above.</p>
                 <button
                   type="button"
                   className="border border-[#cc7748] bg-[#fff1e8] text-destructive rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:bg-[#ffe4d8] hover:border-[#b85a2a] disabled:opacity-55 disabled:cursor-not-allowed"
@@ -217,18 +215,33 @@ export function App() {
                   {isResetting ? "Resetting..." : "Delete Local Data"}
                 </button>
               </div>
-            </div>
-          )}
-        </section>
-      </aside>
-
-      <section className="border border-border rounded-2xl bg-panel shadow-sm grid grid-rows-[auto_1fr_auto] min-h-0">
-        <header className="flex justify-between items-center border-b border-border py-3.5 px-4">
-          <div>
-            <p className="m-0 text-base font-bold">Local Desktop Chat</p>
-            <p className="mt-0.5 text-muted-foreground text-[0.88rem]">Local AI chat · {channelLabel} channel</p>
+            </section>
           </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Chat pane (primary, fills the window) */}
+      <section className="border border-border rounded-2xl bg-panel shadow-sm grid grid-rows-[auto_1fr_auto] min-h-0 mx-4 my-4">
+        <header className="flex items-center gap-2 border-b border-border py-3.5 px-4">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2"
+            aria-label="Toggle conversation list (Cmd+B)"
+          >
+            <PanelLeftIcon className="size-5" />
+          </button>
+          <h1 className="m-0 flex-1 text-base font-bold truncate">{topBarTitle}</h1>
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
+            className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2"
+            aria-label="Open Settings"
+          >
+            <SettingsIcon className="size-5" />
+          </button>
         </header>
+
         {runtimeIssue && runtimeIssue.kind === "api_key_not_set" && (
           <section role="status" className="rounded-lg m-3 mt-0 mx-4 py-2.5 px-3 text-[0.9rem] flex items-center justify-between gap-3">
             <div className="grid gap-0.5">
@@ -238,7 +251,7 @@ export function App() {
             <button
               type="button"
               className="border border-[#cb5627] rounded-lg bg-[#fff7f3] text-destructive font-semibold py-1.5 px-3 cursor-pointer transition-colors hover:bg-[#ffe8de] disabled:opacity-55 disabled:cursor-not-allowed"
-              onClick={() => setActiveLeftRailSurface("settings")}
+              onClick={openSettings}
             >
               Open Settings
             </button>
@@ -254,11 +267,11 @@ export function App() {
             }`}
           >
             <div className="grid gap-0.5">
-              <p className="m-0 font-semibold">The local runtime is not running.</p>
+              <p className="m-0 font-semibold">The assistant service is not running.</p>
               <p className="m-0">
                 {runtimeIssue.kind === "offline"
                   ? "Start it, then press Retry."
-                  : `Runtime responded with an error: ${runtimeIssue.detail}`}
+                  : `The service returned an error: ${runtimeIssue.detail}`}
               </p>
             </div>
             <button
@@ -274,8 +287,8 @@ export function App() {
 
         <div className="overflow-auto p-4 grid gap-3 content-start" aria-live="polite">
           {diagnosticsEnabled && (
-            <section className="border border-[#9ebf97] bg-[#effbe8] rounded-xl py-2.5 px-3 grid gap-0.5" aria-label="Runtime diagnostics">
-              <p className="m-0 text-sm">Runtime diagnostics enabled</p>
+            <section className="border border-[#9ebf97] bg-[#effbe8] rounded-xl py-2.5 px-3 grid gap-0.5" aria-label="Diagnostics">
+              <p className="m-0 text-sm">Diagnostics enabled</p>
               <p className="m-0 text-sm">Conversations: {conversations.length}</p>
               <p className="m-0 text-sm">Messages in view: {messages.length}</p>
             </section>
@@ -292,14 +305,14 @@ export function App() {
                 {!apiKeyConfigured
                   ? "Add your OpenAI API key in Settings to start chatting."
                   : isRuntimeOffline
-                    ? "Start the runtime, then send your first message."
+                    ? "Start the assistant service, then send your first message."
                     : "Type your first message below."}
               </p>
               {!apiKeyConfigured && (
                 <button
                   type="button"
                   className="border border-border bg-white text-foreground rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:border-[#efbe91] hover:bg-[#fff8f2] disabled:opacity-55 disabled:cursor-not-allowed"
-                  onClick={() => setActiveLeftRailSurface("settings")}
+                  onClick={openSettings}
                 >
                   Open Settings
                 </button>
@@ -349,7 +362,7 @@ export function App() {
                 !apiKeyConfigured
                   ? "Add your API key in Settings to chat."
                   : isRuntimeOffline
-                    ? "Start the runtime to chat."
+                    ? "Start the assistant service to chat."
                     : "Type a message..."
               }
               rows={1}
