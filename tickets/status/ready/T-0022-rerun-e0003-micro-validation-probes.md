@@ -2,14 +2,14 @@
 
 ## Metadata
 - ID: T-0022
-- Status: blocked
+- Status: ready
 - Priority: P2
 - Type: chore
 - Area: ui
 - Epic: E-0003
 - Owner: pm-agent
 - Created: 2026-02-28
-- Updated: 2026-02-28
+- Updated: 2026-03-01
 
 ## Summary
 After T-0019..T-0021, rerun the E-0003 tier-2 micro-validation probes with at least one fresh observer and record the results so the UX clarity/hierarchy milestone is actually closed with user-perception evidence.
@@ -17,12 +17,9 @@ After T-0019..T-0021, rerun the E-0003 tier-2 micro-validation probes with at le
 ## Context
 The external designer review (F-20260228-002) identified trust and hierarchy issues (debug-console feel, unclear next action, duplicated runtime-offline messaging, and implementation-leaking copy). The underlying UI fixes shipped in T-0019..T-0021; this ticket captures the follow-up human validation that the updated UI now reads as a chat product first.
 
-## Blocker
-This micro-validation run is currently blocked because runtime reachability and Settings comprehension are known-bad signals:
-- T-0023: runtime-offline detection may be false even when the runtime is running.
-- T-0024: Settings terminology/hierarchy around channel/early-access/improvements is still failing fresh-observer probes.
+## Blocker (Resolved 2026-03-01)
+Resolved: T-0023 done (banner fixed); T-0025 implemented offline safety + Settings fixes. Probes can run against current build.
 
-Rationale: rerunning probes before the above are fixed risks wasting the “fresh observer” sample and producing non-actionable results.
 
 ## References
 - `tickets/meta/epics/E-0003-m2-desktop-ux-clarity-and-hierarchy.md` (Validation Plan)
@@ -78,3 +75,4 @@ Rationale: rerunning probes before the above are fixed risks wasting the “fres
 
 ## Change Log
 - 2026-02-28: Ticket created; moved to `blocked/` pending runtime/banner and Settings clarity fixes.
+- 2026-03-01: Blocker resolved (T-0023 done, T-0025 implemented fixes); moved to `ready/`.

@@ -54,9 +54,8 @@ Make the desktop app read and behave like a chat product first (clear primary fl
   - T-0023 Runtime-offline banner persists when runtime is running
 - Review:
   - T-0024 Settings controls not understandable to a fresh observer (stable/experiments/proposals)
-- Ready:
   - T-0025 Clarify offline safety and simplify Settings copy/layout
-- Blocked:
+- Ready:
   - T-0022 Rerun E-0003 micro-validation probes and record results
 
 ## Notes

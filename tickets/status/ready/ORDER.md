@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| (empty) | — | — | T-0025 moved to review. PM to refresh queue. |
+| 1 | T-0022 | P2 | E-0003 probes; requires user to run fresh-observer validation |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
