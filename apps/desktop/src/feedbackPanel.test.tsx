@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FeedbackPanel } from "./feedbackPanel";
 import { appendFeedbackItem, createFeedbackItem, readFeedbackItems, type FeedbackTag } from "./feedbackStore";
@@ -87,5 +88,23 @@ describe("FeedbackPanel", () => {
     expect(savedItems[0]?.status).toBe("new");
     expect(savedItems[0]?.text).toBe("The capture action should be easier to spot.");
     expect(savedItems[0]?.tags).toEqual(["confusing"]);
+  });
+
+  it("shows 'Feedback about this response' when contextPointer includes message id (conv:msg format)", () => {
+    const markup = renderToStaticMarkup(renderPanel({ contextPointer: "conv-abc:msg-123" }));
+    expect(markup).toContain("Feedback about this response");
+    expect(markup).toContain("response in conversation conv-abc");
+  });
+
+  it("shows 'Feedback about the app or a specific response' and per-message tip when contextPointer is null", () => {
+    const markup = renderToStaticMarkup(renderPanel({ contextPointer: null }));
+    expect(markup).toContain("Feedback about the app or a specific response");
+    expect(markup).toContain("link on any assistant message to give feedback about that response");
+  });
+
+  it("shows 'Feedback about this conversation' when contextPointer is conversation-only", () => {
+    const markup = renderToStaticMarkup(renderPanel({ contextPointer: "conv-1" }));
+    expect(markup).toContain("Feedback about this conversation");
+    expect(markup).toContain("conversation conv-1");
   });
 });

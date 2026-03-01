@@ -28,6 +28,7 @@ export function isApiKeyNotSet(runtimeIssue: RuntimeIssue | null): boolean {
 export function App() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
+  const feedbackSectionRef = useRef<HTMLElement>(null);
 
   const runtime = useRuntime();
   const { conversations, activeConversationId, messages, createConversation, activateConversation } = useConversations();
@@ -73,6 +74,12 @@ export function App() {
       transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [streamingText]);
+
+  useEffect(() => {
+    if (settingsOpen && feedback.isOpen && feedback.contextPointer?.includes(":")) {
+      feedbackSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [settingsOpen, feedback.isOpen, feedback.contextPointer]);
 
   useEffect(() => {
     function handleKeyDown(e: globalThis.KeyboardEvent) {
@@ -188,18 +195,21 @@ export function App() {
               apiKeyError={apiKeyError}
               isSavingApiKey={isSavingApiKey}
             />
-            <section className="border-t border-border pt-4">
+            <section ref={feedbackSectionRef} className="border-t border-border pt-4">
               <h3 className="text-sm font-semibold mb-2">Feedback</h3>
               <FeedbackPanel
                 isOpen={feedback.isOpen}
                 isBusy={isFeedbackBusy}
                 draftText={feedback.draftText}
                 selectedTags={feedback.tags}
-                contextPointer={activeConversationId || null}
+                contextPointer={feedback.contextPointer}
                 items={feedback.items}
                 notice={feedback.notice}
                 error={feedback.error}
-                onToggleOpen={() => feedback.setIsOpen((o) => !o)}
+                onToggleOpen={() => {
+                  if (feedback.isOpen) feedback.clearPendingContext();
+                  feedback.setIsOpen((o) => !o);
+                }}
                 onChangeDraftText={feedback.setDraftText}
                 onToggleTag={feedback.toggleTag}
                 onSubmitFeedback={feedback.submitFeedback}
@@ -337,9 +347,23 @@ export function App() {
                   : "border-[#c8d3c1] bg-[#f8fff5]"
               }`}
             >
-              <p className="m-0 mb-1 text-xs font-semibold tracking-wide uppercase text-muted-foreground">
-                {message.role === "user" ? "You" : "Assistant"}
-              </p>
+              <div className="flex justify-between items-start gap-2">
+                <p className="m-0 mb-1 text-xs font-semibold tracking-wide uppercase text-muted-foreground">
+                  {message.role === "user" ? "You" : "Assistant"}
+                </p>
+                {message.role === "assistant" && (
+                  <button
+                    type="button"
+                    className="shrink-0 text-xs text-muted-foreground hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-1 rounded"
+                    onClick={() => {
+                      setSettingsOpen(true);
+                      feedback.openFeedbackForMessage(activeConversationId, message.id);
+                    }}
+                  >
+                    Feedback
+                  </button>
+                )}
+              </div>
               <p className="m-0 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{message.text}</p>
               {message.meta && <p className="mt-1.5 text-muted-foreground text-xs m-0">{message.meta}</p>}
             </article>

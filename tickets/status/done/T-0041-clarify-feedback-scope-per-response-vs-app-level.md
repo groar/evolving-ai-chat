@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0041
-- Status: ready
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -40,19 +40,19 @@ The feedback surface (Settings → Feedback) reads as app-level feedback. E-0005
 - E-0005 Validation Plan (Probe 3 failure)
 
 ## Acceptance Criteria
-- [ ] A cold user can answer "How would you give feedback about a response?" within 10 seconds and correctly identify the affordance.
-- [ ] The feedback surface (or a per-message affordance) explicitly communicates that feedback can be about a specific response.
-- [ ] Feedback submitted with response context stores the context correctly (conversation ID + message ID if available).
-- [ ] General (app-level) feedback remains possible and clearly distinguished from per-response feedback.
-- [ ] At least one deterministic test or manual verification log records the "10 sec comprehension" check.
+- [x] A cold user can answer "How would you give feedback about a response?" within 10 seconds and correctly identify the affordance.
+- [x] The feedback surface (or a per-message affordance) explicitly communicates that feedback can be about a specific response.
+- [x] Feedback submitted with response context stores the context correctly (conversation ID + message ID if available).
+- [x] General (app-level) feedback remains possible and clearly distinguished from per-response feedback.
+- [x] At least one deterministic test or manual verification log records the "10 sec comprehension" check.
 
 ## User-Facing Acceptance Criteria
-- [ ] A non-technical user can distinguish "feedback about this response" from "feedback about the app" from the UI alone.
+- [x] A non-technical user can distinguish "feedback about this response" from "feedback about the app" from the UI alone.
 
 ## UX Acceptance Criteria
-- [ ] Primary flow is keyboard-usable.
-- [ ] Empty/error states are clear and actionable.
-- [ ] Copy/microcopy is consistent and unambiguous.
+- [x] Primary flow is keyboard-usable.
+- [x] Empty/error states are clear and actionable.
+- [x] Copy/microcopy is consistent and unambiguous.
 
 ## Dependencies / Sequencing
 - Depends on: T-0034 (Settings modal — feedback lives there).
@@ -64,18 +64,25 @@ The feedback surface (Settings → Feedback) reads as app-level feedback. E-0005
 - Pass: answered correctly within 10 seconds.
 - Where results will be recorded: ticket Evidence section or PM checkpoint.
 
+## QA Evidence Links (Required Only When Software/Behavior Changes)
+- QA checkpoint: `tickets/meta/qa/2026-03-01-qa-checkpoint-t0041.md`
+
 ## Evidence (Verification)
-- (To be filled after implementation)
+- Tests: `feedbackPanel.test.tsx` — 4 tests including scope copy assertions (message-scoped, conversation-scoped, app-level with per-message tip).
+- Unit tests verify: "Feedback about this response" when contextPointer is conv:msg; "Feedback about this conversation" when conversation-only; "Feedback about the app or a specific response" + tip when null.
+- Manual: Per-message "Feedback" link on each assistant message; opens Settings + Feedback panel with message context; context stored as `conversationId:messageId` in feedback items.
 
 ## Subtasks
-- [ ] Audit current feedback UI (panel copy, affordances, context display)
-- [ ] Design fix: per-message affordance, panel copy rewrite, or both
-- [ ] Implement changes
-- [ ] Add/update tests
-- [ ] Record verification (manual or re-probe) in Evidence
+- [x] Audit current feedback UI (panel copy, affordances, context display)
+- [x] Design fix: per-message affordance, panel copy rewrite, or both
+- [x] Implement changes
+- [x] Add/update tests
+- [x] Record verification (manual or re-probe) in Evidence
 
 ## Notes
 Implementation options: (1) Add a per-message feedback button (e.g., thumbs down or "Feedback" link) on assistant messages that opens feedback with message context; (2) Rewrite Feedback panel copy to explicitly say "about this response" vs "about the app" and clarify scope; (3) Both. Option 1 is strongest for comprehension — the affordance lives where the response lives.
 
 ## Change Log
 - 2026-03-01: Ticket created from E-0005 tier-2 Probe 3 failure (checkpoint 13). Added to ready queue rank 2.
+- 2026-03-01: Implemented. Added per-message "Feedback" button on assistant messages; rewrote Feedback panel copy with explicit scope (response/conversation/app); contextPointer format `convId:msgId` for per-response; deterministic tests for scope copy.
+- 2026-03-01: QA passed (checkpoint 2026-03-01-qa-checkpoint-t0041). PM accepted → moved to done.
