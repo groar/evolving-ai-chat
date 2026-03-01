@@ -159,6 +159,71 @@ class ProposalStorageFlowTests(unittest.TestCase):
             self.assertEqual(linked_entries[0]["summary"], "Accepted proposal recorded in local changelog.")
 
 
+class PersonaProposalFlowTests(unittest.TestCase):
+    """Tests for system-prompt-persona-v1 improvement class: apply and rollback."""
+
+    def test_persona_proposal_acceptance_applies_addition_and_changelog(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = Path(temp_dir) / "runtime.db"
+            storage = RuntimeStorage(db_path=str(db_path))
+            created = storage.create_proposal(
+                title="Add conciseness instruction",
+                rationale="User reported responses are too long.",
+                source_feedback_ids=["fb-1"],
+                diff_summary='Append "Keep responses concise and direct." to the active system prompt.',
+                improvement_class="system-prompt-persona-v1",
+            )
+            proposal_id = created["proposal_id"]
+            storage.add_proposal_validation_run(
+                proposal_id,
+                status="passing",
+                summary="Persona change validated.",
+                validation_run_id="run-1",
+            )
+            accepted = storage.update_proposal_decision(proposal_id, status="accepted", notes="Apply.")
+            self.assertEqual(accepted["decision"]["status"], "accepted")
+
+            state = storage.get_state()
+            persona_additions = state.get("persona_additions", [])
+            self.assertEqual(len(persona_additions), 1)
+            self.assertEqual(persona_additions[0]["text"], "Keep responses concise and direct.")
+            self.assertIn("added_at", persona_additions[0])
+
+            changelog = [e for e in state["changelog"] if e.get("proposal_id") == proposal_id]
+            self.assertEqual(len(changelog), 1)
+            self.assertIn("system-prompt-persona-v1", changelog[0]["title"])
+
+    def test_remove_persona_addition_reverts_and_logs_rollback(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = Path(temp_dir) / "runtime.db"
+            storage = RuntimeStorage(db_path=str(db_path))
+            created = storage.create_proposal(
+                title="Add tone instruction",
+                rationale="User wanted casual tone.",
+                diff_summary='Append "Use a casual tone." to the active system prompt.',
+                improvement_class="system-prompt-persona-v1",
+            )
+            proposal_id = created["proposal_id"]
+            storage.add_proposal_validation_run(
+                proposal_id, status="passing", summary="OK", validation_run_id="run-1"
+            )
+            storage.update_proposal_decision(proposal_id, status="accepted")
+
+            state_before = storage.get_state()
+            self.assertEqual(len(state_before["persona_additions"]), 1)
+
+            remaining = storage.remove_persona_addition(0)
+            self.assertEqual(len(remaining), 0)
+
+            state_after = storage.get_state()
+            self.assertEqual(len(state_after["persona_additions"]), 0)
+            rollback_entries = [
+                e for e in state_after["changelog"]
+                if "Persona change removed" in e.get("title", "")
+            ]
+            self.assertGreaterEqual(len(rollback_entries), 1)
+
+
 class RuntimeCorsTests(unittest.TestCase):
     def test_runtime_has_cors_middleware_for_desktop_origins(self) -> None:
         cors_entries = [middleware for middleware in app.user_middleware if middleware.cls is CORSMiddleware]

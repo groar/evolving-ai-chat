@@ -38,6 +38,7 @@ function renderPanel(overrides: Partial<ComponentProps<typeof SettingsPanel>> = 
       settings={makeSettings()}
       changelog={[]}
       proposals={[]}
+      personaAdditions={[]}
       feedbackItems={[]}
       isBusy={false}
       canToggleFlags={true}
@@ -52,6 +53,7 @@ function renderPanel(overrides: Partial<ComponentProps<typeof SettingsPanel>> = 
       onCreateProposal={() => undefined}
       onAddValidationRun={() => undefined}
       onUpdateProposalDecision={() => undefined}
+      onRemovePersonaAddition={async () => undefined}
       apiKeys={{ openai: false, anthropic: false }}
       onSaveApiKey={async () => undefined}
       onRemoveApiKey={async () => undefined}

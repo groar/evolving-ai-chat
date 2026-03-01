@@ -7,16 +7,20 @@ export const defaultSettings: RuntimeSettings = {
   active_flags: {}
 };
 
+type PersonaAddition = { text: string; added_at: string };
+
 type SettingsStore = {
   settings: RuntimeSettings;
   changelog: ChangelogEntry[];
   proposals: ChangeProposal[];
+  personaAdditions: PersonaAddition[];
   settingsNotice: string | null;
   settingsError: string | null;
   isProposalBusy: boolean;
   setSettings: (settings: RuntimeSettings) => void;
   setChangelog: (changelog: ChangelogEntry[]) => void;
   setProposals: (proposals: ChangeProposal[]) => void;
+  setPersonaAdditions: (additions: PersonaAddition[]) => void;
   setSettingsNotice: (value: string | null) => void;
   setSettingsError: (value: string | null) => void;
   setIsProposalBusy: (value: boolean) => void;
@@ -26,12 +30,14 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   settings: defaultSettings,
   changelog: [],
   proposals: [],
+  personaAdditions: [],
   settingsNotice: null,
   settingsError: null,
   isProposalBusy: false,
   setSettings: (settings) => set({ settings }),
   setChangelog: (changelog) => set({ changelog }),
   setProposals: (proposals) => set({ proposals }),
+  setPersonaAdditions: (personaAdditions) => set({ personaAdditions }),
   setSettingsNotice: (value) => set({ settingsNotice: value }),
   setSettingsError: (value) => set({ settingsError: value }),
   setIsProposalBusy: (value) => set({ isProposalBusy: value })

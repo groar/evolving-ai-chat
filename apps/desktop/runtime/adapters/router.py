@@ -64,23 +64,25 @@ class ChatRouter:
         message: str,
         model_id: str | None = None,
         history: list[dict[str, str]] | None = None,
+        system_prompt: str | None = None,
     ) -> tuple[str, str, float, int, int]:
         """Route to the appropriate adapter. Returns (reply, model_id, cost_usd, prompt_tokens, completion_tokens)."""
         model = model_id or DEFAULT_MODEL_ID
         adapter = self.get_adapter_for_model(model)
-        return adapter.chat(message=message, model_id=model, history=history)
+        return adapter.chat(message=message, model_id=model, history=history, system_prompt=system_prompt)
 
     async def chat_stream(
         self,
         message: str,
         model_id: str | None = None,
         history: list[dict[str, str]] | None = None,
+        system_prompt: str | None = None,
     ) -> AsyncIterator[dict]:
         """Route streaming to the appropriate adapter."""
         model = model_id or DEFAULT_MODEL_ID
         adapter = self.get_adapter_for_model(model)
         async for event in adapter.chat_stream(
-            message=message, model_id=model, history=history
+            message=message, model_id=model, history=history, system_prompt=system_prompt
         ):
             yield event
 

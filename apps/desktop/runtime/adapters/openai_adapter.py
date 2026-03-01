@@ -100,17 +100,23 @@ class OpenAIAdapter:
         message: str,
         model_id: str | None = None,
         history: list[dict[str, str]] | None = None,
+        system_prompt: str | None = None,
     ) -> tuple[str, str, float, int, int]:
         """
         Send a message with optional conversation history.
         Returns (reply, model_id, cost_usd, prompt_tokens, completion_tokens).
         model_id defaults to gpt-4o-mini.
         history: list of {"role": "user"|"assistant", "content": "..."}; oldest first.
+        system_prompt: optional system message for persona/tone (T-0055).
         """
         model = model_id or "gpt-4o-mini"
         raw_history = [{"role": m["role"], "content": m["content"]} for m in (history or [])]
         truncated = _truncate_history(raw_history, message, model)
-        messages = truncated + [{"role": "user", "content": message}]
+        messages: list[dict[str, str]] = []
+        if system_prompt and str(system_prompt).strip():
+            messages.append({"role": "system", "content": str(system_prompt).strip()})
+        messages.extend(truncated)
+        messages.append({"role": "user", "content": message})
         resp = self._openai.chat.completions.create(
             model=model,
             messages=messages,
@@ -128,6 +134,7 @@ class OpenAIAdapter:
         message: str,
         model_id: str | None = None,
         history: list[dict[str, str]] | None = None,
+        system_prompt: str | None = None,
     ) -> AsyncIterator[dict]:
         """
         Stream chat tokens. Yields {"delta": "..."} for each content chunk,
@@ -141,7 +148,11 @@ class OpenAIAdapter:
         model = model_id or "gpt-4o-mini"
         raw_history = [{"role": m["role"], "content": m["content"]} for m in (history or [])]
         truncated = _truncate_history(raw_history, message, model)
-        messages = truncated + [{"role": "user", "content": message}]
+        messages: list[dict[str, str]] = []
+        if system_prompt and str(system_prompt).strip():
+            messages.append({"role": "system", "content": str(system_prompt).strip()})
+        messages.extend(truncated)
+        messages.append({"role": "user", "content": message})
         try:
             client = AsyncOpenAI(api_key=api_key)
             stream = await client.chat.completions.create(

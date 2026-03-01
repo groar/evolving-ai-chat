@@ -54,6 +54,7 @@ export function App() {
   const settings = useSettingsStore((s) => s.settings);
   const changelog = useSettingsStore((s) => s.changelog);
   const proposals = useSettingsStore((s) => s.proposals);
+  const personaAdditions = useSettingsStore((s) => s.personaAdditions);
   const settingsNotice = useSettingsStore((s) => s.settingsNotice);
   const settingsError = useSettingsStore((s) => s.settingsError);
   const isProposalBusy = useSettingsStore((s) => s.isProposalBusy);
@@ -270,7 +271,8 @@ export function App() {
               settings={settings}
               changelog={changelog}
               proposals={proposals}
-              feedbackItems={feedback.items.map((item) => ({ id: item.id, text: item.text }))}
+              personaAdditions={personaAdditions}
+              feedbackItems={feedback.items.map((item) => ({ id: item.id, text: item.text, tags: item.tags }))}
               isBusy={isSending || isResetting || isProposalBusy}
               canToggleFlags={canToggleFlags}
               configuredDiagnosticsFlag={configuredDiagnosticsFlag}
@@ -283,7 +285,10 @@ export function App() {
               onResetExperiments={() => void runtime.resetExperiments()}
               onCreateProposal={(input) => void runtime.createProposal(input)}
               onAddValidationRun={(proposalId, input) => void runtime.addProposalValidationRun(proposalId, input)}
-              onUpdateProposalDecision={(proposalId, status, notes) => void runtime.updateProposalDecision(proposalId, status, notes)}
+              onUpdateProposalDecision={(proposalId, status, notes, proposal) =>
+                void runtime.updateProposalDecision(proposalId, status, notes, proposal)
+              }
+              onRemovePersonaAddition={(index) => void runtime.removePersonaAddition(index)}
               apiKeys={apiKeys}
               onSaveApiKey={(provider, key) => void runtime.saveApiKey(provider, key)}
               onRemoveApiKey={(provider) => void runtime.removeApiKey(provider)}

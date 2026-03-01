@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0055
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: core
@@ -60,16 +60,24 @@ When feedback matches this class, the proposal title and description must follow
 - System prompt overflow: if a single addition exceeds 200 characters, proposal quality guard flags as too long.
 
 ## Acceptance Criteria
-- [ ] `system-prompt-persona-v1` class registered in the improvement class registry per T-0052 schema.
-- [ ] Feedback with tone/style tag routes to this class and generates a concrete proposal (title, description, rationale all non-empty and non-echo).
-- [ ] Accepting the proposal updates the active system prompt in local storage.
-- [ ] The next AI message in the chat uses the updated system prompt (verified by checking the message that goes to the provider API).
-- [ ] Changelog entry recorded for the accepted change (same format as existing changelog entries).
-- [ ] Settings → AI Persona (or current settings equivalent) shows the active persona additions with a "Remove" rollback action.
-- [ ] Removing a persona addition reverts the system prompt and logs a rollback changelog entry.
-- [ ] Cap enforcement: after 3 additions, system prompts to replace oldest before adding new one.
-- [ ] At least 3 unit tests: trigger routing (tone feedback → `system-prompt-persona-v1`), proposal quality (echo rejected), apply + rollback cycle.
-- [ ] QA checkpoint filed in `tickets/meta/qa/` after verification.
+- [x] `system-prompt-persona-v1` class registered in the improvement class registry per T-0052 schema.
+- [x] Feedback with tone/style tag routes to this class and generates a concrete proposal (title, description, rationale all non-empty and non-echo).
+- [x] Accepting the proposal updates the active system prompt in local storage.
+- [x] The next AI message in the chat uses the updated system prompt (verified by checking the message that goes to the provider API).
+- [x] Changelog entry recorded for the accepted change (same format as existing changelog entries).
+- [x] Settings → AI Persona (or current settings equivalent) shows the active persona additions with a "Remove" rollback action.
+- [x] Removing a persona addition reverts the system prompt and logs a rollback changelog entry.
+- [x] Cap enforcement: after 3 additions, system prompts to replace oldest before adding new one.
+- [x] At least 3 unit tests: trigger routing (tone feedback → `system-prompt-persona-v1`), proposal quality (echo rejected), apply + rollback cycle.
+- [x] QA checkpoint filed in `tickets/meta/qa/` after verification.
+
+## Evidence (Verification)
+- **Improvement class registry**: `apps/desktop/src/improvementClasses.ts` — IMPROVEMENT_CLASSES includes system-prompt-persona-v1; routeFeedbackToClass routes by tags and text heuristics.
+- **Proposal generation**: `apps/desktop/src/proposalGenerator.ts` — generatePersonaProposal produces concrete title, rationale, diff_summary with Append "sentence" format.
+- **Storage**: `apps/desktop/runtime/storage.py` — persona_additions in settings; _apply_persona_addition_locked on accept; remove_persona_addition; improvement_class column.
+- **Chat integration**: ChatRequest.system_prompt; OpenAI/Anthropic adapters prepend system message; useRuntime sends persona_additions as system_prompt.
+- **UI**: Settings → AI Persona section with list + Remove; proposal label "AI Persona & Tone"; persona toast on accept.
+- **Unit tests**: improvementClasses.test.ts (routing), proposalGenerator.test.ts (persona proposal), test_proposals.py (PersonaProposalFlowTests).
 
 ## UI Spec Addendum
 - New UI surface: Settings → AI Persona section (or inline in existing Settings → Connections / General).
@@ -85,3 +93,5 @@ When feedback matches this class, the proposal title and description must follow
 
 ## Change Log
 - 2026-03-01: Created by PM checkpoint (M7 scoping). Moved to ready.
+- 2026-03-01: Implementation complete. improvementClasses.ts, proposalGenerator (persona), storage (persona_additions, apply on accept), chat (system_prompt), Settings → AI Persona UI, unit tests. Moved to review.
+- 2026-03-01: QA checkpoint 2026-03-01-qa-checkpoint-t0055 PASS. PM accepted. Moved to done.

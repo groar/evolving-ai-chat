@@ -1,12 +1,13 @@
 /**
- * Heuristic proposal generator for settings-trust-microcopy-v1.
- * Produces concrete title and rationale from feedback per docs/m7-improvement-classes.md.
+ * Heuristic proposal generator for improvement classes per docs/m7-improvement-classes.md.
+ * Supports settings-trust-microcopy-v1 and system-prompt-persona-v1.
  */
 
+import type { ImprovementClassId } from "./improvementClasses";
 import { isConcreteProposal } from "./proposalQualityGuard";
 
 export type GenerateResult =
-  | { ok: true; title: string; rationale: string }
+  | { ok: true; title: string; rationale: string; diffSummary?: string; riskNotes?: string }
   | { ok: false; message: string };
 
 const COPY_ONLY_RISK_NOTES = "Copy-only change; must not imply autonomous shipping or data deletion.";
@@ -88,20 +89,137 @@ function tryStrategy(
 const DEFAULT_DIFF_SUMMARY =
   "Rename 'Change Drafts' → 'Suggested improvements'; 'Draft an Improvement' → 'Suggest an improvement'; 'No change drafts yet' → 'No suggestions yet.'";
 
-/**
- * Generate a concrete proposal from feedback for settings-trust-microcopy-v1.
- * Returns ok:false if no compliant proposal can be produced after retries.
- */
-export function generateProposalFromFeedback(
-  feedback: { id: string; text: string },
-  maxRetries = 2
-): GenerateResult & { diffSummary?: string; riskNotes?: string } {
+/** Persona sentence templates keyed by feedback patterns. */
+const PERSONA_MAPPINGS: Array<{
+  pattern: RegExp;
+  sentence: string;
+  title: string;
+  rationale: string;
+}> = [
+  {
+    pattern: /too\s+long|too\s+wordy|too\s+verbose|wordy|verbose|padding|repetitive/i,
+    sentence: "Keep responses concise and direct — avoid padding or repetition.",
+    title: "Add conciseness instruction to AI persona",
+    rationale: "User reported AI responses feel too long and verbose."
+  },
+  {
+    pattern: /too\s+formal|sounds\s+formal|formal\s+tone/i,
+    sentence: "Use a more casual, conversational tone.",
+    title: "Add casual tone instruction to AI persona",
+    rationale: "User reported responses sound too formal."
+  },
+  {
+    pattern: /too\s+casual|sounds\s+casual|more\s+professional/i,
+    sentence: "Maintain a professional yet approachable tone.",
+    title: "Add professional tone instruction to AI persona",
+    rationale: "User requested a more professional style."
+  },
+  {
+    pattern: /too\s+short|needs\s+more\s+detail|more\s+elaborate/i,
+    sentence: "Provide thorough explanations when the topic warrants detail.",
+    title: "Add detail instruction to AI persona",
+    rationale: "User reported responses are too brief."
+  },
+  {
+    pattern: /robotic|stiff|mechanical/i,
+    sentence: "Respond in a natural, human-like manner.",
+    title: "Add natural style instruction to AI persona",
+    rationale: "User reported responses feel robotic or stiff."
+  }
+];
+
+function tryPersonaStrategy(feedbackText: string): { title: string; rationale: string; sentence: string } | null {
+  const trimmed = feedbackText.trim();
+  if (!trimmed) return null;
+
+  for (const m of PERSONA_MAPPINGS) {
+    if (m.pattern.test(trimmed)) {
+      return { title: m.title, rationale: m.rationale, sentence: m.sentence };
+    }
+  }
+
+  const lower = trimmed.toLowerCase();
+  if (/\b(tone|style|verbosity|persona|length|formality)\b/.test(lower)) {
+    return {
+      title: "Adjust AI persona based on feedback",
+      rationale: "User feedback indicated a desired change to response tone or style.",
+      sentence: "Adapt response style to better match user preferences."
+    };
+  }
+
+  return null;
+}
+
+function generatePersonaProposal(feedback: { id: string; text: string }): GenerateResult & {
+  diffSummary?: string;
+  riskNotes?: string;
+  improvementClass?: ImprovementClassId;
+} {
   const feedbackText = feedback.text.trim();
   if (!feedbackText) {
     return {
       ok: false,
       message: "We couldn't generate a specific improvement for this feedback. Try describing the issue in more detail."
     };
+  }
+
+  const result = tryPersonaStrategy(feedbackText);
+  if (!result) {
+    return {
+      ok: false,
+      message: "We couldn't match this feedback to an AI persona change. Try mentioning tone, style, or verbosity."
+    };
+  }
+
+  const diffSummary = `Append "${result.sentence}" to the active system prompt.`;
+
+  const passes = isConcreteProposal({
+    title: result.title,
+    rationale: result.rationale,
+    diffSummary,
+    feedbackText
+  });
+
+  if (!passes) {
+    return {
+      ok: false,
+      message: "We couldn't generate a specific improvement for this feedback. Try describing the issue in more detail."
+    };
+  }
+
+  return {
+    ok: true,
+    title: result.title,
+    rationale: result.rationale,
+    diffSummary,
+    riskNotes: "Persona-only change; no model parameters or tool permissions affected.",
+    improvementClass: "system-prompt-persona-v1"
+  };
+}
+
+/**
+ * Generate a concrete proposal from feedback for settings-trust-microcopy-v1.
+ * Returns ok:false if no compliant proposal can be produced after retries.
+ */
+export function generateProposalFromFeedback(
+  feedback: { id: string; text: string },
+  maxRetries = 2,
+  improvementClass?: ImprovementClassId | null
+): GenerateResult & {
+  diffSummary?: string;
+  riskNotes?: string;
+  improvementClass?: ImprovementClassId;
+} {
+  const feedbackText = feedback.text.trim();
+  if (!feedbackText) {
+    return {
+      ok: false,
+      message: "We couldn't generate a specific improvement for this feedback. Try describing the issue in more detail."
+    };
+  }
+
+  if (improvementClass === "system-prompt-persona-v1") {
+    return generatePersonaProposal(feedback);
   }
 
   const diffSummaries = [
@@ -128,7 +246,8 @@ export function generateProposalFromFeedback(
         title: result.title,
         rationale: result.rationale,
         diffSummary,
-        riskNotes: COPY_ONLY_RISK_NOTES
+        riskNotes: COPY_ONLY_RISK_NOTES,
+        improvementClass: "settings-trust-microcopy-v1"
       };
     }
   }

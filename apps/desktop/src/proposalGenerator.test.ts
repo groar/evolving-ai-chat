@@ -47,4 +47,31 @@ describe("proposalGenerator", () => {
       expect(result.rationale).not.toBe("x y z random gibberish feedback that does not match any pattern");
     }
   });
+
+  it("produces persona proposal for tone feedback (system-prompt-persona-v1)", () => {
+    const result = generateProposalFromFeedback(
+      { id: "fb-5", text: "AI responses are too long and verbose" },
+      2,
+      "system-prompt-persona-v1"
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.improvementClass).toBe("system-prompt-persona-v1");
+      expect(result.title).toContain("conciseness");
+      expect(result.diffSummary).toMatch(/Append/);
+      expect(result.diffSummary).toContain("Keep responses concise");
+    }
+  });
+
+  it("persona proposal diff_summary contains exact sentence to append", () => {
+    const result = generateProposalFromFeedback(
+      { id: "fb-6", text: "Too wordy" },
+      2,
+      "system-prompt-persona-v1"
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.diffSummary).toMatch(/Append\s+".+?"\s+to/);
+    }
+  });
 });

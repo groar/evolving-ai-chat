@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { railBtn, railBtnDanger, settingsInput, settingsTextarea } from "@/lib/ui-classes";
+import { getClassById } from "./improvementClasses";
+import { routeFeedbackToClass } from "./improvementClasses";
 import { generateProposalFromFeedback } from "./proposalGenerator";
 import { isConcreteProposal } from "./proposalQualityGuard";
 import {
@@ -53,6 +55,7 @@ type ChangeProposal = {
   risk_notes: string;
   validation_runs: ValidationRunSummary[];
   decision: ProposalDecision;
+  improvement_class?: string | null;
 };
 
 type CreateProposalInput = {
@@ -61,6 +64,7 @@ type CreateProposalInput = {
   source_feedback_ids: string[];
   diff_summary?: string;
   risk_notes?: string;
+  improvement_class?: string;
 };
 
 type AddValidationRunInput = {
@@ -69,12 +73,18 @@ type AddValidationRunInput = {
   artifact_refs: string[];
 };
 
+type PersonaAddition = {
+  text: string;
+  added_at: string;
+};
+
 type SettingsPanelProps = {
   settings: RuntimeSettings;
   changelog: ChangelogEntry[];
   proposals: ChangeProposal[];
+  personaAdditions: PersonaAddition[];
   /** Feedback items for Generate-from-feedback and proposal form datalist */
-  feedbackItems: Array<{ id: string; text: string }>;
+  feedbackItems: Array<{ id: string; text: string; tags?: string[] }>;
   isBusy: boolean;
   canToggleFlags: boolean;
   configuredDiagnosticsFlag: boolean;
@@ -87,7 +97,8 @@ type SettingsPanelProps = {
   onResetExperiments: () => void;
   onCreateProposal: (input: CreateProposalInput) => void;
   onAddValidationRun: (proposalId: string, input: AddValidationRunInput) => void;
-  onUpdateProposalDecision: (proposalId: string, status: "accepted" | "rejected", notes: string) => void;
+  onUpdateProposalDecision: (proposalId: string, status: "accepted" | "rejected", notes: string, proposal?: ChangeProposal) => void;
+  onRemovePersonaAddition: (index: number) => Promise<void>;
   /** API key configuration (Connections subsection) */
   apiKeys: { openai: boolean; anthropic: boolean };
   onSaveApiKey: (provider: ProviderId, key: string) => Promise<void>;
@@ -164,6 +175,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     settings,
     changelog,
     proposals,
+    personaAdditions,
     feedbackItems,
     isBusy,
     canToggleFlags,
@@ -178,6 +190,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onCreateProposal,
     onAddValidationRun,
     onUpdateProposalDecision,
+    onRemovePersonaAddition,
     apiKeys,
     onSaveApiKey,
     onRemoveApiKey,
@@ -192,6 +205,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
   const [proposalFeedbackIdsCsv, setProposalFeedbackIdsCsv] = useState("");
   const [proposalDiffSummary, setProposalDiffSummary] = useState("");
   const [proposalRiskNotes, setProposalRiskNotes] = useState("");
+  const [proposalImprovementClass, setProposalImprovementClass] = useState<string>("settings-trust-microcopy-v1");
   const [proposalFormError, setProposalFormError] = useState<string | null>(null);
   const [proposalEditors, setProposalEditors] = useState<Record<string, ProposalEditorState>>({});
   const [isCreateDraftOpen, setIsCreateDraftOpen] = useState(false);
@@ -285,13 +299,15 @@ export function SettingsPanel(props: SettingsPanelProps) {
       rationale,
       source_feedback_ids: sourceFeedbackIds,
       diff_summary: diffSummary || undefined,
-      risk_notes: proposalRiskNotes.trim() || undefined
+      risk_notes: proposalRiskNotes.trim() || undefined,
+      improvement_class: proposalImprovementClass || "settings-trust-microcopy-v1"
     });
     setProposalTitle("");
     setProposalRationale("");
     setProposalFeedbackIdsCsv("");
     setProposalDiffSummary("");
     setProposalRiskNotes("");
+    setProposalImprovementClass("settings-trust-microcopy-v1");
     setProposalFormError(null);
     setIsCreateDraftOpen(false);
   }
@@ -299,8 +315,16 @@ export function SettingsPanel(props: SettingsPanelProps) {
   const GENERATION_FAILED_MESSAGE =
     "We couldn't generate a specific improvement for this feedback. Try describing the issue in more detail.";
 
-  function generateFromFeedback(feedback: { id: string; text: string }) {
-    const result = generateProposalFromFeedback(feedback, 2);
+  function generateFromFeedback(feedback: { id: string; text: string; tags?: string[] }) {
+    const improvementClass = routeFeedbackToClass({ text: feedback.text, tags: feedback.tags });
+    if (!improvementClass) {
+      setProposalFormError(
+        "No applicable improvement class for this feedback type. Try tone/style for AI persona, or settings/copy for labels."
+      );
+      setIsCreateDraftOpen(true);
+      return;
+    }
+    const result = generateProposalFromFeedback(feedback, 2, improvementClass);
     if (!result.ok) {
       setProposalFormError(result.message);
       setIsCreateDraftOpen(true);
@@ -311,6 +335,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     setProposalFeedbackIdsCsv(feedback.id);
     setProposalDiffSummary(result.diffSummary ?? "");
     setProposalRiskNotes(result.riskNotes ?? "Copy-only change; must not imply autonomous shipping or data deletion.");
+    setProposalImprovementClass(result.improvementClass ?? improvementClass);
     setProposalFormError(null);
     setIsCreateDraftOpen(true);
   }
@@ -341,7 +366,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
       return;
     }
 
-    onUpdateProposalDecision(proposal.proposal_id, status, notes);
+    onUpdateProposalDecision(proposal.proposal_id, status, notes, proposal);
   }
 
   return (
@@ -402,6 +427,35 @@ export function SettingsPanel(props: SettingsPanelProps) {
           )}
         </div>
       ))}
+
+      <div className="flex justify-between items-center gap-2">
+        <p className="m-0 text-sm font-semibold text-foreground">AI Persona</p>
+      </div>
+      <p className="m-0 text-sm text-foreground">Customize response tone and style. Changes apply to the next message.</p>
+      {personaAdditions.length === 0 ? (
+        <p className="m-0 text-xs text-muted-foreground">
+          No persona customizations yet. Use the Improve button on any AI response to start.
+        </p>
+      ) : (
+        <ul className="m-0 p-0 list-none grid gap-2">
+          {personaAdditions.map((addition, index) => (
+            <li
+              key={`${addition.added_at}-${index}`}
+              className="border border-border rounded-lg bg-white p-2.5 flex justify-between items-start gap-2"
+            >
+              <span className="text-sm text-foreground flex-1">{addition.text}</span>
+              <button
+                type="button"
+                className={railBtnDanger}
+                onClick={() => void onRemovePersonaAddition(index)}
+                disabled={isBusy}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div className="flex justify-between items-center gap-2">
         <p className="m-0 text-sm font-semibold text-foreground">Works offline</p>
@@ -624,11 +678,18 @@ export function SettingsPanel(props: SettingsPanelProps) {
               const isRejectDisabled = editor.decisionNotes.trim().length < 10;
               return (
                 <li key={proposal.proposal_id} className="border border-border rounded-lg bg-white p-2.5 grid gap-2.5">
-                  <div className="flex justify-between items-center gap-2">
+                  <div className="flex justify-between items-center gap-2 flex-wrap">
                     <p className="m-0 text-sm font-bold">{proposal.title}</p>
-                    <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground uppercase">
-                      {proposalStateLabel(proposal)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {proposal.improvement_class && (
+                        <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground">
+                          {getClassById(proposal.improvement_class as "system-prompt-persona-v1" | "settings-trust-microcopy-v1")?.label ?? proposal.improvement_class}
+                        </span>
+                      )}
+                      <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground uppercase">
+                        {proposalStateLabel(proposal)}
+                      </span>
+                    </div>
                   </div>
                   <p className="m-0 text-xs text-muted-foreground">
                     {formatTimestamp(proposal.created_at)} · {proposal.proposal_id}

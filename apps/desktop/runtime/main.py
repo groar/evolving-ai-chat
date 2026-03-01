@@ -25,6 +25,7 @@ from .models import (
     ModelEntry,
     NewConversationRequest,
     NewConversationResponse,
+    PersonaAddition,
     UpdateConversationRequest,
     ReleaseChannelUpdateRequest,
     RuntimeSettingsResponse,
@@ -144,6 +145,7 @@ def create_change_proposal(payload: CreateProposalRequest) -> ChangeProposal:
         source_feedback_ids=payload.source_feedback_ids,
         diff_summary=payload.diff_summary,
         risk_notes=payload.risk_notes,
+        improvement_class=payload.improvement_class or "settings-trust-microcopy-v1",
     )
     return ChangeProposal(**proposal)
 
@@ -166,6 +168,20 @@ def add_proposal_validation_run(proposal_id: str, payload: AddValidationRunReque
         )
         status_code = 404 if "does not exist" in str(error) else 400
         raise HTTPException(status_code=status_code, detail=str(error)) from error
+
+
+@app.delete("/persona/additions/{index}", response_model=list)
+def remove_persona_addition(index: int) -> list:
+    """Remove a persona addition by index. Returns updated persona_additions list."""
+    try:
+        updated = storage.remove_persona_addition(index)
+        return [PersonaAddition(**a) for a in updated]
+    except ValueError as error:
+        storage.append_event(
+            "runtime_error",
+            {"detail": str(error), "endpoint": f"/persona/additions/{index}"},
+        )
+        raise HTTPException(status_code=400, detail=str(error)) from error
 
 
 @app.post("/proposals/{proposal_id}/decision", response_model=ChangeProposal)
@@ -208,6 +224,7 @@ def _chat_json(payload: ChatRequest) -> ChatResponse | JSONResponse:
             message=request_text,
             model_id=payload.model_id,
             history=history_dicts,
+            system_prompt=payload.system_prompt,
         )
         created_at = datetime.now(timezone.utc).isoformat()
         total_tokens = prompt_tokens + completion_tokens
@@ -299,6 +316,7 @@ async def _stream_chat_sse(payload: ChatRequest) -> AsyncIterator[str]:
         message=request_text,
         model_id=payload.model_id,
         history=history_dicts,
+        system_prompt=payload.system_prompt,
     ):
         if "error" in event:
             err_code = event["error"]

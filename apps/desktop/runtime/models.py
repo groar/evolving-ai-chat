@@ -14,6 +14,7 @@ class ChatRequest(BaseModel):
     message: str = Field(default="", max_length=4000)
     model_id: str | None = None  # Overrides default gpt-4o-mini when set
     history: list[HistoryMessage] | None = None  # Prior turns for multi-turn context
+    system_prompt: str | None = None  # Optional system message for persona/tone (T-0055)
 
 
 class ChatResponse(BaseModel):
@@ -54,6 +55,11 @@ class ApiKeysStatus(BaseModel):
     anthropic: bool = False
 
 
+class PersonaAddition(BaseModel):
+    text: str
+    added_at: str
+
+
 class RuntimeStateResponse(BaseModel):
     active_conversation_id: str
     conversations: list[ConversationSummary]
@@ -61,6 +67,7 @@ class RuntimeStateResponse(BaseModel):
     settings: "RuntimeSettings"
     changelog: list["ChangelogEntry"] = Field(default_factory=list)
     proposals: list["ChangeProposal"] = Field(default_factory=list)
+    persona_additions: list[PersonaAddition] = Field(default_factory=list)
     api_key_configured: bool = False
     api_keys: ApiKeysStatus = Field(default_factory=ApiKeysStatus)
     models: list[ModelEntry] = Field(default_factory=list)
@@ -107,6 +114,7 @@ class ChangeProposal(BaseModel):
     risk_notes: str = Field(default="", max_length=4000)
     validation_runs: list[ValidationRunSummary] = Field(default_factory=list)
     decision: ProposalDecision
+    improvement_class: str | None = None
 
 
 class NewConversationRequest(BaseModel):
@@ -149,6 +157,7 @@ class CreateProposalRequest(BaseModel):
     source_feedback_ids: list[str] = Field(default_factory=list)
     diff_summary: str = Field(default="", max_length=8000)
     risk_notes: str = Field(default="", max_length=4000)
+    improvement_class: str = Field(default="settings-trust-microcopy-v1", max_length=64)
 
 
 class AddValidationRunRequest(BaseModel):

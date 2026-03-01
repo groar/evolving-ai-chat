@@ -17,6 +17,8 @@ ALLOWED_RELEASE_CHANNELS = {"stable", "experimental"}
 EXPERIMENTAL_FLAG_KEYS = {"show_runtime_diagnostics"}
 CHANGELOG_MAX_ITEMS = 20
 CURRENT_TICKET_ID = "T-0008"
+PERSONA_ADDITIONS_MAX = 3
+PERSONA_ADDITIONS_KEY = "persona_additions_json"
 ALLOWED_DECISION_STATUS = {"pending", "accepted", "rejected"}
 ALLOWED_VALIDATION_STATUS = {"passing", "failing"}
 
@@ -133,6 +135,7 @@ class RuntimeStorage:
             if version_row is None:
                 connection.execute("INSERT INTO schema_version(version) VALUES (?)", (1,))
             self._ensure_changelog_schema(connection)
+            self._ensure_proposals_schema(connection)
 
             active_id = self._get_active_conversation_id(connection)
             if not active_id:
@@ -293,6 +296,84 @@ class RuntimeStorage:
         if "proposal_id" not in column_names:
             connection.execute("ALTER TABLE changelog_entries ADD COLUMN proposal_id TEXT")
 
+    def _ensure_proposals_schema(self, connection: sqlite3.Connection) -> None:
+        columns = connection.execute("PRAGMA table_info(change_proposals)").fetchall()
+        column_names = {str(column["name"]) for column in columns}
+        if "improvement_class" not in column_names:
+            connection.execute(
+                "ALTER TABLE change_proposals ADD COLUMN improvement_class TEXT DEFAULT 'settings-trust-microcopy-v1'"
+            )
+
+    def _read_persona_additions_locked(self, connection: sqlite3.Connection) -> list[dict[str, Any]]:
+        raw = self._get_setting(connection, PERSONA_ADDITIONS_KEY)
+        if raw is None:
+            return []
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError:
+            return []
+        if not isinstance(parsed, list):
+            return []
+        return [
+            {"text": str(item.get("text", "")), "added_at": str(item.get("added_at", ""))}
+            for item in parsed
+            if isinstance(item, dict) and item.get("text")
+        ][:PERSONA_ADDITIONS_MAX]
+
+    def _write_persona_additions_locked(
+        self, connection: sqlite3.Connection, additions: list[dict[str, Any]]
+    ) -> None:
+        self._set_setting(
+            connection,
+            PERSONA_ADDITIONS_KEY,
+            json.dumps(additions[:PERSONA_ADDITIONS_MAX], separators=(",", ":")),
+        )
+
+    def _extract_persona_sentence_from_diff_summary(self, diff_summary: str) -> str | None:
+        """Extract the sentence to add from diff_summary. Format: Append "sentence" to the active system prompt."""
+        if not diff_summary or not isinstance(diff_summary, str):
+            return None
+        s = diff_summary.strip()
+        m = re.search(r'[Aa]ppend\s+["\'](.+?)["\']\s+to', s, re.DOTALL)
+        if m:
+            return m.group(1).strip()
+        return None
+
+    def _apply_persona_addition_locked(
+        self,
+        connection: sqlite3.Connection,
+        diff_summary: str,
+        proposal_title: str,
+        proposal_id: str,
+        replace_index: int | None = None,
+    ) -> None:
+        sentence = self._extract_persona_sentence_from_diff_summary(diff_summary)
+        if not sentence or len(sentence) > 200:
+            raise ValueError("Could not extract a valid persona sentence from the proposal (max 200 chars).")
+
+        additions = self._read_persona_additions_locked(connection)
+
+        if replace_index is not None and 0 <= replace_index < len(additions):
+            additions[replace_index] = {"text": sentence, "added_at": utc_now_iso()}
+            self._write_persona_additions_locked(connection, additions)
+        elif len(additions) >= PERSONA_ADDITIONS_MAX:
+            raise ValueError(
+                f"Persona cap reached ({PERSONA_ADDITIONS_MAX} additions). Remove one from Settings → AI Persona first."
+            )
+        else:
+            additions.append({"text": sentence, "added_at": utc_now_iso()})
+            self._write_persona_additions_locked(connection, additions)
+
+        release_channel = self._read_release_settings_locked(connection)["channel"]
+        self._append_changelog_entry_locked(
+            connection,
+            title=f"system-prompt-persona-v1 | {proposal_title}",
+            summary=diff_summary,
+            channel=release_channel,
+            ticket_id="T-0055",
+            proposal_id=proposal_id,
+        )
+
     def _proposal_changelog_fields(self, row: sqlite3.Row) -> tuple[str, str]:
         title = str(row["title"]).strip()
         if not title:
@@ -396,7 +477,7 @@ class RuntimeStorage:
         except json.JSONDecodeError:
             parsed_validation_runs = []
 
-        return {
+        out: dict[str, Any] = {
             "proposal_id": str(row["proposal_id"]),
             "created_at": str(row["created_at"]),
             "title": str(row["title"]),
@@ -413,12 +494,16 @@ class RuntimeStorage:
                 row["decision_notes"],
             ),
         }
+        if "improvement_class" in row.keys() and row["improvement_class"] is not None:
+            out["improvement_class"] = str(row["improvement_class"])
+        return out
 
     def _list_proposals_locked(self, connection: sqlite3.Connection) -> list[dict[str, Any]]:
         rows = connection.execute(
             """
             SELECT proposal_id, created_at, title, rationale, source_feedback_ids_json, diff_summary, risk_notes,
-                   validation_runs_json, decision_status, decision_timestamp, decision_notes
+                   validation_runs_json, decision_status, decision_timestamp, decision_notes,
+                   improvement_class
             FROM change_proposals
             ORDER BY created_at DESC, proposal_id DESC
             """
@@ -437,18 +522,24 @@ class RuntimeStorage:
         source_feedback_ids: list[str] | None = None,
         diff_summary: str = "",
         risk_notes: str = "",
+        improvement_class: str = "settings-trust-microcopy-v1",
     ) -> dict[str, Any]:
         proposal_id = str(uuid.uuid4())
         created_at = utc_now_iso()
         normalized_feedback_ids = self._normalize_string_list(source_feedback_ids or [])
+        normalized_class = improvement_class.strip() or "settings-trust-microcopy-v1"
+        if normalized_class not in ("settings-trust-microcopy-v1", "system-prompt-persona-v1"):
+            normalized_class = "settings-trust-microcopy-v1"
+
         with self._lock, self._connect() as connection:
             connection.execute(
                 """
                 INSERT INTO change_proposals(
                   proposal_id, created_at, title, rationale, source_feedback_ids_json,
-                  diff_summary, risk_notes, validation_runs_json, decision_status, decision_timestamp, decision_notes
+                  diff_summary, risk_notes, validation_runs_json, decision_status, decision_timestamp, decision_notes,
+                  improvement_class
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NULL, NULL)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NULL, NULL, ?)
                 """,
                 (
                     proposal_id,
@@ -459,6 +550,7 @@ class RuntimeStorage:
                     diff_summary.strip(),
                     risk_notes.strip(),
                     "[]",
+                    normalized_class,
                 ),
             )
             self.append_event_locked(
@@ -469,7 +561,7 @@ class RuntimeStorage:
             row = connection.execute(
                 """
                 SELECT proposal_id, created_at, title, rationale, source_feedback_ids_json, diff_summary, risk_notes,
-                       validation_runs_json, decision_status, decision_timestamp, decision_notes
+                       validation_runs_json, decision_status, decision_timestamp, decision_notes, improvement_class
                 FROM change_proposals
                 WHERE proposal_id = ?
                 LIMIT 1
@@ -552,7 +644,8 @@ class RuntimeStorage:
         with self._lock, self._connect() as connection:
             row = connection.execute(
                 """
-                SELECT title, rationale, diff_summary, validation_runs_json, decision_status, decision_timestamp, decision_notes
+                SELECT title, rationale, diff_summary, validation_runs_json, decision_status, decision_timestamp, decision_notes,
+                       improvement_class
                 FROM change_proposals
                 WHERE proposal_id = ?
                 LIMIT 1
@@ -602,26 +695,35 @@ class RuntimeStorage:
                 payload={"proposal_id": proposal_id, "status": status},
             )
             if status == "accepted":
-                existing_entry = connection.execute(
-                    """
-                    SELECT changelog_id
-                    FROM changelog_entries
-                    WHERE proposal_id = ?
-                    LIMIT 1
-                    """,
-                    (proposal_id,),
-                ).fetchone()
-                if existing_entry is None:
-                    title, summary = self._proposal_changelog_fields(row)
-                    release_channel = self._read_release_settings_locked(connection)["channel"]
-                    self._append_changelog_entry_locked(
+                improvement_class = str(row.get("improvement_class", "")).strip() or "settings-trust-microcopy-v1"
+                if improvement_class == "system-prompt-persona-v1":
+                    self._apply_persona_addition_locked(
                         connection,
-                        title=title,
-                        summary=summary,
-                        channel=release_channel,
-                        ticket_id="T-0015",
+                        diff_summary=str(row["diff_summary"]),
+                        proposal_title=str(row["title"]),
                         proposal_id=proposal_id,
                     )
+                else:
+                    existing_entry = connection.execute(
+                        """
+                        SELECT changelog_id
+                        FROM changelog_entries
+                        WHERE proposal_id = ?
+                        LIMIT 1
+                        """,
+                        (proposal_id,),
+                    ).fetchone()
+                    if existing_entry is None:
+                        title, summary = self._proposal_changelog_fields(row)
+                        release_channel = self._read_release_settings_locked(connection)["channel"]
+                        self._append_changelog_entry_locked(
+                            connection,
+                            title=title,
+                            summary=summary,
+                            channel=release_channel,
+                            ticket_id="T-0015",
+                            proposal_id=proposal_id,
+                        )
             updated = connection.execute(
                 """
                 SELECT proposal_id, created_at, title, rationale, source_feedback_ids_json, diff_summary, risk_notes,
@@ -686,6 +788,8 @@ class RuntimeStorage:
 
             cost_total = _sum_cost_from_messages([dict(row) for row in messages])
 
+            persona_additions = self._read_persona_additions_locked(connection)
+
             return {
                 "active_conversation_id": active_id,
                 "conversations": [dict(row) for row in conversations],
@@ -693,8 +797,32 @@ class RuntimeStorage:
                 "settings": self._read_release_settings_locked(connection),
                 "changelog": self._list_changelog_locked(connection),
                 "proposals": self._list_proposals_locked(connection),
+                "persona_additions": persona_additions,
                 "conversation_cost_total": cost_total,
             }
+
+    def remove_persona_addition(self, index: int) -> list[dict[str, Any]]:
+        """Remove persona addition by index. Logs rollback changelog entry."""
+        with self._lock, self._connect() as connection:
+            additions = self._read_persona_additions_locked(connection)
+            if index < 0 or index >= len(additions):
+                raise ValueError("Invalid persona addition index.")
+            removed = additions.pop(index)
+            self._write_persona_additions_locked(connection, additions)
+            release_channel = self._read_release_settings_locked(connection)["channel"]
+            self._append_changelog_entry_locked(
+                connection,
+                title="system-prompt-persona-v1 | Persona change removed",
+                summary=f"Removed: {removed.get('text', '')}",
+                channel=release_channel,
+                ticket_id="T-0055",
+            )
+            self.append_event_locked(
+                connection,
+                event_type="persona_addition_removed",
+                payload={"index": index, "removed_text": removed.get("text", "")[:100]},
+            )
+            return self._read_persona_additions_locked(connection)
 
     def get_release_settings(self) -> dict[str, Any]:
         with self._lock, self._connect() as connection:

@@ -55,6 +55,8 @@ async function readErrorDetail(response: Response): Promise<string> {
   return `Runtime returned ${response.status}.`;
 }
 
+type PersonaAddition = { text: string; added_at: string };
+
 type RuntimeStatePayload = {
   active_conversation_id: string;
   conversations: Array<{
@@ -72,6 +74,7 @@ type RuntimeStatePayload = {
   settings: RuntimeSettings;
   changelog: ChangelogEntry[];
   proposals: ChangeProposal[];
+  persona_additions?: PersonaAddition[];
   api_key_configured?: boolean;
   api_keys?: { openai?: boolean; anthropic?: boolean };
   models?: Array<{ provider: string; model_id: string; display_name: string }>;
@@ -98,6 +101,7 @@ function applyState(
   settingsStore.setSettings(payload.settings ?? defaultSettings);
   settingsStore.setChangelog(payload.changelog ?? []);
   settingsStore.setProposals(payload.proposals ?? []);
+  settingsStore.setPersonaAdditions(payload.persona_additions ?? []);
   runtimeStore.setApiKeyConfigured(Boolean(payload.api_key_configured));
   if (payload.api_keys) {
     runtimeStore.setApiKeys({
@@ -351,7 +355,8 @@ export function useRuntime() {
             rationale: input.rationale,
             source_feedback_ids: input.source_feedback_ids,
             diff_summary: input.diff_summary ?? "",
-            risk_notes: input.risk_notes ?? ""
+            risk_notes: input.risk_notes ?? "",
+            improvement_class: input.improvement_class ?? "settings-trust-microcopy-v1"
           })
         });
         if (!response.ok) throw new Error(await readErrorDetail(response));
@@ -394,7 +399,12 @@ export function useRuntime() {
   );
 
   const updateProposalDecision = useCallback(
-    async (proposalId: string, status: "accepted" | "rejected", notes: string) => {
+    async (
+      proposalId: string,
+      status: "accepted" | "rejected",
+      notes: string,
+      proposal?: { improvement_class?: string | null }
+    ) => {
       const conv = useConversationStore.getState();
       const setts = useSettingsStore.getState();
       const rt = useRuntimeStore.getState();
@@ -407,10 +417,14 @@ export function useRuntime() {
           body: JSON.stringify({ status, notes })
         });
         if (!response.ok) throw new Error(await readErrorDetail(response));
+        const isPersona =
+          status === "accepted" && proposal?.improvement_class === "system-prompt-persona-v1";
         setts.setSettingsNotice(
-          status === "accepted"
-            ? "Proposal accepted. Changelog entry should now appear in Recent Changes."
-            : "Proposal rejected with rationale."
+          isPersona
+            ? "AI persona updated. Next message will use the new style."
+            : status === "accepted"
+              ? "Proposal accepted. Changelog entry should now appear in Recent Changes."
+              : "Proposal rejected with rationale."
         );
         setts.setSettingsError(null);
         await refreshState(conv.activeConversationId);
@@ -418,6 +432,27 @@ export function useRuntime() {
         setts.setSettingsError(error instanceof Error ? error.message : "Could not update proposal decision.");
       } finally {
         setts.setIsProposalBusy(false);
+      }
+    },
+    [refreshState]
+  );
+
+  const removePersonaAddition = useCallback(
+    async (index: number) => {
+      const conv = useConversationStore.getState();
+      const setts = useSettingsStore.getState();
+      const rt = useRuntimeStore.getState();
+      if (rt.isSending || rt.isResetting) return;
+      try {
+        const response = await fetch(`${runtimeBase}/persona/additions/${index}`, {
+          method: "DELETE"
+        });
+        if (!response.ok) throw new Error(await readErrorDetail(response));
+        setts.setSettingsNotice("Persona change removed.");
+        setts.setSettingsError(null);
+        await refreshState(conv.activeConversationId);
+      } catch (error) {
+        setts.setSettingsError(error instanceof Error ? error.message : "Could not remove persona addition.");
       }
     },
     [refreshState]
@@ -507,11 +542,17 @@ export function useRuntime() {
       conv.setStreamingText("");
 
       const modelId = rt.selectedModelId || "gpt-4o-mini";
+      const personaAdditions = useSettingsStore.getState().personaAdditions;
+      const systemPrompt =
+        personaAdditions.length > 0
+          ? personaAdditions.map((a) => a.text).join(" ")
+          : undefined;
       const body = JSON.stringify({
         message: nextText,
         conversation_id: conv.activeConversationId,
         model_id: modelId,
-        history: conv.messages.map((m) => ({ role: m.role, content: m.text }))
+        history: conv.messages.map((m) => ({ role: m.role, content: m.text })),
+        system_prompt: systemPrompt || undefined
       });
 
       try {
@@ -663,6 +704,7 @@ export function useRuntime() {
     createProposal,
     addProposalValidationRun,
     updateProposalDecision,
+    removePersonaAddition,
     saveApiKey,
     removeApiKey,
     setSelectedModel,

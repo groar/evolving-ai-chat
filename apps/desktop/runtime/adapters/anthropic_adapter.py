@@ -96,9 +96,10 @@ class AnthropicAdapter:
         message: str,
         model_id: str | None = None,
         history: list[dict[str, str]] | None = None,
-    ) -> tuple[str, str, float]:
+        system_prompt: str | None = None,
+    ) -> tuple[str, str, float, int, int]:
         """
-        Send a message. Returns (reply, model_id, cost_usd).
+        Send a message. Returns (reply, model_id, cost_usd, prompt_tokens, completion_tokens).
         model_id defaults to claude-3-5-haiku-20241022.
         """
         model = model_id or "claude-3-5-haiku-20241022"
@@ -107,11 +108,10 @@ class AnthropicAdapter:
         messages = truncated + [{"role": "user", "content": message}]
 
         client = self._get_client()
-        resp = client.messages.create(
-            model=model,
-            max_tokens=4096,
-            messages=messages,
-        )
+        create_kwargs: dict = {"model": model, "max_tokens": 4096, "messages": messages}
+        if system_prompt and str(system_prompt).strip():
+            create_kwargs["system"] = str(system_prompt).strip()
+        resp = client.messages.create(**create_kwargs)
 
         reply = ""
         for block in resp.content:
@@ -129,6 +129,7 @@ class AnthropicAdapter:
         message: str,
         model_id: str | None = None,
         history: list[dict[str, str]] | None = None,
+        system_prompt: str | None = None,
     ) -> AsyncIterator[dict]:
         """
         Stream chat tokens. Yields {"delta": "..."} then {"done": true, "model_id": "...", "cost": ...}.
@@ -148,11 +149,10 @@ class AnthropicAdapter:
             from anthropic import AsyncAnthropic
 
             client = AsyncAnthropic(api_key=api_key)
-            async with client.messages.stream(
-                model=model,
-                max_tokens=4096,
-                messages=messages,
-            ) as stream:
+            stream_kwargs: dict = {"model": model, "max_tokens": 4096, "messages": messages}
+            if system_prompt and str(system_prompt).strip():
+                stream_kwargs["system"] = str(system_prompt).strip()
+            async with client.messages.stream(**stream_kwargs) as stream:
                 async for text in stream.text_stream:
                     if text:
                         yield {"delta": text}

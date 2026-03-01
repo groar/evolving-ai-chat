@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0055-system-prompt-persona-tuning-improvement-class.md | P1 | T-0053 done; unblocked. |
-| 2 | T-0056-e0009-m7-tier2-validation-epic-closure.md | P1 | Validation; pick up only after T-0053–T-0055 are all done. |
+| 1 | T-0056-e0009-m7-tier2-validation-epic-closure.md | P1 | Validation; T-0053–T-0055 done; pick up for E-0009 tier-2 gate. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
