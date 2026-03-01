@@ -149,9 +149,22 @@ export function App() {
         }}
       >
         <SheetContent side="left" className="w-[min(360px,85vw)] p-0 flex flex-col" showCloseButton={true}>
-          <SheetHeader className="px-4 pt-4 pb-2 border-b border-border">
+          <SheetHeader className="px-4 pt-4 pb-2 border-b border-border shrink-0">
             <SheetTitle>Conversations</SheetTitle>
           </SheetHeader>
+          <div className="px-4 py-3 border-b border-border shrink-0">
+            <button
+              type="button"
+              className="w-full border border-border bg-white text-foreground rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:border-[#efbe91] hover:bg-[#fff8f2] disabled:opacity-55 disabled:cursor-not-allowed"
+              onClick={() => {
+                void createConversation();
+                setSidebarOpen(false);
+              }}
+              disabled={isSending || isResetting}
+            >
+              + New Conversation
+            </button>
+          </div>
           <section className="min-h-0 overflow-auto p-4 grid gap-2" aria-live="polite">
             <ul className="m-0 p-0 list-none grid gap-2">
               {conversations.map((conversation) => (
@@ -237,17 +250,6 @@ export function App() {
                 </li>
               ))}
             </ul>
-            <button
-              type="button"
-              className="border border-border bg-white text-foreground rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:border-[#efbe91] hover:bg-[#fff8f2] disabled:opacity-55 disabled:cursor-not-allowed"
-              onClick={() => {
-                void createConversation();
-                setSidebarOpen(false);
-              }}
-              disabled={isSending || isResetting}
-            >
-              + New Conversation
-            </button>
           </section>
         </SheetContent>
       </Sheet>

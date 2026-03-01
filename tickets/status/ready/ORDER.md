@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0042 | P1 | Model selector default to first model with API key (blocks tier-3 validation) |
-| 2 | T-0043 | P2 | New conversation button at top of sidebar |
+| — | _(empty)_ | | T-0042, T-0043 shipped 2026-03-01. M6 not yet scoped. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

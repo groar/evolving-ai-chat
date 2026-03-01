@@ -9,6 +9,18 @@ import {
   setApiKeyInStore,
   setDefaultModelInStore
 } from "../apiKeyStore";
+import type { ApiKeysStatus, ModelEntry } from "../stores/runtimeStore";
+
+/** Return the first model whose provider has an API key, or null if none. */
+export function getFirstModelWithKey(
+  models: ModelEntry[],
+  apiKeys: ApiKeysStatus
+): string | null {
+  for (const m of models) {
+    if (apiKeys[m.provider as keyof ApiKeysStatus]) return m.model_id;
+  }
+  return null;
+}
 import { useConversationStore } from "../stores/conversationStore";
 import { useRuntimeStore } from "../stores/runtimeStore";
 import { defaultSettings, useSettingsStore } from "../stores/settingsStore";
@@ -581,6 +593,24 @@ export function useRuntime() {
       if (modelId) rt.setSelectedModelId(modelId);
     });
   }, []);
+
+  const models = useRuntimeStore((s) => s.models);
+  const apiKeys = useRuntimeStore((s) => s.apiKeys);
+  const selectedModelId = useRuntimeStore((s) => s.selectedModelId);
+
+  useEffect(() => {
+    if (models.length === 0) return;
+    const rt = useRuntimeStore.getState();
+    const selected = models.find((m) => m.model_id === selectedModelId);
+    const hasKeyForSelected = selected && apiKeys[selected.provider as keyof typeof apiKeys];
+    if (!hasKeyForSelected) {
+      const firstWithKey = getFirstModelWithKey(models, apiKeys);
+      if (firstWithKey) {
+        rt.setSelectedModelId(firstWithKey);
+        void setDefaultModelInStore(firstWithKey);
+      }
+    }
+  }, [models, apiKeys, selectedModelId]);
 
   useEffect(() => {
     if (runtimeIssue || isBooting) return;

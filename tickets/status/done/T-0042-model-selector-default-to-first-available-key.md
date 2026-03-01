@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0042
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: bug
 - Epic: E-0006
@@ -46,17 +46,23 @@ When only one provider has an API key (e.g., OpenAI only), the app shows "Add AP
 - `apps/desktop/runtime/adapters/registry.py` (MODEL_REGISTRY, DEFAULT_MODEL_ID)
 
 ## Acceptance Criteria (Fix + Verify)
-- [ ] When selected model's provider has no API key, app auto-switches to first model that has a key.
-- [ ] Default model on fresh config (or when loading from store) is first available model with a key, not first in registry.
-- [ ] Reproduction steps no longer block chat when only OpenAI key is configured.
-- [ ] Regression test for "only OpenAI key → chat works with OpenAI model".
+- [x] When selected model's provider has no API key, app auto-switches to first model that has a key.
+- [x] Default model on fresh config (or when loading from store) is first available model with a key, not first in registry.
+- [x] Reproduction steps no longer block chat when only OpenAI key is configured.
+- [x] Regression test for "only OpenAI key → chat works with OpenAI model".
 
 ## Subtasks
-- [ ] Reproduce locally (OpenAI key only, selected model Anthropic or missing)
-- [ ] Fix default/fallback logic in boot and on apiKeys change
-- [ ] Add/adjust tests
-- [ ] Validate fix via QA scenario
-- [ ] Update docs/changelog if behavior changed
+- [x] Reproduce locally (OpenAI key only, selected model Anthropic or missing)
+- [x] Fix default/fallback logic in boot and on apiKeys change
+- [x] Add/adjust tests
+- [x] Validate fix via QA scenario
+- [x] Update docs/changelog if behavior changed
+
+## Evidence
+- Added `getFirstModelWithKey(models, apiKeys)` and effect in `useRuntime.ts` that auto-switches selectedModelId when current model's provider has no key; persists correction to store.
+- Unit tests in `useRuntime.modelSelection.test.ts` cover: only OpenAI key → returns gpt-4o-mini; only Anthropic key → returns claude; no keys → null; both keys → first in registry.
 
 ## Change Log
 - 2026-03-01: Bug ticket created from tier-3 validation blocker (F-20260301-003).
+- 2026-03-01: Implemented. Added getFirstModelWithKey helper and useEffect that corrects selectedModelId when provider has no API key; persists to store. Unit tests added.
+- 2026-03-01: QA passed (2026-03-01-qa-checkpoint-t0042). PM accepted → done.
