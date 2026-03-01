@@ -83,6 +83,9 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - FastAPI runtime skeleton with stub responses + smoke verification (T-0004, T-0010).
 - Known gaps:
   - **Real AI responses** — the chat returns a stub; no live model calls yet (top priority, M3).
+  - **UI is system-centric** — meta-surfaces (Settings, proposals, flags) dominate over chat (M4 addresses this).
+  - **Tech stack mismatch** — STATUS.md declares Tailwind + shadcn/ui + Zustand; code uses plain CSS + useState (M4 addresses this).
+  - **No Markdown rendering** — assistant responses are plain text; no code highlighting or copy (M5 addresses this).
   - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).
   - An evaluation harness (tests/evals) that can gate changes automatically.
 - Known risks:
@@ -102,13 +105,33 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
     - Settings controls clarity (T-0024).
     - Offline safety copy + settings layout (T-0025).
     - UX/UI design refresh — copy, typography, visual polish (T-0026).
-- Next milestone: M3 — “Real AI Chat / First Live Message” (E-0004)
+- Next milestone: M3 — “Real AI Chat / First Live Message” (E-0004) **[TOP PRIORITY]**
   - Goal: replace the stub response with a real OpenAI API call; full end-to-end chat.
   - Scope:
     - T-0027 OpenAI adapter + real chat endpoint (P1, first pickup).
     - T-0030 API key configuration in Settings (P2).
     - T-0029 Conversation context / multi-turn history (P2).
     - T-0028 Streaming chat response (P2).
+- Following milestone: M4 — “UI Simplification & Chat-First Redesign” (E-0005)
+  - Goal: strip back to a chat-first experience; adopt Tailwind + shadcn/ui; decompose the frontend monolith.
+  - Rationale: product & design review (F-20260301-002) found the UI is designed from the system’s perspective (meta-surfaces dominate) rather than the user’s perspective (chat should be 95% of the experience).
+  - Scope:
+    - T-0031 Adopt Tailwind + shadcn/ui design system (P1).
+    - T-0032 Extract state management — Zustand + custom hooks (P1).
+    - T-0033 Chat-first layout — hide meta-surfaces by default (P1).
+    - T-0034 Settings as modal/drawer, fold Advanced into Settings (P2).
+    - T-0035 User-facing copy and empty state rewrite (P2).
+- Following milestone: M5 — “Conversational UX Table Stakes” (E-0006)
+  - Goal: make the base chat experience excellent enough for daily use — prerequisite for self-evolution to generate meaningful signal.
+  - Scope:
+    - T-0036 Markdown rendering in assistant responses (P1).
+    - T-0037 Code block syntax highlighting + copy-to-clipboard (P1).
+    - T-0038 Conversation renaming (P2).
+    - T-0039 Model selector — multi-provider (P2).
+    - T-0040 Token/cost display per message (P3).
+- Future: M6 — “First Agent-Proposed Change” (epic TBD)
+  - Goal: the system observes a real usage pattern and proposes a concrete change autonomously. This is the moment the product thesis is validated.
+  - Not yet scoped — depends on M3–M5 establishing real, sustained usage.
 
 ## Decisions (Draft; confirm/adjust as we start)
 Record important decisions so future agents do not re-litigate context.
@@ -123,6 +146,8 @@ Record important decisions so future agents do not re-litigate context.
 | 2026-02-26 | Data boundary: local-only (default) | Keeps trust surface small; explicit opt-in required for any export/sync | tickets/status/done/T-0002-define-autonomy-and-data-boundary-defaults.md |
 | 2026-02-26 | Autonomy: UI-level gated changes (default) | Seamless experience with user control; code diffs remain auditable when needed | tickets/status/done/T-0002-define-autonomy-and-data-boundary-defaults.md |
 | 2026-02-26 | Harness baseline: local-first patch workflow (optional PR mirror) | Works in offline/sandboxed environments while preserving auditable diffs, validation artifacts, and ticketed approvals | tickets/status/done/T-0009-agentic-harness-baseline-pidev-like-loop.md |
+| 2026-03-01 | Chat-first, then self-evolve | Self-evolution infrastructure was over-invested before core chat works; course-correct by shipping M3 fast, then M4 (UI simplification) and M5 (chat UX table stakes) before resuming self-evolution work | F-20260301-002, E-0005, E-0006 |
 
 ## Open Questions (Pick early; unblock architecture)
-- None currently blocking M1 loop spec.
+- When should self-evolution resume? After M5 (safe bet) or overlap with M4/M5 (faster but riskier)?
+- Should M6 (First Agent-Proposed Change) target UI changes, system prompt tuning, or tool additions?
