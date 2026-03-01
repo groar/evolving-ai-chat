@@ -40,10 +40,16 @@ Product & design review (F-20260301-002) found that 75% of the left-rail navigat
 - T-0033 Chat-first layout — hide meta-surfaces by default
 - T-0034 Settings as modal/drawer, fold Advanced into Settings
 - T-0035 User-facing copy and empty state rewrite
+- T-0041 Clarify feedback scope (per-response vs app-level)
 
 ## Progress (Ticket Status)
 - Done: T-0031 (2026-03-01), T-0032 (2026-03-01), T-0033 (2026-03-01), T-0034 (2026-03-01)
-- Ready: T-0035 (rank 1). E-0005 tier-2 validation triggers now (T-0033 and T-0034 shipped).
+- Ready: T-0035 (rank 1), T-0041 (rank 2). E-0005 tier-2 validation: 2/3 probes passed (2026-03-01).
+
+## Tier-2 Validation Results (2026-03-01)
+- Probe 1 "What does this app do?": ✓ passed
+- Probe 2 "Where would you change a setting?": ✓ passed
+- Probe 3 "How would you give feedback about a response?": ✗ failed — feedback surface reads as app-level, not per-response. Follow-up: T-0041.
 
 ## Validation Plan
 - Tier-2 micro-validation after T-0033 and T-0034 ship:
