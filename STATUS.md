@@ -96,11 +96,13 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- Most recent milestone: M6 — "First Agent-Proposed Change from Real Usage" (E-0007) (scoped 2026-03-01)
+- Active milestone: M6 — "First Agent-Proposed Change from Real Usage" (E-0007) (active 2026-03-01)
   - Goal: Ship the first agent-proposed change driven by real usage signal.
-  - Ready: T-0044 (Beta→Stable bug fix), T-0045 (M6 scope).
+  - Done: T-0045 (M6 scope / spec addendum).
+  - Ready: T-0046 (wire proposal-from-feedback + first instance — rank 1 in ORDER.md).
+  - Planned: T-0046 implementation → smoke test → tier-2 comprehension probe (see E-0007 Validation Plan).
 - Previous: M5 — "Conversational UX Table Stakes" (E-0006) (completed 2026-03-01)
-  - T-0036–T-0040, T-0042, T-0043. Tier-3 validation: partial pass, proceed.
+  - T-0036–T-0040, T-0042, T-0043, T-0044. Tier-3 validation: partial pass, proceed.
 - M4 — "UI Simplification & Chat-First Redesign" (E-0005) (completed 2026-03-01)
   - T-0031–T-0035, T-0041. Tier-2 validation 2/3 passed.
 

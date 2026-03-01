@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0046
-- Status: backlog
+- Status: ready
 - Priority: P1
 - Type: feature
 - Area: core
