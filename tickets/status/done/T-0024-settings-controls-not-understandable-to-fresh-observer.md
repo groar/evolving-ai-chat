@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0024
-- Status: review
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -141,7 +141,7 @@ E-0002’s tier-2 probes (fresh observer) produced “No idea” answers for bot
 - [x] Implement small UI adjustments (progressive disclosure)
 - [x] Add/adjust tests
 - [x] Run fresh-observer comprehension probes and record results (2026-03-01)
-- [ ] Rerun E-0002 probes and record results
+- [x] Rerun E-0002 probes and record results
 
 ## Evidence
 - Automated checks:
@@ -167,9 +167,11 @@ E-0002’s tier-2 probes (fresh observer) produced “No idea” answers for bot
     - Probe 1: PASS (correct mental model: local AI chat; primary action: send message).
     - Probe 2: PARTIAL (banner is actionable, but implies "AI runs online" when offline; offline/safe-usage remains unclear).
     - Probe 3: PARTIAL/FAIL (Settings found, but "safe offline" not understood; copy reads as jargon-heavy/wordy and hard to scan).
+- T-0022 rerun (2026-03-01, post-T-0025): All 3 probes PASS; observer answers offline-safety and Settings correctly. T-0025 addressed Probe 2/3 gaps; combined flow validated.
 
 ## Change Log
 - 2026-02-28: Ticket created from E-0002 micro-validation probe results (T-0018).
 - 2026-02-28: Implemented copy/hierarchy update in Settings to clarify channel/reset safety, renamed jargon to user-facing language, and collapsed advanced surfaces behind progressive disclosure.
 - 2026-02-28: Updated settings regression coverage in `apps/desktop/src/settingsPanel.test.tsx`; all desktop unit tests passing via `npm --prefix apps/desktop test`.
 - 2026-02-28: Moved ticket to `review/` and completed QA checkpoint with passing automated checks and UX heuristic pass (`tickets/meta/qa/2026-02-28-qa-checkpoint-t0024.md`).
+- 2026-03-01: T-0022 probe rerun (post-T-0025) passed; PM accepted to done.

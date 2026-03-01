@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0022
-- Status: ready
+- Status: done
 - Priority: P2
 - Type: chore
 - Area: ui
@@ -29,10 +29,10 @@ Resolved: T-0023 done (banner fixed); T-0025 implemented offline safety + Settin
 - F-20260228-002
 
 ## Acceptance Criteria
-- [ ] Run the 3 E-0003 probes with at least 1 fresh observer (no prior exposure to the UI).
-- [ ] Record verbatim answers + short interpretation in the Evidence section below (or link to a dated PM checkpoint entry).
-- [ ] If any probe indicates confusion about “what this app is” or what is safe/usable while offline, create a new feedback item and at least one scoped ticket linked to it.
-- [ ] If probes are clean, mark this ticket as complete with a one-line rationale and update E-0003 status.
+- [x] Run the 3 E-0003 probes with at least 1 fresh observer (no prior exposure to the UI).
+- [x] Record verbatim answers + short interpretation in the Evidence section below (or link to a dated PM checkpoint entry).
+- [x] If any probe indicates confusion about “what this app is” or what is safe/usable while offline, create a new feedback item and at least one scoped ticket linked to it.
+- [x] If probes are clean, mark this ticket as complete with a one-line rationale and update E-0003 status.
 
 ## Micro-Validation Probes (Optional; Tier 2/3)
 - Probes (answer in 1-2 sentences each):
@@ -58,21 +58,22 @@ Resolved: T-0023 done (banner fixed); T-0025 implemented offline safety + Settin
   - Offline copy must not imply data loss or that local-only settings are unavailable.
 
 ## Evidence (Verification)
-- Notes:
-- Observer(s):
+- Notes: Post-T-0025 build; fresh observer.
+- Observer(s): sponsor
 - Probe answers:
-  - Probe 1:
-  - Probe 2:
-  - Probe 3:
-- Interpretation:
-- Follow-ups created (if any):
+  - Probe 1 (first launch, what is this, what would you do?): "this is an AI chatbot, I would send messages to try it"
+  - Probe 2 (runtime banner, what seems broken, what next?): "some kind of local service has to run, I should start it (if I can)"
+  - Probe 3 (Settings, what is safe offline?): "safe to browse history, use feedback, toggle early access features, etc."
+- Interpretation: All three probes pass. Mental model correct (AI chatbot); offline banner no longer implies "AI runs online"—observer infers local service; Settings "Safe while offline" section is comprehensible.
+- Follow-ups created (if any): none (probes clean).
 
 ## Subtasks
-- [ ] Run probes with fresh observer
-- [ ] Document results + interpretation
-- [ ] Create follow-ups (if needed)
-- [ ] Update E-0003 status/notes
+- [x] Run probes with fresh observer
+- [x] Document results + interpretation
+- [x] Create follow-ups (if needed)
+- [x] Update E-0003 status/notes
 
 ## Change Log
 - 2026-02-28: Ticket created; moved to `blocked/` pending runtime/banner and Settings clarity fixes.
 - 2026-03-01: Blocker resolved (T-0023 done, T-0025 implemented fixes); moved to `ready/`.
+- 2026-03-01: Probes run; all pass; moved to `done/`.

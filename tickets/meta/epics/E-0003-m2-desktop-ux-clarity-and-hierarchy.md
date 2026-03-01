@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: E-0003
-- Status: in-progress
+- Status: done
 - Owner: pm-agent
 - Created: 2026-02-28
 - Updated: 2026-03-01
@@ -51,14 +51,11 @@ Make the desktop app read and behave like a chat product first (clear primary fl
   - T-0019 Desktop nav hierarchy + progressive disclosure
   - T-0020 Runtime offline UX and actionable guidance
   - T-0021 Empty state + copy cleanup (reduce implementation leakage)
+  - T-0022 Rerun E-0003 micro-validation probes and record results
   - T-0023 Runtime-offline banner persists when runtime is running
-- Review:
   - T-0024 Settings controls not understandable to a fresh observer (stable/experiments/proposals)
   - T-0025 Clarify offline safety and simplify Settings copy/layout
-- Ready:
-  - T-0022 Rerun E-0003 micro-validation probes and record results
 
 ## Notes
 The current UI is a useful engineering workbench, but it cannot be the default surface if the product claim is "chat". This milestone is about hierarchy and comprehension, not "pretty".
-Fresh-observer probes for E-0002 on 2026-02-28 indicate Settings terminology and runtime reachability states still undermine trust; T-0023 is accepted and T-0024 remains prioritized before re-running E-0003 probes (T-0022).
-Fresh-observer probes on 2026-03-01 show improved first-run mental model, but offline safety and Settings scan/comprehension still need another iteration (T-0025) before closing the epic validation loop.
+2026-03-01: T-0022 E-0003 probe rerun (post-T-0025) — all 3 probes pass. Mental model correct; offline banner no longer implies "AI runs online"; Settings "Safe while offline" comprehensible. Epic complete.

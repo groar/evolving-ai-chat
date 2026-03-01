@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0025
-- Status: review
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -88,7 +88,7 @@ This blocks E-0003's UX clarity milestone.
   - [x] no multi-paragraph blocks in the default view (use short headings + bullets).
 - [x] Settings layout is scannable at laptop widths (avoid overly narrow copy column).
 - [x] Regression coverage exists for the above rules.
-- [ ] Tier-2 micro-validation rerun: fresh observer can answer "what is safe offline?" without facilitator explanation.
+- [x] Tier-2 micro-validation rerun: fresh observer can answer "what is safe offline?" without facilitator explanation.
 
 ## Micro-Validation Probes (Optional; Tier 2/3)
 - Probes (answer in 1-2 sentences each):
@@ -103,7 +103,7 @@ This blocks E-0003's UX clarity milestone.
 - [x] Design/copy pass (offline banner + Settings safety section)
 - [x] Implement UI copy/layout changes
 - [x] Add/adjust tests
-- [ ] Run probes + record results
+- [x] Run probes + record results
 
 ## Evidence
 - Automated checks:
@@ -115,7 +115,9 @@ This blocks E-0003's UX clarity milestone.
   - Settings: Added "Safe while offline" section with 3 bullets (browse conversations, view/change channel and toggles, use Feedback and drafts).
   - Simplified copy: Short headings + bullets; reduced multi-paragraph blocks.
   - Layout: Left rail `minmax(300px, 340px)` for laptop-width readability; settings-bullets styling.
+- Micro-validation (T-0022, 2026-03-01 post-ship): Probe 2 "some kind of local service has to run"; Probe 3 "safe to browse history, use feedback, toggle early access features" — PASS.
 
 ## Change Log
 - 2026-03-01: Ticket created from fresh-observer probes after T-0024.
 - 2026-03-01: Implemented offline banner and Settings copy/layout changes; added regression tests; moved to review.
+- 2026-03-01: T-0022 probes passed; tier-2 micro-validation complete; PM accepted to done.
