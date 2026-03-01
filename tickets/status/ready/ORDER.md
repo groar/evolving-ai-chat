@@ -15,14 +15,13 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| — | _(empty)_ | | T-0051 in-progress: awaiting project sponsor to run tier-2 probe. |
+| — | _(empty)_ | | T-0051 done (2026-03-01). M7 scope to be defined; PM replenish queue. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
 - If the table is empty, pause new implementation pickup and wait for PM queue updates.
-- T-0051 is a validation ticket (no software changes). Run the tier-2 probe with the project sponsor, record evidence, and close E-0008.
 
 ## Next Up (Backlog)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| — | _(empty)_ | | | M7 scope to be defined after E-0008 tier-2 comprehension gate passes (T-0051). |
+| — | _(empty)_ | | | M7 scope to be defined; E-0008 tier-2 gate passed (T-0051). |

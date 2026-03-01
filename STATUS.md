@@ -96,11 +96,12 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- Active milestone: M6 — "First Agent-Proposed Change from Real Usage" (E-0007) (active 2026-03-01)
-  - Goal: Ship the first agent-proposed change driven by real usage signal.
-  - Done: T-0045 (M6 scope / spec addendum), T-0046 (generate-from-feedback + copy improvements shipped).
-  - Ready: T-0047 (E2E smoke + tier-2 comprehension probe + E-0007 epic closure — rank 1 in ORDER.md).
-  - Planned: T-0047 run → E-0007 closes → M7 scoping.
+- Active milestone: M7 — scope to be defined (2026-03-01)
+  - E-0008 (M6.1 loop legibility) closed: T-0051 tier-2 comprehension re-probe **PASS**. M7 expansion unblocked.
+  - Ready queue empty; PM to scope M7 (improvement class expansion) and replenish.
+- Previous: M6.1 — "Loop Legibility and UX Clarity" (E-0008) (completed 2026-03-01)
+  - T-0048, T-0049, T-0050 (M6.1 batch), T-0051 (tier-2 re-probe). Comprehension gate passed.
+- Previous: M6 — "First Agent-Proposed Change" (E-0007) (completed 2026-03-01; comprehension gate failed → E-0008 scoped)
 - Previous: M5 — "Conversational UX Table Stakes" (E-0006) (completed 2026-03-01)
   - T-0036–T-0040, T-0042, T-0043, T-0044. Tier-3 validation: partial pass, proceed.
 - M4 — "UI Simplification & Chat-First Redesign" (E-0005) (completed 2026-03-01)
