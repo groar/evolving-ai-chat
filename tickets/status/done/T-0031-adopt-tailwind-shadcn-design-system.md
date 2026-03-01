@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0031
-- Status: review
+- Status: done
 - Priority: P1
 - Type: refactor
 - Area: ui
@@ -76,3 +76,4 @@ Preserve the existing warm neutral palette (#f5f3ea, #fff8e6, #d25722 accent) vi
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
 - 2026-03-01: Implementation complete — Tailwind v4, shadcn/ui, migration to utilities, STATUS.md updated.
+- 2026-03-01: PM acceptance — QA checkpoint passed (no bugs); moved to done.

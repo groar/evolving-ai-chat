@@ -40,8 +40,9 @@ Product & design review (F-20260301-002) found that 75% of the left-rail navigat
 - T-0035 User-facing copy and empty state rewrite
 
 ## Progress (Ticket Status)
-- Planned:
-  - T-0031, T-0032, T-0033, T-0034, T-0035
+- Done: T-0031 (2026-03-01)
+- Planned / in progress:
+  - T-0032 (ready, rank 1), T-0033, T-0034, T-0035
 
 ## Validation Plan
 - Tier-2 micro-validation after T-0033 and T-0034 ship:
