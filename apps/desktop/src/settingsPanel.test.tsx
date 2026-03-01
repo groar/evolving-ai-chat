@@ -118,7 +118,7 @@ describe("SettingsPanel", () => {
 
   it("renders a single stable-experimental channel control surface", () => {
     const markup = renderToStaticMarkup(renderPanel());
-    expect(markup).toContain('class="channel-toggle"');
+    expect(markup).toContain("channel-toggle");
     expect(markup).toContain(">Stable (recommended)<");
     expect(markup).toContain(">Beta (early access)<");
     expect(markup).not.toContain(">Switch to Stable<");

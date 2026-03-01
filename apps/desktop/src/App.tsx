@@ -647,50 +647,62 @@ export function App() {
   }
 
   return (
-    <main className="app-shell">
-      <aside className="left-rail">
-        <header className="left-rail-header">
-          <h1>Evolving AI Chat</h1>
+    <main className="app-shell grid grid-cols-[minmax(300px,360px)_1fr] gap-4 h-screen p-4">
+      <aside className="border border-border rounded-2xl bg-panel shadow-sm p-3.5 flex flex-col gap-3 min-h-0 overflow-hidden">
+        <header>
+          <h1 className="m-0 text-[1.35rem]">Evolving AI Chat</h1>
         </header>
-        <nav className="left-rail-nav" aria-label="Left rail surfaces">
+        <nav className="flex gap-0.5 border-b border-border pb-0" aria-label="Left rail surfaces">
           <button
             type="button"
-            className={`surface-nav-btn ${activeLeftRailSurface === "conversations" ? "active" : ""}`}
+            className={`flex-1 border-b-2 border-transparent rounded-none bg-transparent text-muted-foreground py-2 px-1 -mb-px text-sm text-center cursor-pointer transition-colors ${
+              activeLeftRailSurface === "conversations" ? "text-primary border-b-primary font-semibold" : "hover:text-foreground"
+            }`}
             onClick={() => setActiveLeftRailSurface("conversations")}
           >
             Conversations
           </button>
           <button
             type="button"
-            className={`surface-nav-btn ${activeLeftRailSurface === "settings" ? "active" : ""}`}
+            className={`flex-1 border-b-2 border-transparent rounded-none bg-transparent text-muted-foreground py-2 px-1 -mb-px text-sm text-center cursor-pointer transition-colors ${
+              activeLeftRailSurface === "settings" ? "text-primary border-b-primary font-semibold" : "hover:text-foreground"
+            }`}
             onClick={() => setActiveLeftRailSurface("settings")}
           >
             Settings
           </button>
           <button
             type="button"
-            className={`surface-nav-btn ${activeLeftRailSurface === "feedback" ? "active" : ""}`}
+            className={`flex-1 border-b-2 border-transparent rounded-none bg-transparent text-muted-foreground py-2 px-1 -mb-px text-sm text-center cursor-pointer transition-colors ${
+              activeLeftRailSurface === "feedback" ? "text-primary border-b-primary font-semibold" : "hover:text-foreground"
+            }`}
             onClick={() => setActiveLeftRailSurface("feedback")}
           >
             Feedback
           </button>
           <button
             type="button"
-            className={`surface-nav-btn ${activeLeftRailSurface === "advanced" ? "active" : ""}`}
+            className={`flex-1 border-b-2 border-transparent rounded-none bg-transparent text-muted-foreground py-2 px-1 -mb-px text-sm text-center cursor-pointer transition-colors ${
+              activeLeftRailSurface === "advanced" ? "text-primary border-b-primary font-semibold" : "hover:text-foreground"
+            }`}
             onClick={() => setActiveLeftRailSurface("advanced")}
           >
             Advanced
           </button>
         </nav>
-        <section className="left-rail-surface" aria-live="polite">
+        <section className="min-h-0 overflow-auto grid" aria-live="polite">
           {activeLeftRailSurface === "conversations" && (
             <>
-              <ul className="conversation-list">
+              <ul className="m-0 p-0 list-none grid gap-2">
                 {conversations.map((conversation) => (
                   <li key={conversation.conversation_id}>
                     <button
                       type="button"
-                      className={`conversation-item ${conversation.conversation_id === activeConversationId ? "active" : ""}`}
+                      className={`w-full text-left border rounded-xl py-2.5 px-3 cursor-pointer font-inherit transition-all ${
+                        conversation.conversation_id === activeConversationId
+                          ? "border-primary bg-[#fff2e6] text-foreground shadow-[inset_0_0_0_1px_#efbe91]"
+                          : "border-border bg-white text-muted-foreground hover:border-[#efbe91] hover:text-foreground"
+                      }`}
                       onClick={() => void activateConversation(conversation.conversation_id)}
                     >
                       {conversation.title}
@@ -698,10 +710,10 @@ export function App() {
                   </li>
                 ))}
               </ul>
-              <div className="left-rail-actions">
+              <div className="grid gap-2">
                 <button
                   type="button"
-                  className="rail-btn"
+                  className="border border-border bg-white text-foreground rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:border-[#efbe91] hover:bg-[#fff8f2] disabled:opacity-55 disabled:cursor-not-allowed"
                   onClick={() => void createConversation()}
                   disabled={isSending || isResetting}
                 >
@@ -711,7 +723,7 @@ export function App() {
             </>
           )}
           {activeLeftRailSurface === "settings" && (
-            <div className="surface-panel">
+            <div className="grid gap-2.5 min-h-0">
               <SettingsPanel
                 settings={settings}
                 changelog={changelog}
@@ -739,7 +751,7 @@ export function App() {
             </div>
           )}
           {activeLeftRailSurface === "feedback" && (
-            <div className="surface-panel">
+            <div className="grid gap-2.5 min-h-0">
               <FeedbackPanel
                 isOpen={isFeedbackOpen}
                 isBusy={isFeedbackBusy}
@@ -757,12 +769,12 @@ export function App() {
             </div>
           )}
           {activeLeftRailSurface === "advanced" && (
-            <div className="surface-panel">
-              <div className="advanced-panel">
-                <p className="settings-copy">Release channel: {channelLabel}. Change it in Settings.</p>
+            <div className="grid gap-2.5 min-h-0">
+              <div className="grid gap-2.5">
+                <p className="m-0 text-sm text-foreground">Release channel: {channelLabel}. Change it in Settings.</p>
                 <button
                   type="button"
-                  className="rail-btn danger"
+                  className="border border-[#cc7748] bg-[#fff1e8] text-destructive rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:bg-[#ffe4d8] hover:border-[#b85a2a] disabled:opacity-55 disabled:cursor-not-allowed"
                   onClick={() => void deleteLocalData()}
                   disabled={isSending || isResetting}
                 >
@@ -774,24 +786,22 @@ export function App() {
         </section>
       </aside>
 
-      <section className="chat-pane">
-        <header className="top-bar">
+      <section className="border border-border rounded-2xl bg-panel shadow-sm grid grid-rows-[auto_1fr_auto] min-h-0">
+        <header className="flex justify-between items-center border-b border-border py-3.5 px-4">
           <div>
-            <p className="top-bar-title">Local Desktop Chat</p>
-            <p className="top-bar-subtitle">Local AI chat · {channelLabel} channel</p>
+            <p className="m-0 text-base font-bold">Local Desktop Chat</p>
+            <p className="mt-0.5 text-muted-foreground text-[0.88rem]">Local AI chat · {channelLabel} channel</p>
           </div>
         </header>
         {runtimeIssue && runtimeIssue.kind === "api_key_not_set" && (
-          <section role="status" className="runtime-status api-key-prompt">
-            <div className="runtime-status-copy">
-              <p className="runtime-status-title">Add your OpenAI API key in Settings to start chatting.</p>
-              <p>
-                Open Settings and add your API key in the Connections section.
-              </p>
+          <section role="status" className="rounded-lg m-3 mt-0 mx-4 py-2.5 px-3 text-[0.9rem] flex items-center justify-between gap-3">
+            <div className="grid gap-0.5">
+              <p className="m-0 font-semibold">Add your OpenAI API key in Settings to start chatting.</p>
+              <p className="m-0">Open Settings and add your API key in the Connections section.</p>
             </div>
             <button
               type="button"
-              className="retry-btn"
+              className="border border-[#cb5627] rounded-lg bg-[#fff7f3] text-destructive font-semibold py-1.5 px-3 cursor-pointer transition-colors hover:bg-[#ffe8de] disabled:opacity-55 disabled:cursor-not-allowed"
               onClick={() => setActiveLeftRailSurface("settings")}
             >
               Open Settings
@@ -799,40 +809,50 @@ export function App() {
           </section>
         )}
         {runtimeIssue && runtimeIssue.kind !== "api_key_not_set" && (
-          <section role="status" className={`runtime-status ${runtimeIssue.kind === "offline" ? "offline" : "error"}`}>
-            <div className="runtime-status-copy">
-              <p className="runtime-status-title">
-                The local runtime is not running.
-              </p>
-              <p>
+          <section
+            role="status"
+            className={`rounded-lg m-3 mt-0 mx-4 py-2.5 px-3 text-[0.9rem] flex items-center justify-between gap-3 ${
+              runtimeIssue.kind === "offline"
+                ? "border border-[#f4a58b] bg-[#ffe4dd] text-destructive"
+                : "border border-[#dfbe78] bg-[#fff7e6] text-[#6b4e00]"
+            }`}
+          >
+            <div className="grid gap-0.5">
+              <p className="m-0 font-semibold">The local runtime is not running.</p>
+              <p className="m-0">
                 {runtimeIssue.kind === "offline"
                   ? "Start it, then press Retry."
                   : `Runtime responded with an error: ${runtimeIssue.detail}`}
               </p>
             </div>
-            <button type="button" className="retry-btn" disabled={!canRetry} onClick={() => void retryRuntime()}>
+            <button
+              type="button"
+              className="border border-[#cb5627] rounded-lg bg-[#fff7f3] text-destructive font-semibold py-1.5 px-3 cursor-pointer transition-colors hover:bg-[#ffe8de] disabled:opacity-55 disabled:cursor-not-allowed"
+              disabled={!canRetry}
+              onClick={() => void retryRuntime()}
+            >
               Retry
             </button>
           </section>
         )}
 
-        <div className="transcript" aria-live="polite">
+        <div className="overflow-auto p-4 grid gap-3 content-start" aria-live="polite">
           {diagnosticsEnabled && (
-            <section className="diagnostics-card" aria-label="Runtime diagnostics">
-              <p>Runtime diagnostics enabled</p>
-              <p>Conversations: {conversations.length}</p>
-              <p>Messages in view: {messages.length}</p>
+            <section className="border border-[#9ebf97] bg-[#effbe8] rounded-xl py-2.5 px-3 grid gap-0.5" aria-label="Runtime diagnostics">
+              <p className="m-0 text-sm">Runtime diagnostics enabled</p>
+              <p className="m-0 text-sm">Conversations: {conversations.length}</p>
+              <p className="m-0 text-sm">Messages in view: {messages.length}</p>
             </section>
           )}
           {isBooting && (
-            <div className="empty-state">
-              <p>Loading local state...</p>
+            <div className="empty-state border border-dashed border-border rounded-xl p-4 text-muted-foreground bg-[#fffaf0]">
+              <p className="m-0 mb-2">Loading local state...</p>
             </div>
           )}
-            {!hasMessages && !isBooting && (
-            <div className="empty-state">
-              <p>Your local AI assistant.</p>
-              <p>
+          {!hasMessages && !isBooting && (
+            <div className="empty-state border border-dashed border-border rounded-xl p-4 text-muted-foreground bg-[#fffaf0]">
+              <p className="m-0 mb-2">Your local AI assistant.</p>
+              <p className="m-0 mb-2">
                 {!apiKeyConfigured
                   ? "Add your OpenAI API key in Settings to start chatting."
                   : isRuntimeOffline
@@ -842,7 +862,7 @@ export function App() {
               {!apiKeyConfigured && (
                 <button
                   type="button"
-                  className="rail-btn"
+                  className="border border-border bg-white text-foreground rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:border-[#efbe91] hover:bg-[#fff8f2] disabled:opacity-55 disabled:cursor-not-allowed"
                   onClick={() => setActiveLeftRailSurface("settings")}
                 >
                   Open Settings
@@ -852,34 +872,43 @@ export function App() {
           )}
 
           {messages.map((message) => (
-            <article key={message.id} className={`message ${message.role}`}>
-              <p className="message-role">{message.role === "user" ? "You" : "Assistant"}</p>
-              <p>{message.text}</p>
-              {message.meta && <p className="message-meta">{message.meta}</p>}
+            <article
+              key={message.id}
+              className={`border rounded-xl py-3 px-3.5 max-w-[700px] bg-white ${
+                message.role === "user"
+                  ? "ml-auto bg-[#fff2e6]"
+                  : "border-[#c8d3c1] bg-[#f8fff5]"
+              }`}
+            >
+              <p className="m-0 mb-1 text-xs font-semibold tracking-wide uppercase text-muted-foreground">
+                {message.role === "user" ? "You" : "Assistant"}
+              </p>
+              <p className="m-0 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{message.text}</p>
+              {message.meta && <p className="mt-1.5 text-muted-foreground text-xs m-0">{message.meta}</p>}
             </article>
           ))}
           {streamingText.length > 0 && (
-            <article className="message assistant streaming">
-              <p className="message-role">Assistant</p>
-              <p>
+            <article className="border border-[#c8d3c1] rounded-xl py-3 px-3.5 max-w-[700px] bg-[#f8fff5]">
+              <p className="m-0 mb-1 text-xs font-semibold tracking-wide uppercase text-muted-foreground">Assistant</p>
+              <p className="m-0 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">
                 {streamingText}
-                <span className="streaming-cursor" aria-hidden="true" />
+                <span className="inline-block w-0.5 h-4 ml-0.5 bg-primary animate-[streaming-blink_0.8s_step-end_infinite] align-text-bottom" aria-hidden="true" />
               </p>
             </article>
           )}
           <div ref={transcriptEndRef} aria-hidden="true" />
         </div>
 
-        <footer className="composer-wrap">
+        <footer className="border-t border-border py-3 px-4 pb-4">
           <label htmlFor="composer" className="sr-only">
             Message composer
           </label>
-          <div className="composer-bar">
+          <div className="flex items-end gap-2">
             <textarea
               id="composer"
               ref={inputRef}
               value={composer}
-              className="composer"
+              className="flex-1 resize-none min-h-0 max-h-[120px] rounded-lg border border-border py-2.5 px-3 font-inherit text-[0.9375rem] leading-snug bg-white overflow-y-auto transition-colors focus:outline-none focus:border-[#efbe91] focus:ring-2 focus:ring-[#efbe91]/50 focus:ring-offset-2"
               placeholder={
                 !apiKeyConfigured
                   ? "Add your API key in Settings to chat."
@@ -892,8 +921,17 @@ export function App() {
               onChange={(event) => setComposer(event.target.value)}
               onKeyDown={handleComposerKeyDown}
             />
-            <button type="button" className="send-btn" disabled={!canSend} onClick={() => void sendMessage()}>
-              {isSending ? <span className="sending-indicator" aria-label="Sending" /> : "Send"}
+            <button
+              type="button"
+              className="shrink-0 border border-primary rounded-lg bg-primary text-primary-foreground font-bold text-sm py-2.5 px-4 cursor-pointer transition-colors hover:bg-[#b84a1c] hover:border-[#b84a1c] disabled:opacity-45 disabled:cursor-not-allowed"
+              disabled={!canSend}
+              onClick={() => void sendMessage()}
+            >
+              {isSending ? (
+                <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin align-middle" aria-label="Sending" />
+              ) : (
+                "Send"
+              )}
             </button>
           </div>
         </footer>

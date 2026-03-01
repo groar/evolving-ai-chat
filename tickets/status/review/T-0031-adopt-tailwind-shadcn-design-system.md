@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0031
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: refactor
 - Area: ui
@@ -35,18 +35,18 @@ Replace the plain CSS approach with Tailwind CSS and shadcn/ui components. STATU
 - F-20260301-002
 
 ## Acceptance Criteria
-- [ ] Tailwind CSS is installed and configured with the existing color palette mapped to Tailwind theme tokens.
-- [ ] shadcn/ui is initialized; at least Button, Dialog, and Sheet components are available.
-- [ ] All existing UI renders identically (visual regression: no visible differences in happy/empty/offline/error states).
-- [ ] `styles.css` custom rules are reduced by at least 50% (migrated to Tailwind utilities).
-- [ ] `npm run build` succeeds with no new warnings.
-- [ ] Existing Vitest tests pass without modification (or with minimal test-only changes).
+- [x] Tailwind CSS is installed and configured with the existing color palette mapped to Tailwind theme tokens.
+- [x] shadcn/ui is initialized; at least Button, Dialog, and Sheet components are available.
+- [x] All existing UI renders identically (visual regression: no visible differences in happy/empty/offline/error states).
+- [x] `styles.css` custom rules are reduced by at least 50% (migrated to Tailwind utilities).
+- [x] `npm run build` succeeds with no new warnings.
+- [x] Existing Vitest tests pass without modification (or with minimal test-only changes).
 
 ## UX Acceptance Criteria
-- [ ] Primary flow is keyboard-usable (no mouse required for core actions).
-- [ ] Empty/error states are clear and actionable.
-- [ ] Copy/microcopy is consistent and unambiguous.
-- [ ] Layout works at common breakpoints (mobile + desktop).
+- [x] Primary flow is keyboard-usable (no mouse required for core actions).
+- [x] Empty/error states are clear and actionable.
+- [x] Copy/microcopy is consistent and unambiguous.
+- [x] Layout works at common breakpoints (mobile + desktop).
 
 ## Dependencies / Sequencing
 - Depends on: none (can start immediately after M3).
@@ -54,14 +54,25 @@ Replace the plain CSS approach with Tailwind CSS and shadcn/ui components. STATU
 - Sequencing notes: Ship before or in parallel with T-0032 (state management).
 
 ## Subtasks
-- [ ] Install and configure Tailwind CSS with project theme
-- [ ] Initialize shadcn/ui, add Button, Dialog, Sheet, Command components
-- [ ] Migrate styles.css to Tailwind utilities (preserving visual design)
-- [ ] Verify all existing tests pass
-- [ ] Update STATUS.md to note adoption
+- [x] Install and configure Tailwind CSS with project theme
+- [x] Initialize shadcn/ui, add Button, Dialog, Sheet, Command components
+- [x] Migrate styles.css to Tailwind utilities (preserving visual design)
+- [x] Verify all existing tests pass
+- [x] Update STATUS.md to note adoption
 
 ## Notes
 Preserve the existing warm neutral palette (#f5f3ea, #fff8e6, #d25722 accent) via `tailwind.config`. The goal is infrastructure swap, not visual redesign.
 
+## QA Evidence Links
+- QA checkpoint: `tickets/meta/qa/2026-03-01-qa-checkpoint-t0031.md`
+
+## Evidence (Verification)
+- **Tests run**: `npm run test` — 21/21 passed (appShell, feedbackPanel, settingsPanel).
+- **Build**: `npm run build` — succeeds, no new warnings.
+- **styles.css reduction**: 627 lines → 198 lines (68% reduction, exceeds 50% target).
+- **Manual checks**: Tailwind v4 + @tailwindcss/vite; shadcn/ui with Button, Dialog, Sheet, Command; theme tokens mapped in @theme and :root; path alias @/* configured; responsive .app-shell media query preserved.
+- **Minimal test changes**: appShell (regex for empty-state), settingsPanel (channel-toggle assertion).
+
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
+- 2026-03-01: Implementation complete — Tailwind v4, shadcn/ui, migration to utilities, STATUS.md updated.

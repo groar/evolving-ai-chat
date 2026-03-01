@@ -85,7 +85,7 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Real AI chat: OpenAI adapter (T-0027), streaming (T-0028), multi-turn context (T-0029). Full end-to-end chat when API key is set.
 - Known gaps:
   - **UI is system-centric** — meta-surfaces (Settings, proposals, flags) dominate over chat (M4 addresses this).
-  - **Tech stack mismatch** — STATUS.md declares Tailwind + shadcn/ui + Zustand; code uses plain CSS + useState (M4 addresses this).
+  - ~~Tech stack mismatch~~ — Tailwind + shadcn/ui adopted (T-0031); Zustand pending (T-0032).
   - **No Markdown rendering** — assistant responses are plain text; no code highlighting or copy (M5 addresses this).
   - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).
   - An evaluation harness (tests/evals) that can gate changes automatically.

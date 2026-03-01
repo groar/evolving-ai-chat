@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0031 Adopt Tailwind + shadcn/ui design system | P1 | Foundation for M4 UI work; no deps. |
-| 2 | T-0032 Extract state management (Zustand + hooks) | P1 | Parallel with T-0031; no deps. |
+| 1 | T-0032 Extract state management (Zustand + hooks) | P1 | Parallel with T-0031; no deps. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

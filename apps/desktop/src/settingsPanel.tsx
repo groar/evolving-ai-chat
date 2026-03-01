@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { railBtn, railBtnDanger, settingsInput, settingsTextarea } from "@/lib/ui-classes";
 
 type RuntimeSettings = {
   channel: "stable" | "experimental";
@@ -291,19 +292,19 @@ export function SettingsPanel(props: SettingsPanelProps) {
   }
 
   return (
-    <section className="settings-panel" aria-label="Settings">
-      <div className="settings-section-header">
-        <p className="settings-title">Connections</p>
+    <section className="grid gap-3 max-h-none min-h-0 overflow-visible min-w-0" aria-label="Settings">
+      <div className="flex justify-between items-center gap-2">
+        <p className="m-0 text-sm font-semibold text-foreground">Connections</p>
       </div>
-      <p className="settings-copy">
+      <p className="m-0 text-sm text-foreground">
         {apiKeySet ? "OpenAI API key: Set ✓" : "OpenAI API key: Not configured"}
       </p>
       {apiKeySet ? (
-        <div className="api-key-actions">
-          <span className="api-key-masked" aria-hidden>••••••••••••</span>
+        <div className="flex items-center gap-2.5">
+          <span className="font-mono tracking-[0.15em]" aria-hidden>••••••••••••</span>
           <button
             type="button"
-            className="rail-btn danger"
+            className={railBtnDanger}
             onClick={() => void handleRemoveApiKey()}
             disabled={isBusy || isSavingApiKey}
           >
@@ -311,13 +312,13 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </button>
         </div>
       ) : (
-        <div className="api-key-form">
+        <div className="grid gap-2">
           <label htmlFor="api-key-input" className="sr-only">
             OpenAI API key
           </label>
           <input
             id="api-key-input"
-            className="settings-input"
+            className={settingsInput}
             type="password"
             placeholder="OpenAI API key"
             value={apiKeyInput}
@@ -326,10 +327,14 @@ export function SettingsPanel(props: SettingsPanelProps) {
             disabled={isBusy || isSavingApiKey}
             autoComplete="off"
           />
-          {apiKeyError && <p role="alert" className="settings-error">{apiKeyError}</p>}
+          {apiKeyError && (
+            <p role="alert" className="m-0 border border-[#f4a58b] rounded-lg bg-[#fff0ea] text-destructive text-xs py-2 px-2.5">
+              {apiKeyError}
+            </p>
+          )}
           <button
             type="button"
-            className="rail-btn"
+            className={railBtn}
             onClick={() => void handleSaveApiKey()}
             disabled={isBusy || isSavingApiKey || apiKeyInput.trim().length === 0}
           >
@@ -338,24 +343,28 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </div>
       )}
 
-      <div className="settings-section-header">
-        <p className="settings-title">Works offline</p>
+      <div className="flex justify-between items-center gap-2">
+        <p className="m-0 text-sm font-semibold text-foreground">Works offline</p>
       </div>
-      <ul className="settings-bullets">
+      <ul className="m-0 ml-4 p-0 text-sm text-foreground leading-relaxed [&>li]:mb-1">
         <li>Browse and search conversations</li>
         <li>Change settings and feature toggles</li>
         <li>Capture and review feedback</li>
       </ul>
 
-      <div className="settings-section-header">
-        <p className="settings-title">Release Channel</p>
+      <div className="flex justify-between items-center gap-2">
+        <p className="m-0 text-sm font-semibold text-foreground">Release Channel</p>
       </div>
-      <p className="settings-copy">Controls which features are active. Your conversations and history are never affected.</p>
+      <p className="m-0 text-sm text-foreground">Controls which features are active. Your conversations and history are never affected.</p>
 
-      <div className="channel-toggle">
+      <div className="channel-toggle grid grid-cols-2 gap-1.5">
         <button
           type="button"
-          className={`channel-btn ${settings.channel === "stable" ? "active" : ""}`}
+          className={`border rounded-lg bg-white text-foreground py-2 px-2.5 font-inherit cursor-pointer transition-all disabled:opacity-55 disabled:cursor-not-allowed ${
+            settings.channel === "stable"
+              ? "border-primary bg-[#fff2e6] text-primary font-bold"
+              : "border-border hover:border-[#efbe91] hover:bg-[#fff8f2]"
+          }`}
           onClick={requestSwitchToStable}
           disabled={isBusy}
         >
@@ -363,7 +372,11 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </button>
         <button
           type="button"
-          className={`channel-btn ${settings.channel === "experimental" ? "active" : ""}`}
+          className={`border rounded-lg bg-white text-foreground py-2 px-2.5 font-inherit cursor-pointer transition-all disabled:opacity-55 disabled:cursor-not-allowed ${
+            settings.channel === "experimental"
+              ? "border-primary bg-[#fff2e6] text-primary font-bold"
+              : "border-border hover:border-[#efbe91] hover:bg-[#fff8f2]"
+          }`}
           onClick={() => onSelectChannel("experimental")}
           disabled={isBusy}
         >
@@ -371,10 +384,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </button>
       </div>
 
-      <details className="settings-disclosure">
-        <summary className="settings-disclosure-summary">Early-Access Features (advanced)</summary>
-        <p className="settings-copy">Optional beta toggles. Your data is never affected.</p>
-        <label className="flag-control">
+      <details className="border-t border-dashed border-border pt-2.5 grid gap-2.5">
+        <summary className="cursor-pointer text-sm font-semibold text-foreground">Early-Access Features (advanced)</summary>
+        <p className="m-0 text-sm text-foreground">Optional beta toggles. Your data is never affected.</p>
+        <label className="flex items-center gap-1.5 text-sm">
           <input
             type="checkbox"
             checked={configuredDiagnosticsFlag}
@@ -384,49 +397,49 @@ export function SettingsPanel(props: SettingsPanelProps) {
           Show local service diagnostics (early-access feature)
         </label>
         {settings.channel !== "experimental" && (
-          <p className="flag-note">Switch to Beta (early access) to adjust early-access feature toggles.</p>
+          <p className="m-0 text-xs text-muted-foreground">Switch to Beta (early access) to adjust early-access feature toggles.</p>
         )}
-        <div className="rollback-actions">
-          <button type="button" className="rail-btn" disabled={isBusy} onClick={requestResetExperiments}>
+        <div className="grid gap-1.5">
+          <button type="button" className={railBtn} disabled={isBusy} onClick={requestResetExperiments}>
             Reset Early-Access Features
           </button>
         </div>
-        <p className="flag-note">Resets all toggles to defaults. No data is deleted.</p>
+        <p className="m-0 text-xs text-muted-foreground">Resets all toggles to defaults. No data is deleted.</p>
       </details>
 
       {notice && (
-        <p role="status" className="settings-notice">
+        <p role="status" className="m-0 border border-[#9ebf97] rounded-lg bg-[#effbe8] text-[#2e5a2b] text-xs py-2 px-2.5">
           {notice}
         </p>
       )}
       {error && (
-        <p role="alert" className="settings-error">
+        <p role="alert" className="m-0 border border-[#f4a58b] rounded-lg bg-[#fff0ea] text-destructive text-xs py-2 px-2.5">
           {error}
         </p>
       )}
 
-      <details className="proposals-wrap" name="settings-advanced">
-        <summary className="settings-disclosure-summary">Improvements (advanced)</summary>
-        <p className="settings-copy">Change draft = local suggestion you review. Nothing ships automatically.</p>
-        <p className="flag-note">Feedback → Draft → Run checks → Decide</p>
-        <div className="settings-section-header">
-          <p className="settings-title">Change Drafts</p>
-          <button type="button" className="rail-btn" onClick={onRefresh} disabled={isBusy}>
+      <details className="border-t border-dashed border-border pt-2.5 grid gap-2.5" name="settings-advanced">
+        <summary className="cursor-pointer text-sm font-semibold text-foreground">Improvements (advanced)</summary>
+        <p className="m-0 text-sm text-foreground">Change draft = local suggestion you review. Nothing ships automatically.</p>
+        <p className="m-0 text-xs text-muted-foreground">Feedback → Draft → Run checks → Decide</p>
+        <div className="flex justify-between items-center gap-2">
+          <p className="m-0 text-sm font-semibold text-foreground">Change Drafts</p>
+          <button type="button" className={railBtn} onClick={onRefresh} disabled={isBusy}>
             Refresh
           </button>
         </div>
-        <button type="button" className="rail-btn" onClick={() => setIsCreateDraftOpen((current) => !current)} disabled={isBusy}>
+        <button type="button" className={railBtn} onClick={() => setIsCreateDraftOpen((current) => !current)} disabled={isBusy}>
           {isCreateDraftOpen ? "Hide Draft Form" : "Draft an Improvement"}
         </button>
 
         {isCreateDraftOpen && (
-          <div className="proposal-create-form">
-            <label className="settings-title" htmlFor="proposal-title-input">
+          <div className="border border-border rounded-lg bg-white p-2.5 grid gap-2">
+            <label className="text-sm font-semibold text-foreground" htmlFor="proposal-title-input">
               Draft an Improvement
             </label>
             <input
               id="proposal-title-input"
-              className="settings-input"
+              className={settingsInput}
               type="text"
               placeholder="Draft title"
               value={proposalTitle}
@@ -434,7 +447,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
               disabled={isBusy}
             />
             <textarea
-              className="settings-textarea"
+              className={settingsTextarea}
               placeholder="Rationale (required if no feedback IDs linked)"
               rows={3}
               value={proposalRationale}
@@ -442,7 +455,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
               disabled={isBusy}
             />
             <input
-              className="settings-input"
+              className={settingsInput}
               type="text"
               list="feedback-id-options"
               placeholder="Feedback IDs (comma-separated, optional)"
@@ -455,46 +468,52 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 <option key={feedbackId} value={feedbackId} />
               ))}
             </datalist>
-            {proposalFormError && <p className="settings-error">{proposalFormError}</p>}
-            <button type="button" className="rail-btn" onClick={submitCreateProposal} disabled={isBusy}>
+            {proposalFormError && (
+              <p className="m-0 border border-[#f4a58b] rounded-lg bg-[#fff0ea] text-destructive text-xs py-2 px-2.5">
+                {proposalFormError}
+              </p>
+            )}
+            <button type="button" className={railBtn} onClick={submitCreateProposal} disabled={isBusy}>
               Save Draft
             </button>
           </div>
         )}
 
         {proposals.length === 0 ? (
-          <p className="flag-note">No change drafts yet.</p>
+          <p className="m-0 text-xs text-muted-foreground">No change drafts yet.</p>
         ) : (
-          <ul className="proposals-list">
+          <ul className="list-none m-0 p-0 grid gap-2">
             {proposals.map((proposal) => {
               const latestValidation = latestValidationRun(proposal);
               const acceptReason = acceptBlockReason(proposal);
               const editor = editorFor(proposal.proposal_id);
               const isRejectDisabled = editor.decisionNotes.trim().length < 10;
               return (
-                <li key={proposal.proposal_id} className="proposal-item">
-                  <div className="proposal-header">
-                    <p className="changelog-title">{proposal.title}</p>
-                    <span className="changelog-channel">{proposalStateLabel(proposal)}</span>
+                <li key={proposal.proposal_id} className="border border-border rounded-lg bg-white p-2.5 grid gap-2.5">
+                  <div className="flex justify-between items-center gap-2">
+                    <p className="m-0 text-sm font-bold">{proposal.title}</p>
+                    <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground uppercase">
+                      {proposalStateLabel(proposal)}
+                    </span>
                   </div>
-                  <p className="changelog-meta">
+                  <p className="m-0 text-xs text-muted-foreground">
                     {formatTimestamp(proposal.created_at)} · {proposal.proposal_id}
                   </p>
-                  <p className="changelog-summary">{proposal.rationale || "No rationale provided."}</p>
-                  <p className="changelog-meta">
+                  <p className="m-0 text-sm text-foreground">{proposal.rationale || "No rationale provided."}</p>
+                  <p className="m-0 text-xs text-muted-foreground">
                     Feedback links: {proposal.source_feedback_ids.length > 0 ? proposal.source_feedback_ids.join(", ") : "none"}
                   </p>
 
-                  <div className="proposal-subsection">
-                    <p className="settings-title">Checks</p>
-                    <p className="flag-note">
+                  <div className="border-t border-dashed border-border pt-2.5 grid gap-2">
+                    <p className="m-0 text-sm font-semibold text-foreground">Checks</p>
+                    <p className="m-0 text-xs text-muted-foreground">
                       {latestValidation
                         ? `Latest: ${latestValidation.status} (${formatTimestamp(latestValidation.created_at)})`
                         : "Checks have not run."}
                     </p>
-                    <div className="proposal-actions-grid">
+                    <div className="grid gap-1.5">
                       <select
-                        className="settings-input"
+                        className={settingsInput}
                         value={editor.validationStatus}
                         onChange={(event) =>
                           updateProposalEditor(proposal.proposal_id, {
@@ -507,7 +526,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                         <option value="failing">Failing</option>
                       </select>
                       <input
-                        className="settings-input"
+                        className={settingsInput}
                         type="text"
                         placeholder="Validation summary"
                         value={editor.validationSummary}
@@ -519,7 +538,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                         disabled={isBusy}
                       />
                       <input
-                        className="settings-input"
+                        className={settingsInput}
                         type="text"
                         placeholder="Artifact refs (comma-separated)"
                         value={editor.validationArtifactRefs}
@@ -532,7 +551,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                       />
                       <button
                         type="button"
-                        className="rail-btn"
+                        className={railBtn}
                         onClick={() => submitValidationRun(proposal)}
                         disabled={isBusy || editor.validationSummary.trim().length === 0}
                       >
@@ -541,10 +560,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
                     </div>
                   </div>
 
-                  <div className="proposal-subsection">
-                    <p className="settings-title">Decision</p>
+                  <div className="border-t border-dashed border-border pt-2.5 grid gap-2">
+                    <p className="m-0 text-sm font-semibold text-foreground">Decision</p>
                     <textarea
-                      className="settings-textarea"
+                      className={settingsTextarea}
                       rows={2}
                       placeholder="Decision notes (required to reject)"
                       value={editor.decisionNotes}
@@ -555,11 +574,11 @@ export function SettingsPanel(props: SettingsPanelProps) {
                       }
                       disabled={isBusy}
                     />
-                    {acceptReason && <p className="flag-note">{acceptReason}</p>}
-                    <div className="proposal-actions-row">
+                    {acceptReason && <p className="m-0 text-xs text-muted-foreground">{acceptReason}</p>}
+                    <div className="grid grid-cols-2 gap-1.5">
                       <button
                         type="button"
-                        className="rail-btn"
+                        className={railBtn}
                         onClick={() => submitProposalDecision(proposal, "accepted")}
                         disabled={isBusy || acceptReason !== null}
                       >
@@ -567,7 +586,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                       </button>
                       <button
                         type="button"
-                        className="rail-btn danger"
+                        className={railBtnDanger}
                         onClick={() => submitProposalDecision(proposal, "rejected")}
                         disabled={isBusy || isRejectDisabled}
                       >
@@ -575,11 +594,13 @@ export function SettingsPanel(props: SettingsPanelProps) {
                       </button>
                     </div>
                     {proposal.decision.decided_at && (
-                      <p className="changelog-meta">
+                      <p className="m-0 text-xs text-muted-foreground">
                         Decision: {proposal.decision.status} at {formatTimestamp(proposal.decision.decided_at)}
                       </p>
                     )}
-                    {proposal.decision.notes && <p className="changelog-meta">Notes: {proposal.decision.notes}</p>}
+                    {proposal.decision.notes && (
+                      <p className="m-0 text-xs text-muted-foreground">Notes: {proposal.decision.notes}</p>
+                    )}
                   </div>
                 </li>
               );
@@ -588,20 +609,22 @@ export function SettingsPanel(props: SettingsPanelProps) {
         )}
       </details>
 
-      <div className="changelog-wrap">
-        <p className="settings-title">Recent Changes</p>
+      <div className="border-t border-dashed border-border pt-2.5 grid gap-2.5">
+        <p className="m-0 text-sm font-semibold text-foreground">Recent Changes</p>
         {changelog.length === 0 ? (
-          <p className="flag-note">No changes recorded yet.</p>
+          <p className="m-0 text-xs text-muted-foreground">No changes recorded yet.</p>
         ) : (
-          <ul className="changelog-list">
+          <ul className="list-none m-0 p-0 grid gap-2">
             {changelog.map((entry) => (
-              <li key={`${entry.created_at}-${entry.title}`} className="changelog-item">
-                <div className="changelog-header">
-                  <p className="changelog-title">{entry.title}</p>
-                  <span className="changelog-channel">{entry.channel}</span>
+              <li key={`${entry.created_at}-${entry.title}`} className="border border-border rounded-lg bg-white p-2.5 grid gap-1">
+                <div className="flex justify-between gap-2 items-center">
+                  <p className="m-0 text-sm font-bold">{entry.title}</p>
+                  <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground capitalize">
+                    {entry.channel}
+                  </span>
                 </div>
-                <p className="changelog-summary">{entry.summary}</p>
-                <p className="changelog-meta">
+                <p className="m-0 text-sm text-foreground">{entry.summary}</p>
+                <p className="m-0 text-xs text-muted-foreground">
                   {formatTimestamp(entry.created_at)}
                   {entry.ticket_id ? ` · ${entry.ticket_id}` : ""}
                   {entry.proposal_id ? ` · ${entry.proposal_id}` : ""}

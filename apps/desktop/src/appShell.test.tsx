@@ -44,7 +44,7 @@ describe("App shell IA", () => {
 
   it("avoids duplicate empty-state instruction blocks", () => {
     const markup = renderToStaticMarkup(<App />);
-    expect(markup.match(/class=\"empty-state\"/g)).toHaveLength(1);
+    expect((markup.match(/\bempty-state\b/g) || []).length).toBe(1);
     expect(markup).not.toContain("press Enter to send");
   });
 
