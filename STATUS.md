@@ -69,20 +69,22 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
 - Safe execution: run agent-proposed changes and tests in an isolated sandbox (e.g., Docker) before applying patches to the working copy.
 - Model adapters: thin provider wrappers per vendor (OpenAI/Anthropic/Google), with a later option to unify via LiteLLM if needed.
 
-### Current State (2026-02-27)
+### Current State (2026-03-01)
 - Shipped / working:
   - This repository scaffold: ticketing board + PM/QA workflow docs.
-  - Desktop app skeleton (Tauri + React) with basic chat UI shell (T-0003).
+  - Desktop app skeleton (Tauri + React) with polished chat UI shell (T-0003, T-0026).
   - Release controls + user trust surfaces: stable/experimental channels, changelog, and rollback UX (T-0006, T-0008).
   - A process path for agentic iteration (tickets → in-progress → review → QA → done).
   - In-app feedback capture (local-only) with deterministic UI test coverage (T-0012).
   - Change proposal artifact persistence + decision gating (local-only) (T-0013).
   - Settings proposals panel (draft + validate + decide) (T-0016).
+  - Desktop nav hierarchy, progressive disclosure, and offline-state clarity (E-0003: T-0019–T-0025).
+  - UX/UI design refresh: copy, typography, hover states, tab bar, modern composer (T-0026).
+  - FastAPI runtime skeleton with stub responses + smoke verification (T-0004, T-0010).
 - Known gaps:
+  - **Real AI responses** — the chat returns a stub; no live model calls yet (top priority, M3).
   - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).
-  - The MVP chat experience and the “observe → propose → validate → release” loop.
   - An evaluation harness (tests/evals) that can gate changes automatically.
-  - Python runtime dependency management for FastAPI and runtime unit tests (recurring verification blockers).
 - Known risks:
   - UX churn: frequent changes can annoy more than help without stability controls.
   - Regressions: agent-written changes can break core flows without strong tests/evals.
@@ -90,13 +92,23 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- Most recent milestone: M1 — “First self-improvement cycle” (completed 2026-02-27)
+- Most recent milestone: M2 — “Desktop UX clarity and hierarchy” (completed 2026-03-01)
   - Completed scope:
-    - In-app feedback capture (T-0012).
-    - Proposal artifacts + validation results (T-0013).
-    - Proposal accept creates changelog entry (T-0015).
-    - Settings proposals panel (T-0016).
-- Next milestone: TBD (define next after running the M1 micro-validation probes in E-0002).
+    - Nav hierarchy + progressive disclosure (T-0019).
+    - Runtime offline UX — single actionable state (T-0020).
+    - Empty state + copy cleanup (T-0021).
+    - Micro-validation probes passed (T-0022).
+    - Runtime offline banner bug fix (T-0023).
+    - Settings controls clarity (T-0024).
+    - Offline safety copy + settings layout (T-0025).
+    - UX/UI design refresh — copy, typography, visual polish (T-0026).
+- Next milestone: M3 — “Real AI Chat / First Live Message” (E-0004)
+  - Goal: replace the stub response with a real OpenAI API call; full end-to-end chat.
+  - Scope:
+    - T-0027 OpenAI adapter + real chat endpoint (P1, first pickup).
+    - T-0030 API key configuration in Settings (P2).
+    - T-0029 Conversation context / multi-turn history (P2).
+    - T-0028 Streaming chat response (P2).
 
 ## Decisions (Draft; confirm/adjust as we start)
 Record important decisions so future agents do not re-litigate context.

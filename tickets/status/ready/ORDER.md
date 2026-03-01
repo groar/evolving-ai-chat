@@ -15,7 +15,10 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| (empty) | — | — | T-0022, T-0024, T-0025 accepted. PM to refresh queue when backlog has ready work. |
+| 1 | T-0027 OpenAI adapter + real chat endpoint | P1 | Blocks T-0028 and T-0029; must ship first. |
+| 2 | T-0030 API key configuration in Settings | P2 | Independent of T-0028/T-0029; ship next for usability. |
+| 3 | T-0029 Conversation context — multi-turn history | P2 | Depends on T-0027; independent of T-0028. |
+| 4 | T-0028 Streaming chat response | P2 | Depends on T-0027; independent of T-0029. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
