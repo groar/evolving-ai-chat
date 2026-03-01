@@ -81,8 +81,9 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Desktop nav hierarchy, progressive disclosure, and offline-state clarity (E-0003: T-0019–T-0025).
   - UX/UI design refresh: copy, typography, hover states, tab bar, modern composer (T-0026).
   - FastAPI runtime skeleton with stub responses + smoke verification (T-0004, T-0010).
+  - In-app API key configuration in Settings → Connections (T-0030); key stored via Tauri plugin-store; composer disabled when no key.
 - Known gaps:
-  - **Real AI responses** — T-0027 shipped; chat now calls OpenAI when `OPENAI_API_KEY` is set. Remaining M3: in-app key config (T-0030), streaming (T-0028), multi-turn context (T-0029).
+  - **Real AI responses** — T-0027, T-0030 shipped; chat calls OpenAI when key is set (env or in-app Settings → Connections). Remaining M3: streaming (T-0028), multi-turn context (T-0029).
   - **UI is system-centric** — meta-surfaces (Settings, proposals, flags) dominate over chat (M4 addresses this).
   - **Tech stack mismatch** — STATUS.md declares Tailwind + shadcn/ui + Zustand; code uses plain CSS + useState (M4 addresses this).
   - **No Markdown rendering** — assistant responses are plain text; no code highlighting or copy (M5 addresses this).

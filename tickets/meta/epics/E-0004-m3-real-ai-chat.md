@@ -5,7 +5,7 @@
 - Status: in-progress
 - Owner: pm-agent
 - Created: 2026-03-01
-- Updated: 2026-03-01 (T-0027 shipped)
+- Updated: 2026-03-01 (T-0027, T-0030 shipped)
 
 ## Goal
 Replace the stub chat response with a real LLM call so the user can send a message and receive an intelligent AI response. This is the core value loop — without it, everything else is scaffolding.
@@ -46,11 +46,11 @@ Replace the stub chat response with a real LLM call so the user can send a messa
 
 ## Progress (Ticket Status)
 - Done:
-  - T-0027 OpenAI adapter + real chat endpoint
+  - T-0027 OpenAI adapter + real chat endpoint (shipped 2026-03-01)
+  - T-0030 API key configuration in Settings (shipped 2026-03-01)
 - Ready:
   - T-0028 Streaming chat response
   - T-0029 Conversation context — multi-turn history
-  - T-0030 API key configuration in Settings
 
 ## Notes
 The app has had a polished UI shell since T-0026, validated UX clarity since E-0003, and the full change-loop infrastructure since E-0001/E-0002. The glaring gap is: no real AI. This milestone closes that gap in the simplest reasonable way (one provider, streaming, context, key config).

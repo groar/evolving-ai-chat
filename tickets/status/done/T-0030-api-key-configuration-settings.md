@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0030
-- Status: review
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -99,6 +99,7 @@ T-0027 requires `OPENAI_API_KEY` as an environment variable. For a power user co
 ## Evidence (Verification)
 - Tests run: npm test (21 pass), runtime unittest (13 pass).
 - Manual checks performed: QA checkpoint executed; UX checklist PASS.
+- User confirmation (2026-03-01): Works with real API key; removing key disables composer.
 
 ## Subtasks
 - [x] Add `@tauri-apps/plugin-store` dependency (check if already present)
@@ -115,3 +116,4 @@ The backend/frontend key handoff is the trickiest part. Simplest approach: on ap
 ## Change Log
 - 2026-03-01: Ticket created by PM.
 - 2026-03-01: Implementation complete. Added Tauri plugin-store, Connections subsection, POST /configure, api_key_configured in /state, composer disabled when no key, api_key_not_set handling.
+- 2026-03-01: PM acceptance. User confirmed real API key works; removing key disables composer. QA checkpoint passed.
