@@ -40,6 +40,17 @@ class MessageRecord(BaseModel):
     created_at: str
 
 
+class ModelEntry(BaseModel):
+    provider: str
+    model_id: str
+    display_name: str
+
+
+class ApiKeysStatus(BaseModel):
+    openai: bool = False
+    anthropic: bool = False
+
+
 class RuntimeStateResponse(BaseModel):
     active_conversation_id: str
     conversations: list[ConversationSummary]
@@ -48,6 +59,8 @@ class RuntimeStateResponse(BaseModel):
     changelog: list["ChangelogEntry"] = Field(default_factory=list)
     proposals: list["ChangeProposal"] = Field(default_factory=list)
     api_key_configured: bool = False
+    api_keys: ApiKeysStatus = Field(default_factory=ApiKeysStatus)
+    models: list[ModelEntry] = Field(default_factory=list)
 
 
 class RuntimeSettings(BaseModel):
@@ -147,7 +160,8 @@ class UpdateProposalDecisionRequest(BaseModel):
 
 
 class ConfigureRequest(BaseModel):
-    """Runtime configuration (e.g. API key from in-app settings)."""
+    """Runtime configuration (e.g. API keys from in-app settings)."""
     openai_api_key: str | None = Field(default=None, max_length=4000)
+    anthropic_api_key: str | None = Field(default=None, max_length=4000)
 
 

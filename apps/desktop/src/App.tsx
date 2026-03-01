@@ -39,7 +39,9 @@ export function App() {
   const isBooting = useRuntimeStore((s) => s.isBooting);
   const isResetting = useRuntimeStore((s) => s.isResetting);
   const apiKeyConfigured = useRuntimeStore((s) => s.apiKeyConfigured);
-  const apiKeySet = useRuntimeStore((s) => s.apiKeySet);
+  const apiKeys = useRuntimeStore((s) => s.apiKeys);
+  const models = useRuntimeStore((s) => s.models);
+  const selectedModelId = useRuntimeStore((s) => s.selectedModelId);
   const apiKeyError = useRuntimeStore((s) => s.apiKeyError);
   const isSavingApiKey = useRuntimeStore((s) => s.isSavingApiKey);
 
@@ -103,12 +105,19 @@ export function App() {
 
   const hasMessages = messages.length > 0;
   const isRuntimeOffline = runtimeIssue?.kind === "offline";
+  const selectedModel = useMemo(
+    () => models.find((m) => m.model_id === selectedModelId) ?? models[0],
+    [models, selectedModelId]
+  );
+  const hasKeyForSelectedModel =
+    selectedModel && apiKeys[selectedModel.provider as keyof typeof apiKeys];
   const canSend =
     composer.trim().length > 0 &&
     !isSending &&
     activeConversationId.length > 0 &&
     !isRuntimeOffline &&
-    apiKeyConfigured;
+    apiKeyConfigured &&
+    hasKeyForSelectedModel;
   const diagnosticsEnabled = Boolean(settings.active_flags[diagnosticsFlagKey]);
   const canRetry = !isSending && !isResetting;
   const canToggleFlags = settings.channel === "experimental" && !isSending && !isResetting;
@@ -267,9 +276,9 @@ export function App() {
               onCreateProposal={(input) => void runtime.createProposal(input)}
               onAddValidationRun={(proposalId, input) => void runtime.addProposalValidationRun(proposalId, input)}
               onUpdateProposalDecision={(proposalId, status, notes) => void runtime.updateProposalDecision(proposalId, status, notes)}
-              apiKeySet={apiKeySet}
-              onSaveApiKey={(key) => void runtime.saveApiKey(key)}
-              onRemoveApiKey={() => void runtime.removeApiKey()}
+              apiKeys={apiKeys}
+              onSaveApiKey={(provider, key) => void runtime.saveApiKey(provider, key)}
+              onRemoveApiKey={(provider) => void runtime.removeApiKey(provider)}
               apiKeyError={apiKeyError}
               isSavingApiKey={isSavingApiKey}
             />
@@ -463,6 +472,28 @@ export function App() {
         </div>
 
         <footer className="border-t border-border py-3 px-4 pb-4">
+          <div className="flex items-center gap-2 mb-2">
+            {models.length > 0 && (
+              <>
+                <label htmlFor="model-select" className="text-xs text-muted-foreground shrink-0">
+                  Model
+                </label>
+                <select
+                  id="model-select"
+                  className="text-xs border border-border rounded-lg bg-white py-1.5 px-2 text-foreground focus:outline-none focus:ring-2 focus:ring-[#efbe91]/50"
+                  value={selectedModelId}
+                  onChange={(e) => void runtime.setSelectedModel(e.target.value)}
+                >
+                  {models.map((m) => (
+                    <option key={m.model_id} value={m.model_id}>
+                      {m.display_name}
+                      {!apiKeys[m.provider as keyof typeof apiKeys] ? " (no key)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+          </div>
           <label htmlFor="composer" className="sr-only">
             Message composer
           </label>
@@ -475,12 +506,14 @@ export function App() {
               placeholder={
                 !apiKeyConfigured
                   ? "Add your API key in Settings to chat."
-                  : isRuntimeOffline
-                    ? "Can't reach the assistant — check your connection."
-                    : "Type a message..."
+                  : !hasKeyForSelectedModel
+                    ? "Add API key for this model in Settings."
+                    : isRuntimeOffline
+                      ? "Can't reach the assistant — check your connection."
+                      : "Type a message..."
               }
               rows={1}
-              disabled={isRuntimeOffline || !apiKeyConfigured}
+              disabled={isRuntimeOffline || !apiKeyConfigured || !hasKeyForSelectedModel}
               onChange={(event) => setComposer(event.target.value)}
               onKeyDown={handleComposerKeyDown}
             />

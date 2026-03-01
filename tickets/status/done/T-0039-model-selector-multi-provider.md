@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0039
-- Status: ready
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: core
@@ -54,12 +54,12 @@ Let users select which AI model to use for their conversations. Support at minim
 - F-20260301-002
 
 ## Acceptance Criteria
-- [ ] Users can select a model from a dropdown (at minimum: GPT-4o, GPT-4o-mini, Claude Sonnet, Claude Haiku).
-- [ ] Each provider requires its own API key; missing keys show a prompt to configure in Settings.
-- [ ] Selected model persists as a default (and optionally per-conversation).
-- [ ] Each assistant message records which model generated it (visible in message meta).
-- [ ] Backend supports an Anthropic adapter alongside the OpenAI adapter from T-0027.
-- [ ] Invalid/missing API key errors are handled gracefully (inline error, not a crash).
+- [x] Users can select a model from a dropdown (at minimum: GPT-4o, GPT-4o-mini, Claude Sonnet, Claude Haiku).
+- [x] Each provider requires its own API key; missing keys show a prompt to configure in Settings.
+- [x] Selected model persists as a default (and optionally per-conversation).
+- [x] Each assistant message records which model generated it (visible in message meta).
+- [x] Backend supports an Anthropic adapter alongside the OpenAI adapter from T-0027.
+- [x] Invalid/missing API key errors are handled gracefully (inline error, not a crash).
 
 ## Dependencies / Sequencing
 - Depends on: T-0027 (OpenAI adapter), T-0030 (API key configuration).
@@ -67,17 +67,29 @@ Let users select which AI model to use for their conversations. Support at minim
 - Sequencing notes: Ship after M3 (T-0027/T-0030) since it extends the model layer.
 
 ## Subtasks
-- [ ] Define model registry (provider, model ID, display name, required API key)
-- [ ] Implement Anthropic adapter (parallel to OpenAI adapter from T-0027)
-- [ ] Add model selector UI (dropdown in composer or top bar)
-- [ ] Extend API key configuration in Settings to support multiple providers
-- [ ] Persist default model preference
-- [ ] Add model_id to message meta on each response
-- [ ] Add tests (adapter, selection, API key gating)
+- [x] Define model registry (provider, model ID, display name, required API key)
+- [x] Implement Anthropic adapter (parallel to OpenAI adapter from T-0027)
+- [x] Add model selector UI (dropdown in composer or top bar)
+- [x] Extend API key configuration in Settings to support multiple providers
+- [x] Persist default model preference
+- [x] Add model_id to message meta on each response
+- [x] Add tests (adapter, selection, API key gating)
 
 ## Notes
 Consider a thin adapter interface that T-0027's OpenAI adapter already partially defines. The Anthropic adapter should implement the same interface. This sets up for future providers (Google, local models, LiteLLM) without refactoring.
 
+## Evidence
+- Model registry: `runtime/adapters/registry.py`
+- Anthropic adapter: `runtime/adapters/anthropic_adapter.py`
+- ChatRouter: `runtime/adapters/router.py`
+- Settings Connections: OpenAI + Anthropic API key inputs with Set/Remove
+- Model selector: native `<select>` in composer footer
+- Default model: stored via `apiKeyStore.setDefaultModelInStore`, sent in chat body as `model_id`
+- Message meta: already included `model_id` (e.g. `gpt-4o-mini | 2026-03-01T... | $0.00`)
+- Tests: `runtime.test_chat` 18 tests, `settingsPanel.test` 12 tests
+
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
 - 2026-03-01: Promoted to ready (PM run 21; queue replenishment).
+- 2026-03-01: Implementation complete. Moved to review.
+- 2026-03-01: QA checkpoint 2026-03-01-qa-checkpoint-t0039.md — PASS. PM accepted to done.

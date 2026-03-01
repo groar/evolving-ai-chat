@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0039 Model selector (multi-provider) | P2 | E-0006; depends on T-0027, T-0030. |
-| 2 | T-0040 Token/cost display per message | P3 | E-0006; depends on T-0027. |
+| 1 | T-0040 Token/cost display per message | P3 | E-0006; depends on T-0027. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

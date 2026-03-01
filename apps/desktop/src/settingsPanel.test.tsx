@@ -47,7 +47,7 @@ function renderPanel(overrides: Partial<ComponentProps<typeof SettingsPanel>> = 
       onCreateProposal={() => undefined}
       onAddValidationRun={() => undefined}
       onUpdateProposalDecision={() => undefined}
-      apiKeySet={false}
+      apiKeys={{ openai: false, anthropic: false }}
       onSaveApiKey={async () => undefined}
       onRemoveApiKey={async () => undefined}
       apiKeyError={null}
@@ -144,20 +144,19 @@ describe("SettingsPanel", () => {
     expect(markup).not.toContain("Could not load changelog, proposals, and settings.");
   });
 
-  it("renders Connections subsection with Not configured when API key not set", () => {
-    const markup = renderToStaticMarkup(renderPanel({ apiKeySet: false }));
+  it("renders Connections subsection with Not configured when API keys not set", () => {
+    const markup = renderToStaticMarkup(renderPanel({ apiKeys: { openai: false, anthropic: false } }));
     expect(markup).toContain("Connections");
-    expect(markup).toContain("OpenAI API key: Not configured");
+    expect(markup).toContain("Not configured");
     expect(markup).toContain("Save");
-    expect(markup).not.toContain("Set ✓");
-    expect(markup).not.toContain("Remove");
+    expect(markup).toContain("OpenAI");
+    expect(markup).toContain("Anthropic");
   });
 
   it("renders Connections subsection with Set when API key is set", () => {
-    const markup = renderToStaticMarkup(renderPanel({ apiKeySet: true }));
+    const markup = renderToStaticMarkup(renderPanel({ apiKeys: { openai: true, anthropic: false } }));
     expect(markup).toContain("Connections");
-    expect(markup).toContain("OpenAI API key: Set ✓");
+    expect(markup).toContain("Set ✓");
     expect(markup).toContain("Remove");
-    expect(markup).not.toContain("Not configured");
   });
 });

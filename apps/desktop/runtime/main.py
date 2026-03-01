@@ -7,10 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from openai import AuthenticationError, RateLimitError
 
-from .adapters import OpenAIAdapter
-from .adapters.openai_adapter import MissingApiKeyError
+from .adapters.anthropic_adapter import MissingApiKeyError as AnthropicMissingApiKeyError
+from .adapters.openai_adapter import MissingApiKeyError as OpenAIMissingApiKeyError
+from .adapters.registry import list_models
+from .adapters.router import ChatRouter
 from .models import (
     AddValidationRunRequest,
+    ApiKeysStatus,
     ChangeProposal,
     ChatRequest,
     ChatResponse,
@@ -19,6 +22,7 @@ from .models import (
     DeleteDataResponse,
     FeatureFlagUpdateRequest,
     HealthResponse,
+    ModelEntry,
     NewConversationRequest,
     NewConversationResponse,
     UpdateConversationRequest,
@@ -29,7 +33,7 @@ from .models import (
 )
 from .storage import RuntimeStorage
 
-chat_adapter = OpenAIAdapter()
+chat_router = ChatRouter()
 
 app = FastAPI(title="Evolving AI Chat Runtime", version="0.1.0")
 app.add_middleware(
@@ -50,7 +54,9 @@ def health() -> HealthResponse:
 @app.get("/state", response_model=RuntimeStateResponse)
 def state() -> RuntimeStateResponse:
     state_data = dict(storage.get_state())
-    state_data["api_key_configured"] = chat_adapter.has_api_key()
+    state_data["api_key_configured"] = chat_router.has_any_key()
+    state_data["api_keys"] = ApiKeysStatus(**chat_router.get_api_keys_status())
+    state_data["models"] = [ModelEntry(**m) for m in list_models()]
     return RuntimeStateResponse(**state_data)
 
 
@@ -89,8 +95,11 @@ def reset_experimental_flags() -> RuntimeSettingsResponse:
 
 @app.post("/configure")
 def configure(payload: ConfigureRequest) -> dict:
-    """Configure runtime (e.g. API key from in-app settings). Env var takes priority at startup."""
-    chat_adapter.configure(payload.openai_api_key or "")
+    """Configure runtime (e.g. API keys from in-app settings). Omitted keys are left unchanged."""
+    chat_router.configure(
+        openai_api_key=payload.openai_api_key,
+        anthropic_api_key=payload.anthropic_api_key,
+    )
     return {"ok": True}
 
 
@@ -167,7 +176,7 @@ def _chat_json(payload: ChatRequest) -> ChatResponse | JSONResponse:
                 {"role": m.role, "content": m.content}
                 for m in payload.history
             ]
-        reply, model_id, cost = chat_adapter.chat(
+        reply, model_id, cost = chat_router.chat(
             message=request_text,
             model_id=payload.model_id,
             history=history_dicts,
@@ -195,18 +204,20 @@ def _chat_json(payload: ChatRequest) -> ChatResponse | JSONResponse:
         )
         storage.try_auto_title_from_first_message(conversation_id)
         return response
-    except MissingApiKeyError:
+    except (OpenAIMissingApiKeyError, AnthropicMissingApiKeyError):
         storage.append_event("runtime_error", {"error": "api_key_not_set", "endpoint": "/chat"})
         return JSONResponse(status_code=503, content={"error": "api_key_not_set"})
+    except ValueError as error:
+        storage.append_event("runtime_error", {"detail": str(error), "endpoint": "/chat"})
+        if "Unknown model" in str(error):
+            return JSONResponse(status_code=400, content={"error": "unknown_model", "detail": str(error)})
+        raise HTTPException(status_code=404, detail=str(error)) from error
     except AuthenticationError:
         storage.append_event("runtime_error", {"error": "api_key_invalid", "endpoint": "/chat"})
         return JSONResponse(status_code=401, content={"error": "api_key_invalid"})
     except RateLimitError:
         storage.append_event("runtime_error", {"error": "rate_limit", "endpoint": "/chat"})
         return JSONResponse(status_code=429, content={"error": "rate_limit"})
-    except ValueError as error:
-        storage.append_event("runtime_error", {"detail": str(error), "endpoint": "/chat"})
-        raise HTTPException(status_code=404, detail=str(error)) from error
     except HTTPException:
         raise
     except Exception as error:
@@ -246,7 +257,7 @@ async def _stream_chat_sse(payload: ChatRequest) -> AsyncIterator[str]:
     model_id = "gpt-4o-mini"
     cost = 0.0
 
-    async for event in chat_adapter.chat_stream(
+    async for event in chat_router.chat_stream(
         message=request_text,
         model_id=payload.model_id,
         history=history_dicts,

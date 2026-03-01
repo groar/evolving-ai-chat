@@ -37,7 +37,7 @@ class ChatEndpointHappyPathTests(unittest.TestCase):
             def fake_chat(message: str, model_id: str | None = None, history=None):
                 return "Hello, human!", "gpt-4o-mini", 0.000015
 
-            with patch("runtime.main.chat_adapter.chat", fake_chat):
+            with patch("runtime.main.chat_router.chat", fake_chat):
                 client = _make_client(db_path)
                 resp = client.post("/chat", json={"message": "hello"})
 
@@ -56,7 +56,7 @@ class ChatEndpointHappyPathTests(unittest.TestCase):
             def fake_chat(message: str, model_id: str | None = None, history=None):
                 return "Hi", model_id or "gpt-4o-mini", 0.001
 
-            with patch("runtime.main.chat_adapter.chat", fake_chat):
+            with patch("runtime.main.chat_router.chat", fake_chat):
                 client = _make_client(db_path)
                 resp = client.post(
                     "/chat",
@@ -78,7 +78,7 @@ class ChatEndpointHappyPathTests(unittest.TestCase):
                 seen_history = history
                 return "reply two", "gpt-4o-mini", 0.00002
 
-            with patch("runtime.main.chat_adapter.chat", fake_chat):
+            with patch("runtime.main.chat_router.chat", fake_chat):
                 client = _make_client(db_path)
                 resp = client.post(
                     "/chat",
@@ -110,7 +110,7 @@ class ChatEndpointHappyPathTests(unittest.TestCase):
                 seen_history = history
                 return "Hi", "gpt-4o-mini", 0.00001
 
-            with patch("runtime.main.chat_adapter.chat", fake_chat):
+            with patch("runtime.main.chat_router.chat", fake_chat):
                 client = _make_client(db_path)
                 resp = client.post("/chat", json={"message": "hello", "history": []})
 
@@ -129,7 +129,7 @@ class ChatEndpointHappyPathTests(unittest.TestCase):
                 seen_history = history if history is not None else []
                 return "Hi", "gpt-4o-mini", 0.00001
 
-            with patch("runtime.main.chat_adapter.chat", fake_chat):
+            with patch("runtime.main.chat_router.chat", fake_chat):
                 client = _make_client(db_path)
                 resp = client.post("/chat", json={"message": "hello"})
 
@@ -182,7 +182,7 @@ class ChatEndpointErrorTests(unittest.TestCase):
                 raise MissingApiKeyError()
 
             with patch(
-                "runtime.main.chat_adapter.chat",
+                "runtime.main.chat_router.chat",
                 side_effect=fake_chat_missing_key,
             ):
                 client = _make_client(db_path)
@@ -206,7 +206,7 @@ class ChatEndpointErrorTests(unittest.TestCase):
                 os.environ, {"OPENAI_API_KEY": "invalid"}, clear=False
             ):
                 with patch(
-                    "runtime.main.chat_adapter.chat",
+                    "runtime.main.chat_router.chat",
                     side_effect=fake_chat_401,
                 ):
                     client = _make_client(db_path)
@@ -228,7 +228,7 @@ class ChatEndpointErrorTests(unittest.TestCase):
 
             with patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test"}, clear=False):
                 with patch(
-                    "runtime.main.chat_adapter.chat",
+                    "runtime.main.chat_router.chat",
                     side_effect=fake_chat_429,
                 ):
                     client = _make_client(db_path)
@@ -255,7 +255,7 @@ class ChatStreamingTests(unittest.TestCase):
                 yield {"delta": " world"}
                 yield {"done": True, "model_id": "gpt-4o-mini", "cost": 0.00001}
 
-            with patch("runtime.main.chat_adapter.chat_stream", fake_stream):
+            with patch("runtime.main.chat_router.chat_stream", fake_stream):
                 client = _make_client(db_path)
                 resp = client.post(
                     "/chat",
@@ -275,7 +275,7 @@ class ConfigureEndpointTests(unittest.TestCase):
     def test_configure_accepts_key_and_returns_ok(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             db_path = str(Path(temp_dir) / "runtime.db")
-            with patch("runtime.main.chat_adapter") as mock_adapter:
+            with patch("runtime.main.chat_router") as mock_adapter:
                 client = _make_client(db_path)
                 resp = client.post(
                     "/configure",
@@ -283,25 +283,32 @@ class ConfigureEndpointTests(unittest.TestCase):
                 )
                 self.assertEqual(resp.status_code, 200)
                 self.assertEqual(resp.json(), {"ok": True})
-                mock_adapter.configure.assert_called_once_with("sk-test-key")
+                mock_adapter.configure.assert_called_once_with(
+                    openai_api_key="sk-test-key", anthropic_api_key=None
+                )
 
     def test_state_includes_api_key_configured(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             db_path = str(Path(temp_dir) / "runtime.db")
-            with patch("runtime.main.chat_adapter") as mock_adapter:
-                mock_adapter.has_api_key.return_value = True
+            with patch("runtime.main.chat_router") as mock_adapter:
+                mock_adapter.has_any_key.return_value = True
+                mock_adapter.get_api_keys_status.return_value = {"openai": True, "anthropic": False}
                 client = _make_client(db_path)
                 resp = client.get("/state")
                 self.assertEqual(resp.status_code, 200)
                 self.assertTrue(resp.json().get("api_key_configured"))
+                self.assertIn("models", resp.json())
+                self.assertIn("api_keys", resp.json())
+                self.assertGreater(len(resp.json()["models"]), 0)
 
 
 class ConversationRenameTests(unittest.TestCase):
     def test_patch_conversation_updates_title(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             db_path = str(Path(temp_dir) / "runtime.db")
-            with patch("runtime.main.chat_adapter") as mock_adapter:
-                mock_adapter.has_api_key.return_value = True
+            with patch("runtime.main.chat_router") as mock_adapter:
+                mock_adapter.has_any_key.return_value = True
+                mock_adapter.get_api_keys_status.return_value = {"openai": True, "anthropic": False}
                 client = _make_client(db_path)
                 # Create conversation
                 resp = client.post(
@@ -344,7 +351,7 @@ class AutoTitleTests(unittest.TestCase):
                 return "Hello!", "gpt-4o-mini", 0.00001
 
             with patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test"}, clear=False):
-                with patch("runtime.main.chat_adapter.chat", fake_chat):
+                with patch("runtime.main.chat_router.chat", fake_chat):
                     client = _make_client(db_path)
                     # Create new conversation
                     resp = client.post(

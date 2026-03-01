@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { railBtn, railBtnDanger, settingsInput, settingsTextarea } from "@/lib/ui-classes";
+import type { ProviderId } from "./apiKeyStore";
 
 type RuntimeSettings = {
   channel: "stable" | "experimental";
@@ -74,9 +75,9 @@ type SettingsPanelProps = {
   onAddValidationRun: (proposalId: string, input: AddValidationRunInput) => void;
   onUpdateProposalDecision: (proposalId: string, status: "accepted" | "rejected", notes: string) => void;
   /** API key configuration (Connections subsection) */
-  apiKeySet: boolean;
-  onSaveApiKey: (key: string) => Promise<void>;
-  onRemoveApiKey: () => Promise<void>;
+  apiKeys: { openai: boolean; anthropic: boolean };
+  onSaveApiKey: (provider: ProviderId, key: string) => Promise<void>;
+  onRemoveApiKey: (provider: ProviderId) => Promise<void>;
   apiKeyError: string | null;
   isSavingApiKey: boolean;
 };
@@ -163,14 +164,14 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onCreateProposal,
     onAddValidationRun,
     onUpdateProposalDecision,
-    apiKeySet,
+    apiKeys,
     onSaveApiKey,
     onRemoveApiKey,
     apiKeyError,
     isSavingApiKey
   } = props;
 
-  const [apiKeyInput, setApiKeyInput] = useState("");
+  const [apiKeyInputs, setApiKeyInputs] = useState<Record<ProviderId, string>>({ openai: "", anthropic: "" });
   const [proposalTitle, setProposalTitle] = useState("");
   const [proposalRationale, setProposalRationale] = useState("");
   const [proposalFeedbackIdsCsv, setProposalFeedbackIdsCsv] = useState("");
@@ -197,20 +198,20 @@ export function SettingsPanel(props: SettingsPanelProps) {
     });
   }
 
-  async function handleSaveApiKey() {
-    const key = apiKeyInput.trim();
+  async function handleSaveApiKey(provider: ProviderId) {
+    const key = apiKeyInputs[provider].trim();
     if (key.length === 0) return;
     try {
-      await onSaveApiKey(key);
-      setApiKeyInput("");
+      await onSaveApiKey(provider, key);
+      setApiKeyInputs((prev) => ({ ...prev, [provider]: "" }));
     } catch {
       // Error surfaced via apiKeyError prop
     }
   }
 
-  async function handleRemoveApiKey() {
+  async function handleRemoveApiKey(provider: ProviderId) {
     try {
-      await onRemoveApiKey();
+      await onRemoveApiKey(provider);
     } catch {
       // Error surfaced via apiKeyError prop
     }
@@ -297,51 +298,58 @@ export function SettingsPanel(props: SettingsPanelProps) {
         <p className="m-0 text-sm font-semibold text-foreground">Connections</p>
       </div>
       <p className="m-0 text-sm text-foreground">
-        {apiKeySet ? "OpenAI API key: Set ✓" : "OpenAI API key: Not configured"}
+        OpenAI: {apiKeys.openai ? "Set ✓" : "Not configured"} · Anthropic: {apiKeys.anthropic ? "Set ✓" : "Not configured"}
       </p>
-      {apiKeySet ? (
-        <div className="flex items-center gap-2.5">
-          <span className="font-mono tracking-[0.15em]" aria-hidden>••••••••••••</span>
-          <button
-            type="button"
-            className={railBtnDanger}
-            onClick={() => void handleRemoveApiKey()}
-            disabled={isBusy || isSavingApiKey}
-          >
-            Remove
-          </button>
-        </div>
-      ) : (
-        <div className="grid gap-2">
-          <label htmlFor="api-key-input" className="sr-only">
-            OpenAI API key
-          </label>
-          <input
-            id="api-key-input"
-            className={settingsInput}
-            type="password"
-            placeholder="OpenAI API key"
-            value={apiKeyInput}
-            onChange={(event) => setApiKeyInput(event.target.value)}
-            onKeyDown={(event) => event.key === "Enter" && void handleSaveApiKey()}
-            disabled={isBusy || isSavingApiKey}
-            autoComplete="off"
-          />
-          {apiKeyError && (
-            <p role="alert" className="m-0 border border-[#f4a58b] rounded-lg bg-[#fff0ea] text-destructive text-xs py-2 px-2.5">
-              {apiKeyError}
-            </p>
+      {(["openai", "anthropic"] as const).map((provider) => (
+        <div key={provider} className="grid gap-2">
+          <p className="m-0 text-sm font-medium text-foreground">
+            {provider === "openai" ? "OpenAI" : "Anthropic"} API key
+          </p>
+          {apiKeys[provider] ? (
+            <div className="flex items-center gap-2.5">
+              <span className="font-mono tracking-[0.15em]" aria-hidden>••••••••••••</span>
+              <button
+                type="button"
+                className={railBtnDanger}
+                onClick={() => void handleRemoveApiKey(provider)}
+                disabled={isBusy || isSavingApiKey}
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              <label htmlFor={`api-key-input-${provider}`} className="sr-only">
+                {provider === "openai" ? "OpenAI" : "Anthropic"} API key
+              </label>
+              <input
+                id={`api-key-input-${provider}`}
+                className={settingsInput}
+                type="password"
+                placeholder={provider === "openai" ? "sk-..." : "sk-ant-..."}
+                value={apiKeyInputs[provider]}
+                onChange={(event) => setApiKeyInputs((prev) => ({ ...prev, [provider]: event.target.value }))}
+                onKeyDown={(event) => event.key === "Enter" && void handleSaveApiKey(provider)}
+                disabled={isBusy || isSavingApiKey}
+                autoComplete="off"
+              />
+              {apiKeyError && (
+                <p role="alert" className="m-0 border border-[#f4a58b] rounded-lg bg-[#fff0ea] text-destructive text-xs py-2 px-2.5">
+                  {apiKeyError}
+                </p>
+              )}
+              <button
+                type="button"
+                className={`${railBtn} w-fit min-w-[100px]`}
+                onClick={() => void handleSaveApiKey(provider)}
+                disabled={isBusy || isSavingApiKey || apiKeyInputs[provider].trim().length === 0}
+              >
+                {isSavingApiKey ? "Saving…" : "Save"}
+              </button>
+            </div>
           )}
-          <button
-            type="button"
-            className={`${railBtn} w-fit min-w-[100px]`}
-            onClick={() => void handleSaveApiKey()}
-            disabled={isBusy || isSavingApiKey || apiKeyInput.trim().length === 0}
-          >
-            {isSavingApiKey ? "Saving…" : "Save"}
-          </button>
         </div>
-      )}
+      ))}
 
       <div className="flex justify-between items-center gap-2">
         <p className="m-0 text-sm font-semibold text-foreground">Works offline</p>

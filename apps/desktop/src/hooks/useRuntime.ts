@@ -1,6 +1,14 @@
 import type { RefObject } from "react";
 import { useCallback, useEffect } from "react";
-import { getApiKeyFromStore, removeApiKeyFromStore, setApiKeyInStore } from "../apiKeyStore";
+import {
+  type ProviderId,
+  getAllApiKeysFromStore,
+  getApiKeyFromStore,
+  getDefaultModelFromStore,
+  removeApiKeyFromStore,
+  setApiKeyInStore,
+  setDefaultModelInStore
+} from "../apiKeyStore";
 import { useConversationStore } from "../stores/conversationStore";
 import { useRuntimeStore } from "../stores/runtimeStore";
 import { defaultSettings, useSettingsStore } from "../stores/settingsStore";
@@ -53,6 +61,8 @@ type RuntimeStatePayload = {
   changelog: ChangelogEntry[];
   proposals: ChangeProposal[];
   api_key_configured?: boolean;
+  api_keys?: { openai?: boolean; anthropic?: boolean };
+  models?: Array<{ provider: string; model_id: string; display_name: string }>;
 };
 
 function applyState(
@@ -76,6 +86,18 @@ function applyState(
   settingsStore.setChangelog(payload.changelog ?? []);
   settingsStore.setProposals(payload.proposals ?? []);
   runtimeStore.setApiKeyConfigured(Boolean(payload.api_key_configured));
+  if (payload.api_keys) {
+    runtimeStore.setApiKeys({
+      openai: Boolean(payload.api_keys.openai),
+      anthropic: Boolean(payload.api_keys.anthropic)
+    });
+    runtimeStore.setApiKeySet(payload.api_keys.openai || payload.api_keys.anthropic);
+  } else {
+    runtimeStore.setApiKeySet(Boolean(payload.api_key_configured));
+  }
+  if (payload.models && payload.models.length > 0) {
+    runtimeStore.setModels(payload.models);
+  }
   runtimeStore.setRuntimeIssue(null);
 }
 
@@ -385,17 +407,25 @@ export function useRuntime() {
     [refreshState]
   );
 
-  const saveApiKey = useCallback(async (key: string) => {
+  const saveApiKey = useCallback(async (provider: ProviderId, key: string) => {
     const rt = useRuntimeStore.getState();
     if (rt.isSavingApiKey || key.trim().length === 0) return;
     rt.setIsSavingApiKey(true);
     rt.setApiKeyError(null);
     try {
-      await setApiKeyInStore(key.trim());
+      const allKeys = await getAllApiKeysFromStore();
+      await setApiKeyInStore(key.trim(), provider);
       await fetch(`${runtimeBase}/configure`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ openai_api_key: key.trim() })
+        body: JSON.stringify({
+          openai_api_key: provider === "openai" ? key.trim() : allKeys.openai ?? undefined,
+          anthropic_api_key: provider === "anthropic" ? key.trim() : allKeys.anthropic ?? undefined
+        })
+      });
+      rt.setApiKeys({
+        openai: provider === "openai" ? true : Boolean(allKeys.openai),
+        anthropic: provider === "anthropic" ? true : Boolean(allKeys.anthropic)
       });
       rt.setApiKeySet(true);
       rt.setApiKeyConfigured(true);
@@ -406,25 +436,40 @@ export function useRuntime() {
     }
   }, []);
 
-  const removeApiKey = useCallback(async () => {
+  const removeApiKey = useCallback(async (provider: ProviderId) => {
     const rt = useRuntimeStore.getState();
     if (rt.isSavingApiKey) return;
     rt.setIsSavingApiKey(true);
     rt.setApiKeyError(null);
     try {
-      await removeApiKeyFromStore();
+      await removeApiKeyFromStore(provider);
+      const allKeys = await getAllApiKeysFromStore();
       await fetch(`${runtimeBase}/configure`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ openai_api_key: null })
+        body: JSON.stringify({
+          openai_api_key: provider === "openai" ? "" : allKeys.openai ?? undefined,
+          anthropic_api_key: provider === "anthropic" ? "" : allKeys.anthropic ?? undefined
+        })
       });
-      rt.setApiKeySet(false);
-      rt.setApiKeyConfigured(false);
+      const hasAny = Boolean(allKeys.openai) || Boolean(allKeys.anthropic);
+      if (provider === "openai") {
+        rt.setApiKeys({ openai: false, anthropic: Boolean(allKeys.anthropic) });
+      } else {
+        rt.setApiKeys({ openai: Boolean(allKeys.openai), anthropic: false });
+      }
+      rt.setApiKeySet(hasAny);
+      rt.setApiKeyConfigured(hasAny);
     } catch {
       rt.setApiKeyError("Could not remove API key. Please try again.");
     } finally {
       rt.setIsSavingApiKey(false);
     }
+  }, []);
+
+  const setSelectedModel = useCallback(async (modelId: string) => {
+    useRuntimeStore.getState().setSelectedModelId(modelId);
+    await setDefaultModelInStore(modelId);
   }, []);
 
   const sendMessage = useCallback(
@@ -445,9 +490,11 @@ export function useRuntime() {
       conv.setIsSending(true);
       conv.setStreamingText("");
 
+      const modelId = rt.selectedModelId || "gpt-4o-mini";
       const body = JSON.stringify({
         message: nextText,
         conversation_id: conv.activeConversationId,
+        model_id: modelId,
         history: conv.messages.map((m) => ({ role: m.role, content: m.text }))
       });
 
@@ -524,21 +571,27 @@ export function useRuntime() {
   }, [refreshState]);
 
   useEffect(() => {
-    getApiKeyFromStore().then((key) => {
-      useRuntimeStore.getState().setApiKeySet(Boolean(key));
+    Promise.all([getAllApiKeysFromStore(), getDefaultModelFromStore()]).then(([keys, modelId]) => {
+      const rt = useRuntimeStore.getState();
+      rt.setApiKeySet(Boolean(keys.openai) || Boolean(keys.anthropic));
+      if (modelId) rt.setSelectedModelId(modelId);
     });
   }, []);
 
   useEffect(() => {
     if (runtimeIssue || isBooting) return;
     let cancelled = false;
-    getApiKeyFromStore().then(async (storedKey) => {
-      if (cancelled || !storedKey) return;
+    getAllApiKeysFromStore().then(async (keys) => {
+      const hasAny = Boolean(keys.openai) || Boolean(keys.anthropic);
+      if (cancelled || !hasAny) return;
       try {
         await fetch(`${runtimeBase}/configure`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ openai_api_key: storedKey })
+          body: JSON.stringify({
+            openai_api_key: keys.openai ?? undefined,
+            anthropic_api_key: keys.anthropic ?? undefined
+          })
         });
         if (!cancelled) await refreshState(useConversationStore.getState().activeConversationId);
       } catch {
@@ -573,6 +626,7 @@ export function useRuntime() {
     updateProposalDecision,
     saveApiKey,
     removeApiKey,
+    setSelectedModel,
     sendMessage
   };
 }
