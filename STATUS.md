@@ -96,11 +96,11 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- Active milestone: M7 — "Improvement Class Expansion" (E-0009, scoped 2026-03-01)
-  - E-0008 (M6.1 loop legibility) closed: T-0051 tier-2 comprehension re-probe **PASS**. M7 expansion unblocked.
-  - M7 scope: proposal generation quality (T-0053), feedback entry point copy reframe (T-0054), system prompt / persona tuning improvement class (T-0055), design spec first (T-0052 ✓ done), tier-2 validation + closure last (T-0056).
-  - T-0052 done: `docs/m7-improvement-classes.md` created (improvement class schema, trigger rules, proposal quality contract). Unblocks T-0053 and T-0055.
-  - Ready queue: T-0054 (rank 1) → T-0053 → T-0055 → T-0056.
+- **Active milestone: M8 — "Agentic Code Self-Modification Loop" (E-0010, scoped 2026-03-01)**
+  - Pivot from M7 improvement-class/config approach (see F-20260301-008). The intended loop is: feedback → agent drafts a source code patch → user reviews diff → accept or reject → code applied + app rebuilds.
+  - M7 (E-0009) superseded: T-0056 cancelled, T-0057 cancelled. T-0052–T-0055 are done but their scope (config edits) is superseded.
+  - Ready queue: T-0058 (rank 1) — M8 design spec (feedback → patch → diff UI → apply/rollback). Implementation tickets created from spec.
+- Previous: M7 — "Improvement Class Expansion" (E-0009) (superseded 2026-03-01; T-0052–T-0055 done, T-0056 cancelled)
 - Previous: M6.1 — "Loop Legibility and UX Clarity" (E-0008) (completed 2026-03-01)
   - T-0048, T-0049, T-0050 (M6.1 batch), T-0051 (tier-2 re-probe). Comprehension gate passed.
 - Previous: M6 — "First Agent-Proposed Change" (E-0007) (completed 2026-03-01; comprehension gate failed → E-0008 scoped)
@@ -125,5 +125,6 @@ Record important decisions so future agents do not re-litigate context.
 | 2026-03-01 | Chat-first, then self-evolve | Self-evolution infrastructure was over-invested before core chat works; course-correct by shipping M3 fast, then M4 (UI simplification) and M5 (chat UX table stakes) before resuming self-evolution work | F-20260301-002, E-0005, E-0006 |
 
 ## Open Questions (Pick early; unblock architecture)
-- When should self-evolution resume? After M5 (safe bet) or overlap with M4/M5 (faster but riskier)?
-- Should M6 (First Agent-Proposed Change) target UI changes, system prompt tuning, or tool additions?
+- M8 design spec (T-0058): what is the right patch scope guard in M8 (UI-only allowlist, prompt constraint, or both)?
+- M8 build step: hot-reload on patch accept, or full Tauri rebuild? What's the minimum viable "change is live" signal?
+- M8 diff UI: unified diff view inline in the app, or a dedicated "Proposed Changes" panel?

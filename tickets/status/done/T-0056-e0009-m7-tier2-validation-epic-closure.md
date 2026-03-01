@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0056
-- Status: ready
+- Status: cancelled
 - Priority: P1
 - Type: validation
 - Area: core
@@ -49,7 +49,8 @@ Run the E-0009 tier-2 value + trust probe with the project sponsor after the M7 
 - Blocks: E-0009 epic closure; M8 scoping.
 
 ## Evidence (Verification)
-_(to be filled during implementation)_
+Tier-2 probe not run. Approach superseded — see F-20260301-008 and E-0010.
 
 ## Change Log
 - 2026-03-01: Created by PM checkpoint (M7 scoping). Ordered last in M7 ready queue. Moved to ready.
+- 2026-03-01: Cancelled. Primary user confirmed the M7 improvement-class/config approach (what this probe was validating) does not match the intended vision. The expected loop is feedback → code changes, not feedback → config string edits. E-0009 closed as superseded; M8 (E-0010) scoped as first milestone targeting actual source-code modification. F-20260301-008.

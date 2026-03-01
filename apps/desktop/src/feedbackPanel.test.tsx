@@ -108,4 +108,35 @@ describe("FeedbackPanel", () => {
     expect(markup).toContain("Help improve this software");
     expect(markup).toContain("conversation conv-1");
   });
+
+  it("shows 'Generate suggestion from this' per item when onGenerateFromFeedback is provided", () => {
+    const items = [
+      {
+        id: "fb-2026-03-01-abc",
+        timestamp: "2026-03-01T10:00:00.000Z",
+        text: "responses are too verbose",
+        tags: ["tone" as const],
+        status: "new" as const,
+        context_pointer: "conv-1:msg-2"
+      }
+    ];
+    const markup = renderToStaticMarkup(
+      renderPanel({ items, onGenerateFromFeedback: () => undefined })
+    );
+    expect(markup).toContain("Generate suggestion from this");
+  });
+
+  it("does not show 'Generate suggestion from this' when onGenerateFromFeedback is not provided", () => {
+    const items = [
+      {
+        id: "fb-2026-03-01-abc",
+        timestamp: "2026-03-01T10:00:00.000Z",
+        text: "responses are too verbose",
+        tags: ["tone" as const],
+        status: "new" as const
+      }
+    ];
+    const markup = renderToStaticMarkup(renderPanel({ items }));
+    expect(markup).not.toContain("Generate suggestion from this");
+  });
 });

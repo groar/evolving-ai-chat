@@ -19,6 +19,8 @@ type FeedbackPanelProps = {
   onChangeDraftText: (value: string) => void;
   onToggleTag: (tag: FeedbackTag) => void;
   onSubmitFeedback: () => void;
+  /** When provided, show "Generate suggestion" button per item to create a proposal from feedback */
+  onGenerateFromFeedback?: (feedbackId: string) => void;
 };
 
 function formatTimestamp(value: string): string {
@@ -55,7 +57,8 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
     onToggleOpen,
     onChangeDraftText,
     onToggleTag,
-    onSubmitFeedback
+    onSubmitFeedback,
+    onGenerateFromFeedback
   } = props;
 
   const canSubmit = draftText.trim().length > 0 && !isBusy;
@@ -166,6 +169,15 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                   {item.tags.length > 0 ? item.tags.join(", ") : "untagged"}
                   {item.context_pointer ? ` · ${item.context_pointer}` : ""}
                 </p>
+                {onGenerateFromFeedback && (
+                  <button
+                    type="button"
+                    className="text-xs underline text-primary hover:text-primary/80 mt-1 w-fit"
+                    onClick={() => onGenerateFromFeedback(item.id)}
+                  >
+                    Generate suggestion from this
+                  </button>
+                )}
               </li>
             ))}
           </ul>

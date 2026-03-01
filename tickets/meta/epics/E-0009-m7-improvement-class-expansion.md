@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: E-0009
-- Status: active
+- Status: superseded
 - Owner: pm-agent
 - Created: 2026-03-01
 - Updated: 2026-03-01
@@ -69,4 +69,11 @@ Expand the observe-propose-validate loop beyond the single `settings-trust-micro
 - T-0056: E-0009 M7 tier-2 validation + epic closure (ready; order last)
 
 ## Progress
-- Active as of 2026-03-01. No tickets started yet.
+- T-0052 (design spec): done
+- T-0053 (proposal quality): done
+- T-0054 (entry point copy): done
+- T-0055 (system-prompt-persona class): done
+- T-0056 (tier-2 validation): cancelled — see below
+
+## Closure Note (2026-03-01)
+E-0009 is superseded by E-0010 (M8). The primary user confirmed the improvement-class approach (config string edits) does not match the intended vision. The expected self-evolution loop is: feedback → the app modifies its own source code → user reviews a diff and accepts or rejects. M7 work built real infrastructure (improvement class registry, proposal generation quality, concrete proposal shapes, system prompt apply/rollback) and those concepts may inform M8 design, but the tier-2 probe (T-0056) is cancelled and the loop direction pivots to source-code modification. See F-20260301-008.

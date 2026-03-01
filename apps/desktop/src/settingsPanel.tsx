@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { railBtn, railBtnDanger, settingsInput, settingsTextarea } from "@/lib/ui-classes";
 import { getClassById } from "./improvementClasses";
 import { routeFeedbackToClass } from "./improvementClasses";
@@ -85,6 +85,9 @@ type SettingsPanelProps = {
   personaAdditions: PersonaAddition[];
   /** Feedback items for Generate-from-feedback and proposal form datalist */
   feedbackItems: Array<{ id: string; text: string; tags?: string[] }>;
+  /** When set, auto-generate proposal from this feedback id and open form (e.g. from Improve section) */
+  pendingGenerateFeedbackId?: string | null;
+  onClearPendingGenerate?: () => void;
   isBusy: boolean;
   canToggleFlags: boolean;
   configuredDiagnosticsFlag: boolean;
@@ -177,6 +180,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
     proposals,
     personaAdditions,
     feedbackItems,
+    pendingGenerateFeedbackId,
+    onClearPendingGenerate,
     isBusy,
     canToggleFlags,
     configuredDiagnosticsFlag,
@@ -214,6 +219,17 @@ export function SettingsPanel(props: SettingsPanelProps) {
     () => [...feedbackItems].sort((a, b) => b.id.localeCompare(a.id)),
     [feedbackItems]
   );
+
+  // When Improve section requests "generate from" a feedback id, run generation and open form
+  useEffect(() => {
+    if (!pendingGenerateFeedbackId || !onClearPendingGenerate) return;
+    const item = feedbackItems.find((f) => f.id === pendingGenerateFeedbackId);
+    onClearPendingGenerate();
+    if (!item) return;
+    generateFromFeedback(item);
+    // generateFromFeedback is stable (uses state setters); omit to avoid effect churn
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingGenerateFeedbackId, onClearPendingGenerate, feedbackItems]);
 
   function editorFor(proposalId: string): ProposalEditorState {
     return proposalEditors[proposalId] ?? defaultProposalEditorState;
@@ -533,7 +549,12 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </p>
       )}
 
-      <details className="border-t border-dashed border-border pt-2.5 grid gap-2.5" name="settings-improvements">
+      <details
+        id="settings-improvements"
+        className="border-t border-dashed border-border pt-2.5 grid gap-2.5"
+        name="settings-improvements"
+        open={sortedFeedbackItems.length > 0}
+      >
         <summary className="cursor-pointer text-sm font-semibold text-foreground">Improvements</summary>
         <p className="m-0 text-sm text-foreground">Suggestion = local proposal you review. Nothing ships automatically.</p>
         <p className="m-0 text-xs text-muted-foreground">Feedback → Draft → Run checks → Decide</p>

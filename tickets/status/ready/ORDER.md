@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0056-e0009-m7-tier2-validation-epic-closure.md | P1 | Validation; T-0053–T-0055 done; pick up for E-0009 tier-2 gate. |
+| 1 | T-0058 | P1 | M8 design spec — agentic code modification loop. Complete before any M8 implementation starts. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -24,4 +24,4 @@ This file is the source of truth for ready-ticket pickup order.
 ## Next Up (Backlog)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| — | _(empty)_ | | | M8 scope to be defined after E-0009 tier-2 gate passes (T-0056). |
+| — | _(pending T-0058)_ | | E-0010 | M8 implementation tickets (agent integration, diff UI, apply/rollback) to be created from T-0058 design spec. |

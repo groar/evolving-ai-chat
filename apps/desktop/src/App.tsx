@@ -64,6 +64,7 @@ export function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [pendingGenerateFeedbackId, setPendingGenerateFeedbackId] = useState<string | null>(null);
   const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
   const [renameError, setRenameError] = useState<string | null>(null);
@@ -84,16 +85,21 @@ export function App() {
     }
   }, [streamingText]);
 
-  // When opening settings from the per-message Improve button, scroll to Improve section after sheet is visible.
+  // When opening settings from the per-message Improve button, scroll to the right section.
+  // If there are captured feedback items, scroll to Improvements so user can generate a suggestion.
   useEffect(() => {
     if (!settingsOpen || !feedback.isOpen || !feedback.contextPointer?.includes(":")) {
       return;
     }
     const timeoutId = window.setTimeout(() => {
-      feedbackSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const target =
+        feedback.items.length > 0
+          ? document.getElementById("settings-improvements")
+          : feedbackSectionRef.current;
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 350);
     return () => window.clearTimeout(timeoutId);
-  }, [settingsOpen, feedback.isOpen, feedback.contextPointer]);
+  }, [settingsOpen, feedback.isOpen, feedback.contextPointer, feedback.items.length]);
 
   useEffect(() => {
     function handleKeyDown(e: globalThis.KeyboardEvent) {
@@ -273,6 +279,8 @@ export function App() {
               proposals={proposals}
               personaAdditions={personaAdditions}
               feedbackItems={feedback.items.map((item) => ({ id: item.id, text: item.text, tags: item.tags }))}
+              pendingGenerateFeedbackId={pendingGenerateFeedbackId}
+              onClearPendingGenerate={() => setPendingGenerateFeedbackId(null)}
               isBusy={isSending || isResetting || isProposalBusy}
               canToggleFlags={canToggleFlags}
               configuredDiagnosticsFlag={configuredDiagnosticsFlag}
@@ -313,6 +321,13 @@ export function App() {
                 onChangeDraftText={feedback.setDraftText}
                 onToggleTag={feedback.toggleTag}
                 onSubmitFeedback={feedback.submitFeedback}
+                onGenerateFromFeedback={(id) => {
+                  setPendingGenerateFeedbackId(id);
+                  document.getElementById("settings-improvements")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                  });
+                }}
               />
             </section>
             <section className="border-t border-border pt-4">
