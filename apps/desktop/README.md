@@ -66,6 +66,7 @@ npm run smoke:fastapi -- --assume-running
 Expected behavior:
 - If runtime is not started on `127.0.0.1:8787`, smoke fails and the UI shows "Runtime unavailable".
 - Once runtime is available, smoke should pass and chat requests can receive responses.
+- For real AI responses, set `OPENAI_API_KEY` before starting the runtime (see `runtime/README.md`).
 - `smoke:fastapi` writes a timestamped artifact log under `tickets/meta/qa/artifacts/runtime-smoke/`.
 
 Run runtime unit tests in the same declared dependency environment:

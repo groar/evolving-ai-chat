@@ -34,6 +34,7 @@ const checks = [
         payload.reply.length > 0 &&
         typeof payload.model_id === "string" &&
         payload.model_id.length > 0 &&
+        payload.model_id !== "stub" &&
         typeof payload.created_at === "string" &&
         payload.created_at.length > 0 &&
         typeof payload.cost === "number"

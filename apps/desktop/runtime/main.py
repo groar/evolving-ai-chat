@@ -1,6 +1,12 @@
+from datetime import datetime, timezone
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from openai import AuthenticationError, RateLimitError
 
+from .adapters import OpenAIAdapter
+from .adapters.openai_adapter import MissingApiKeyError
 from .models import (
     AddValidationRunRequest,
     ChangeProposal,
@@ -16,9 +22,10 @@ from .models import (
     RuntimeSettingsResponse,
     RuntimeStateResponse,
     UpdateProposalDecisionRequest,
-    make_chat_response,
 )
 from .storage import RuntimeStorage
+
+chat_adapter = OpenAIAdapter()
 
 app = FastAPI(title="Evolving AI Chat Runtime", version="0.1.0")
 app.add_middleware(
@@ -131,16 +138,28 @@ def update_proposal_decision(proposal_id: str, payload: UpdateProposalDecisionRe
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(payload: ChatRequest) -> ChatResponse:
+def chat(payload: ChatRequest) -> ChatResponse | JSONResponse:
     request_text = payload.message.strip()
     if not request_text:
-        raise HTTPException(status_code=400, detail="Message is required.")
+        raise HTTPException(status_code=422, detail="Message is required.")
 
     try:
         active_id = storage.get_state()["active_conversation_id"]
         conversation_id = payload.conversation_id or active_id
         storage.set_active_conversation(conversation_id)
-        response = make_chat_response(conversation_id=conversation_id, message=request_text)
+
+        reply, model_id, cost = chat_adapter.chat(
+            message=request_text,
+            model_id=payload.model_id,
+        )
+        created_at = datetime.now(timezone.utc).isoformat()
+        response = ChatResponse(
+            conversation_id=conversation_id,
+            reply=reply,
+            model_id=model_id,
+            created_at=created_at,
+            cost=cost,
+        )
 
         storage.append_message(conversation_id, role="user", text=request_text)
         storage.append_event(
@@ -155,14 +174,26 @@ def chat(payload: ChatRequest) -> ChatResponse:
             {"conversation_id": conversation_id, "role": "assistant", "model_id": response.model_id},
         )
         return response
+    except MissingApiKeyError:
+        storage.append_event("runtime_error", {"error": "api_key_not_set", "endpoint": "/chat"})
+        return JSONResponse(status_code=503, content={"error": "api_key_not_set"})
+    except AuthenticationError:
+        storage.append_event("runtime_error", {"error": "api_key_invalid", "endpoint": "/chat"})
+        return JSONResponse(status_code=401, content={"error": "api_key_invalid"})
+    except RateLimitError:
+        storage.append_event("runtime_error", {"error": "rate_limit", "endpoint": "/chat"})
+        return JSONResponse(status_code=429, content={"error": "rate_limit"})
     except ValueError as error:
         storage.append_event("runtime_error", {"detail": str(error), "endpoint": "/chat"})
         raise HTTPException(status_code=404, detail=str(error)) from error
     except HTTPException:
         raise
-    except Exception as error:  # pragma: no cover
+    except Exception as error:
         storage.append_event("runtime_error", {"detail": str(error), "endpoint": "/chat"})
-        raise HTTPException(status_code=500, detail="Runtime error while processing chat.") from error
+        return JSONResponse(
+            status_code=502,
+            content={"error": "model_error", "detail": str(error)},
+        )
 
 
 @app.post("/conversations", response_model=NewConversationResponse)

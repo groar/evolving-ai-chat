@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 class ChatRequest(BaseModel):
     conversation_id: str | None = None
     message: str = Field(default="", max_length=4000)
+    model_id: str | None = None  # Overrides default gpt-4o-mini when set
 
 
 class ChatResponse(BaseModel):
@@ -134,12 +135,3 @@ class UpdateProposalDecisionRequest(BaseModel):
     notes: str | None = Field(default=None, max_length=4000)
 
 
-def make_chat_response(conversation_id: str, message: str) -> ChatResponse:
-    created_at = datetime.now(timezone.utc).isoformat()
-    return ChatResponse(
-        conversation_id=conversation_id,
-        reply=f"stub: {message}",
-        model_id="stub",
-        created_at=created_at,
-        cost=0,
-    )
