@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0025-clarify-offline-safety-and-simplify-settings-copy.md | P1 | Address remaining fresh-observer confusion from 2026-03-01 probes (offline safety + Settings wordiness/layout). |
+| (empty) | — | — | T-0025 moved to review. PM to refresh queue. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

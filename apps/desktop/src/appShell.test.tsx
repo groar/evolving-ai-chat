@@ -26,18 +26,16 @@ describe("App shell IA", () => {
 
   it("renders a single runtime-offline status with clear next action", () => {
     const markup = renderToStaticMarkup(<App />);
-    const offlineBannerCopy = "Runtime is the local background service that loads saved conversations and powers assistant replies.";
-    expect(markup).toContain(offlineBannerCopy);
-    expect(markup.match(new RegExp(offlineBannerCopy, "g"))).toHaveLength(1);
-    expect(markup).toContain("Chat sending is currently unavailable. Start the runtime, then retry.");
+    expect(markup).toContain("Chat is unavailable because a local service on this device is not reachable.");
+    expect(markup).toContain("Start the local service, then Retry.");
     expect(markup).toContain(">Retry<");
-    expect(markup).not.toContain("Runtime unavailable. Retry once runtime is running.");
+    expect(markup).not.toContain("online");
   });
 
   it("disables composer input when runtime is offline", () => {
     const markup = renderToStaticMarkup(<App />);
     expect(markup).toContain('id="composer"');
-    expect(markup).toContain('placeholder="Chat is disabled while runtime is offline."');
+    expect(markup).toContain('placeholder="Chat requires the local service. Start it, then send."');
     expect(markup).toContain("disabled");
   });
 

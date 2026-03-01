@@ -28,7 +28,7 @@ body {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
   gap: 16px;
   height: 100vh;
   padding: 16px;
@@ -146,12 +146,25 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: #fffdf6;
-  padding: 10px;
+  padding: 12px;
   display: grid;
-  gap: 8px;
+  gap: 10px;
   max-height: none;
   min-height: 0;
   overflow: visible;
+  min-width: 0;
+}
+
+.settings-bullets {
+  margin: 0 0 0 1em;
+  padding: 0;
+  font-size: 0.83rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.settings-bullets li {
+  margin-bottom: 4px;
 }
 
 .feedback-panel {

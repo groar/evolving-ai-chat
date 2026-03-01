@@ -262,14 +262,20 @@ export function SettingsPanel(props: SettingsPanelProps) {
   return (
     <section className="settings-panel" aria-label="Settings">
       <p className="settings-title">Settings</p>
-      <p className="settings-copy">Updates &amp; Safety explains what changes and what stays safe.</p>
+
+      <div className="settings-section-header">
+        <p className="settings-title">Safe while offline</p>
+      </div>
+      <ul className="settings-bullets">
+        <li>Browse conversations and history</li>
+        <li>View and change channel, early-access toggles</li>
+        <li>Use Feedback and change drafts</li>
+      </ul>
+
       <div className="settings-section-header">
         <p className="settings-title">Release Channel</p>
       </div>
-      <p className="settings-copy">
-        Switching channels changes feature behavior only. It does not delete conversations/history and does not roll back
-        code.
-      </p>
+      <p className="settings-copy">Switching channel changes feature behavior only. Does not delete conversations/history or roll back code.</p>
 
       <div className="channel-toggle">
         <button
@@ -292,10 +298,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
       <details className="settings-disclosure">
         <summary className="settings-disclosure-summary">Early-Access Features (advanced)</summary>
-        <p className="settings-copy">
-          An early-access feature is an optional beta toggle. Turning these on/off changes feature behavior only and does
-          not delete conversations/history.
-        </p>
+        <p className="settings-copy">Optional beta toggles. On/off changes feature behavior only, not conversations/history.</p>
         <label className="flag-control">
           <input
             type="checkbox"
@@ -329,9 +332,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
       <details className="proposals-wrap" name="settings-advanced">
         <summary className="settings-disclosure-summary">Improvements (advanced)</summary>
-        <p className="settings-copy">
-          A change draft is a suggested improvement you review locally. Nothing ships automatically.
-        </p>
+        <p className="settings-copy">Change draft = local suggestion you review. Nothing ships automatically.</p>
         <p className="flag-note">Feedback → Draft → Run checks → Decide</p>
         <div className="settings-section-header">
           <p className="settings-title">Change Drafts</p>

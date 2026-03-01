@@ -649,12 +649,12 @@ export function App() {
           <section role="status" className={`runtime-status ${runtimeIssue.kind === "offline" ? "offline" : "error"}`}>
             <div className="runtime-status-copy">
               <p className="runtime-status-title">
-                Runtime is the local background service that loads saved conversations and powers assistant replies.
+                Chat is unavailable because a local service on this device is not reachable.
               </p>
               <p>
                 {runtimeIssue.kind === "offline"
-                  ? "Chat sending is currently unavailable. Start the runtime, then retry."
-                  : `Runtime is reachable, but the last request failed: ${runtimeIssue.detail}`}
+                  ? "Start the local service, then Retry."
+                  : `The local service is reachable, but the last request failed: ${runtimeIssue.detail}`}
               </p>
             </div>
             <button type="button" className="retry-btn" disabled={!canRetry} onClick={() => void retryRuntime()}>
@@ -676,10 +676,10 @@ export function App() {
               <p>Loading local state...</p>
             </div>
           )}
-          {!hasMessages && !isBooting && (
+            {!hasMessages && !isBooting && (
             <div className="empty-state">
               <p>This is your local chat workspace.</p>
-              <p>{isRuntimeOffline ? "Start the runtime, then send your first message." : "Type your first message below."}</p>
+              <p>{isRuntimeOffline ? "Start the local service, then send your first message." : "Type your first message below."}</p>
             </div>
           )}
 
@@ -701,7 +701,7 @@ export function App() {
             ref={inputRef}
             value={composer}
             className="composer"
-            placeholder={isRuntimeOffline ? "Chat is disabled while runtime is offline." : "Type your message..."}
+            placeholder={isRuntimeOffline ? "Chat requires the local service. Start it, then send." : "Type your message..."}
             rows={3}
             disabled={isRuntimeOffline}
             onChange={(event) => setComposer(event.target.value)}

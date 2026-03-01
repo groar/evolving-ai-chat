@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0025
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -79,15 +79,15 @@ This blocks E-0003's UX clarity milestone.
 - F-20260301-001
 
 ## Acceptance Criteria
-- [ ] In Settings, an explicit "Safe while offline" (or equivalent) section exists and lists at least 2 concrete things the user can do while offline.
-- [ ] Offline/runtime-unavailable banner copy communicates:
-  - [ ] chat is unavailable because a local service is not reachable,
-  - [ ] what the user should do next (retry/start service),
-  - [ ] and does not claim or imply "the AI runs online".
-- [ ] Settings copy is measurably less wordy:
-  - [ ] no multi-paragraph blocks in the default view (use short headings + bullets).
-- [ ] Settings layout is scannable at laptop widths (avoid overly narrow copy column).
-- [ ] Regression coverage exists for the above rules.
+- [x] In Settings, an explicit "Safe while offline" (or equivalent) section exists and lists at least 2 concrete things the user can do while offline.
+- [x] Offline/runtime-unavailable banner copy communicates:
+  - [x] chat is unavailable because a local service is not reachable,
+  - [x] what the user should do next (retry/start service),
+  - [x] and does not claim or imply "the AI runs online".
+- [x] Settings copy is measurably less wordy:
+  - [x] no multi-paragraph blocks in the default view (use short headings + bullets).
+- [x] Settings layout is scannable at laptop widths (avoid overly narrow copy column).
+- [x] Regression coverage exists for the above rules.
 - [ ] Tier-2 micro-validation rerun: fresh observer can answer "what is safe offline?" without facilitator explanation.
 
 ## Micro-Validation Probes (Optional; Tier 2/3)
@@ -100,10 +100,22 @@ This blocks E-0003's UX clarity milestone.
   - Ticket Evidence section.
 
 ## Subtasks
-- [ ] Design/copy pass (offline banner + Settings safety section)
-- [ ] Implement UI copy/layout changes
-- [ ] Add/adjust tests
+- [x] Design/copy pass (offline banner + Settings safety section)
+- [x] Implement UI copy/layout changes
+- [x] Add/adjust tests
 - [ ] Run probes + record results
+
+## Evidence
+- Automated checks:
+  - `npm --prefix apps/desktop test` (PASS)
+  - `npm --prefix apps/desktop run build` (PASS)
+- QA checkpoint: `tickets/meta/qa/2026-03-01-qa-checkpoint-t0025.md` (PASS, no bugs filed)
+- Implementation notes:
+  - Offline banner: Replaced "Runtime" with "local service"; clarified chat is unavailable because the local service is not reachable; explicit "Start the local service, then Retry."; no "online" implication.
+  - Settings: Added "Safe while offline" section with 3 bullets (browse conversations, view/change channel and toggles, use Feedback and drafts).
+  - Simplified copy: Short headings + bullets; reduced multi-paragraph blocks.
+  - Layout: Left rail `minmax(300px, 340px)` for laptop-width readability; settings-bullets styling.
 
 ## Change Log
 - 2026-03-01: Ticket created from fresh-observer probes after T-0024.
+- 2026-03-01: Implemented offline banner and Settings copy/layout changes; added regression tests; moved to review.

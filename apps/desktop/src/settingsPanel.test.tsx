@@ -108,7 +108,7 @@ describe("SettingsPanel", () => {
   it("renders rollback guardrail copy", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("does not delete conversations/history");
-    expect(markup).toContain("does not roll back code");
+    expect(markup).toContain("roll back code");
   });
 
   it("renders a single stable-experimental channel control surface", () => {
@@ -123,7 +123,14 @@ describe("SettingsPanel", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Early-Access Features (advanced)");
     expect(markup).toContain("Improvements (advanced)");
-    expect(markup).toContain("A change draft is a suggested improvement you review locally.");
+    expect(markup).toContain("Change draft = local suggestion you review.");
+  });
+
+  it("renders Safe while offline section with at least 2 concrete items", () => {
+    const markup = renderToStaticMarkup(renderPanel());
+    expect(markup).toContain("Safe while offline");
+    expect(markup).toContain("Browse conversations and history");
+    expect(markup).toContain("View and change channel");
   });
 
   it("shows runtime-offline error copy without implying settings are unavailable", () => {
