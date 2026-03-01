@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: E-0005
-- Status: planned
+- Status: done
 - Owner: pm-agent
 - Created: 2026-03-01
 - Updated: 2026-03-01
@@ -43,8 +43,8 @@ Product & design review (F-20260301-002) found that 75% of the left-rail navigat
 - T-0041 Clarify feedback scope (per-response vs app-level)
 
 ## Progress (Ticket Status)
-- Done: T-0031 (2026-03-01), T-0032 (2026-03-01), T-0033 (2026-03-01), T-0034 (2026-03-01)
-- Ready: T-0035 (rank 1), T-0041 (rank 2). E-0005 tier-2 validation: 2/3 probes passed (2026-03-01).
+- Done: T-0031, T-0032, T-0033, T-0034, T-0035, T-0041 (all 2026-03-01). E-0005 complete.
+- Tier-2 validation: 2/3 probes passed; Probe 3 addressed by T-0041 (feedback scope).
 
 ## Tier-2 Validation Results (2026-03-01)
 - Probe 1 "What does this app do?": ✓ passed

@@ -96,26 +96,12 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- Most recent milestone: M3 — “Real AI Chat / First Live Message” (completed 2026-03-01)
-  - Completed scope:
-    - T-0027 (OpenAI adapter), T-0030 (API key config), T-0028 (streaming), T-0029 (multi-turn context).
-- Next milestone: M4 — “UI Simplification & Chat-First Redesign” (E-0005) **[TOP PRIORITY]**
-  - Goal: strip back to a chat-first experience; adopt Tailwind + shadcn/ui; decompose the frontend monolith.
-  - Rationale: product & design review (F-20260301-002) found the UI is designed from the system’s perspective (meta-surfaces dominate) rather than the user’s perspective (chat should be 95% of the experience).
-  - Scope:
-    - T-0031 Adopt Tailwind + shadcn/ui design system (P1).
-    - T-0032 Extract state management — Zustand + custom hooks (P1).
-    - T-0033 Chat-first layout — hide meta-surfaces by default (P1).
-    - T-0034 Settings as modal/drawer, fold Advanced into Settings (P2).
-    - T-0035 User-facing copy and empty state rewrite (P2).
-- Following milestone: M5 — “Conversational UX Table Stakes” (E-0006)
+- Most recent milestone: M4 — “UI Simplification & Chat-First Redesign” (E-0005) (completed 2026-03-01)
+  - Completed scope: T-0031 (Tailwind + shadcn/ui), T-0032 (Zustand + hooks), T-0033 (chat-first layout), T-0034 (Settings modal/drawer), T-0035 (copy rewrite), T-0041 (feedback scope). Tier-2 validation 2/3 passed.
+- Next milestone: M5 — “Conversational UX Table Stakes” (E-0006)
   - Goal: make the base chat experience excellent enough for daily use — prerequisite for self-evolution to generate meaningful signal.
-  - Scope:
-    - T-0036 Markdown rendering in assistant responses (P1).
-    - T-0037 Code block syntax highlighting + copy-to-clipboard (P1).
-    - T-0038 Conversation renaming (P2).
-    - T-0039 Model selector — multi-provider (P2).
-    - T-0040 Token/cost display per message (P3).
+  - Ready: T-0036 (Markdown rendering), T-0038 (conversation renaming).
+  - Backlog: T-0037 (code block highlighting), T-0039 (model selector), T-0040 (token/cost display).
 - Future: M6 — “First Agent-Proposed Change” (epic TBD)
   - Goal: the system observes a real usage pattern and proposes a concrete change autonomously. This is the moment the product thesis is validated.
   - Not yet scoped — depends on M3–M5 establishing real, sustained usage.

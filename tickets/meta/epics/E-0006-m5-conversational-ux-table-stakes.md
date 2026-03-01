@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: E-0006
-- Status: planned
+- Status: in-progress
 - Owner: pm-agent
 - Created: 2026-03-01
 - Updated: 2026-03-01
@@ -37,8 +37,8 @@ Product & design review (F-20260301-002) identified that after M3 (real chat) an
 - T-0040 Token/cost display per message
 
 ## Progress (Ticket Status)
-- Planned:
-  - T-0036, T-0037, T-0038, T-0039, T-0040
+- Ready: T-0036 (rank 1), T-0038 (rank 2).
+- Backlog: T-0037, T-0039, T-0040.
 
 ## Validation Plan
 - Tier-3 external validation after all tickets ship:

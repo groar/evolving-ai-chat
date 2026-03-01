@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0038
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -63,3 +63,4 @@ Auto-titling via AI summary (e.g., "Summarize this conversation in 5 words") is 
 
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
+- 2026-03-01: Moved to ready (PM checkpoint 17).

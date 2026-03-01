@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0036
-- Status: backlog
+- Status: ready
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -69,3 +69,4 @@ Render assistant response text as Markdown instead of plain text. Support headin
 
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
+- 2026-03-01: Moved to ready (PM checkpoint 17).

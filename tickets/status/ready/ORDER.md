@@ -15,7 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| (empty — T-0041 moved to in-progress) | | | |
+| 1 | T-0036 Markdown rendering in assistant responses | P1 | E-0006; unblocked by T-0031. |
+| 2 | T-0038 Conversation renaming | P2 | E-0006; independent. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -24,8 +25,6 @@ This file is the source of truth for ready-ticket pickup order.
 ## Next Up (Backlog — Will Move to Ready as Queue Drains)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| 3 | T-0036 Markdown rendering in assistant responses | P1 | E-0006 | Depends on T-0031 (Tailwind typography). |
-| 4 | T-0037 Code block syntax highlighting + copy | P1 | E-0006 | Depends on T-0036. |
-| 5 | T-0038 Conversation renaming | P2 | E-0006 | Independent; can ship any time. |
-| 6 | T-0039 Model selector (multi-provider) | P2 | E-0006 | Depends on T-0027, T-0030. |
-| 7 | T-0040 Token/cost display per message | P3 | E-0006 | Depends on T-0027. Lowest priority. |
+| 3 | T-0037 Code block syntax highlighting + copy | P1 | E-0006 | Depends on T-0036. |
+| 4 | T-0039 Model selector (multi-provider) | P2 | E-0006 | Depends on T-0027, T-0030. |
+| 5 | T-0040 Token/cost display per message | P3 | E-0006 | Depends on T-0027. Lowest priority. |
