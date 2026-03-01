@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0037
-- Status: backlog
+- Status: ready
 - Priority: P1
 - Type: feature
 - Area: ui
@@ -71,3 +71,4 @@ Consider `shiki` for build-time-safe syntax highlighting (it uses TextMate gramm
 
 ## Change Log
 - 2026-03-01: Ticket created (F-20260301-002 product & design review).
+- 2026-03-01: Moved to ready (PM run; T-0036 done, dependency satisfied).

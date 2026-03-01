@@ -15,7 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| — | _(queue empty)_ | | T-0036, T-0038 completed. Next: T-0037 (depends on T-0036). |
+| 1 | T-0037 Code block syntax highlighting + copy | P1 | E-0006 |
+| — | _(next in backlog)_ | | T-0039, T-0040 |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -24,6 +25,5 @@ This file is the source of truth for ready-ticket pickup order.
 ## Next Up (Backlog — Will Move to Ready as Queue Drains)
 | Rank | Ticket | Priority | Epic | Notes |
 | --- | --- | --- | --- | --- |
-| 3 | T-0037 Code block syntax highlighting + copy | P1 | E-0006 | Depends on T-0036. |
-| 4 | T-0039 Model selector (multi-provider) | P2 | E-0006 | Depends on T-0027, T-0030. |
-| 5 | T-0040 Token/cost display per message | P3 | E-0006 | Depends on T-0027. Lowest priority. |
+| 2 | T-0039 Model selector (multi-provider) | P2 | E-0006 | Depends on T-0027, T-0030. |
+| 3 | T-0040 Token/cost display per message | P3 | E-0006 | Depends on T-0027. Lowest priority. |
