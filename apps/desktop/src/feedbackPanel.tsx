@@ -173,19 +173,6 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                   {item.context_pointer ? ` · ${item.context_pointer}` : ""}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-1">
-  <label htmlFor="model-select" className="text-xs text-muted-foreground">Select AI Model:</label>
-  <select id="model-select" className="text-xs border rounded py-1 px-2">
-    <option value="default">Default Model</option>
-    <option value="model1">Model 1</option>
-    <option value="model2">Model 2</option>
-  </select>
-  <button
-    type="button"
-    className="text-xs font-medium border border-[#0073e6] bg-[#e6f4ff] text-[#0073e6] rounded-lg py-1 px-2 cursor-pointer transition-colors hover:bg-[#cce6ff] focus:outline-none focus:ring-2 focus:ring-[#0073e6] focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
-    onClick={() => alert('Replaying response with selected model')}
-  >
-    Replay with selected model
-  </button>
                   {onGenerateFromFeedback && (
                     <button
                       type="button"
@@ -198,15 +185,14 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                   {onRequestCodePatch && (
                     <button
                       type="button"
-                      className="text-xs font-medium border border-[#d25722] bg-[#fff7f3] text-[#d25722] rounded-lg py-1 px-2 cursor-pointer transition-colors hover:bg-[#ffe8de] focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-xs font-medium border border-[#d25722] bg-[#fff7f3] text-[#d25722] rounded-lg py-1 px-2 cursor-pointer transition-colors hover:bg-[#ffe8de] focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-1"
                       onClick={() =>
                         onRequestCodePatch(
                           item.id,
-                          item.text.trim().slice(0, 240) || "(no title)",
-                          item.text || "",
+                          item.text.slice(0, 240),
+                          item.text,
                         )
                       }
-                      disabled={!item.text.trim()}
                     >
                       Fix with AI →
                     </button>
