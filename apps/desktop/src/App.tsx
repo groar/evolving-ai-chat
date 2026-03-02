@@ -18,7 +18,7 @@ import { useRuntime, offlineStateRetryIntervalMs, shouldAutoRetryOfflineState } 
 import { useConversations } from "./hooks/useConversations";
 import type { RuntimeIssue } from "./stores/runtimeStore";
 
-const appName = "Evolving AI Chat";
+const appName = "Evolving AI Chat — your personal assistant";
 const diagnosticsFlagKey = "show_runtime_diagnostics";
 
 export { offlineStateRetryIntervalMs, shouldAutoRetryOfflineState };
