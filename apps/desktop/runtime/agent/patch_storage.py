@@ -67,3 +67,16 @@ class PatchStorage:
                 except (json.JSONDecodeError, OSError):
                     continue
         return False
+
+    def list_all(self) -> list[PatchArtifact]:
+        """Return all stored patch artifacts sorted by created_at descending."""
+        artifacts: list[PatchArtifact] = []
+        with self._lock:
+            for f in self._dir.glob("*.json"):
+                try:
+                    data = json.loads(f.read_text(encoding="utf-8"))
+                    artifacts.append(PatchArtifact.from_dict(data))
+                except (json.JSONDecodeError, OSError, KeyError):
+                    continue
+        artifacts.sort(key=lambda a: a.created_at, reverse=True)
+        return artifacts

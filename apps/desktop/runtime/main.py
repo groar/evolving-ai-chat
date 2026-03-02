@@ -1,4 +1,5 @@
 import json
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import AsyncIterator
@@ -32,6 +33,7 @@ from .models import (
     NewConversationRequest,
     NewConversationResponse,
     PatchStatusResponse,
+    PatchSummary,
     PersonaAddition,
     RollbackRequest,
     RollbackResponse,
@@ -100,6 +102,20 @@ def state() -> RuntimeStateResponse:
     state_data["api_keys"] = ApiKeysStatus(**chat_router.get_api_keys_status())
     state_data["models"] = [ModelEntry(**m) for m in list_models()]
     # conversation_cost_total is already in state_data from storage.get_state()
+    state_data["patches"] = [
+        PatchSummary(
+            id=a.id,
+            status=a.status,
+            title=a.title,
+            description=a.description,
+            unified_diff=a.unified_diff,
+            created_at=a.created_at,
+            failure_reason=a.failure_reason,
+            applied_at=a.applied_at,
+            reverted_at=a.reverted_at,
+        )
+        for a in patch_storage.list_all()
+    ]
     return RuntimeStateResponse(**state_data)
 
 
@@ -457,8 +473,20 @@ def agent_code_patch(
         "area": payload.feedback_area,
     }
 
+    # Resolve base_ref from git HEAD when the frontend omits it
+    base_ref = payload.base_ref
+    if not base_ref:
+        try:
+            base_ref = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"],
+                cwd=str(_REPO_ROOT),
+                text=True,
+            ).strip()
+        except subprocess.SubprocessError:
+            base_ref = "HEAD"
+
     try:
-        artifact = patch_agent.generate_patch(feedback, payload.base_ref)
+        artifact = patch_agent.generate_patch(feedback, base_ref)
     except HarnessUnavailableError as exc:
         storage.append_event(
             "patch_harness_unavailable",
@@ -524,6 +552,7 @@ def agent_patch_status(patch_id: str) -> PatchStatusResponse | JSONResponse:
         status=artifact.status,
         title=artifact.title,
         description=artifact.description,
+        unified_diff=artifact.unified_diff,
         files_changed=artifact.files_changed,
         scope_violations=artifact.scope_violations or None,
         failure_reason=artifact.failure_reason,

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { ChangeProposal, ChangelogEntry, RuntimeSettings } from "../settingsPanel";
+import type { PatchEntry } from "../PatchNotification";
 
 export const defaultSettings: RuntimeSettings = {
   channel: "stable",
@@ -14,6 +15,9 @@ type SettingsStore = {
   changelog: ChangelogEntry[];
   proposals: ChangeProposal[];
   personaAdditions: PersonaAddition[];
+  patches: PatchEntry[];
+  /** ID of the patch currently shown in the notification banner (null when dismissed) */
+  notificationPatchId: string | null;
   settingsNotice: string | null;
   settingsError: string | null;
   isProposalBusy: boolean;
@@ -21,6 +25,8 @@ type SettingsStore = {
   setChangelog: (changelog: ChangelogEntry[]) => void;
   setProposals: (proposals: ChangeProposal[]) => void;
   setPersonaAdditions: (additions: PersonaAddition[]) => void;
+  setPatches: (patches: PatchEntry[]) => void;
+  setNotificationPatchId: (id: string | null) => void;
   setSettingsNotice: (value: string | null) => void;
   setSettingsError: (value: string | null) => void;
   setIsProposalBusy: (value: boolean) => void;
@@ -31,6 +37,8 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   changelog: [],
   proposals: [],
   personaAdditions: [],
+  patches: [],
+  notificationPatchId: null,
   settingsNotice: null,
   settingsError: null,
   isProposalBusy: false,
@@ -38,6 +46,8 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   setChangelog: (changelog) => set({ changelog }),
   setProposals: (proposals) => set({ proposals }),
   setPersonaAdditions: (personaAdditions) => set({ personaAdditions }),
+  setPatches: (patches) => set({ patches }),
+  setNotificationPatchId: (notificationPatchId) => set({ notificationPatchId }),
   setSettingsNotice: (value) => set({ settingsNotice: value }),
   setSettingsError: (value) => set({ settingsError: value }),
   setIsProposalBusy: (value) => set({ isProposalBusy: value })

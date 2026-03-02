@@ -69,7 +69,7 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
 - Safe execution: run agent-proposed changes and tests in an isolated sandbox (e.g., Docker) before applying patches to the working copy.
 - Model adapters: thin provider wrappers per vendor (OpenAI/Anthropic/Google), with a later option to unify via LiteLLM if needed.
 
-### Current State (2026-03-01)
+### Current State (2026-03-02)
 - Shipped / working:
   - This repository scaffold: ticketing board + PM/QA workflow docs.
   - Desktop app skeleton (Tauri + React) with polished chat UI shell (T-0003, T-0026).
@@ -96,10 +96,12 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- **Active milestone: M8 — "Agentic Code Self-Modification Loop" (E-0010, scoped 2026-03-01)**
-  - Pivot from M7 improvement-class/config approach (see F-20260301-008). The intended loop is: feedback → agent drafts a source code patch → user reviews diff → accept or reject → code applied + app rebuilds.
-  - M7 (E-0009) superseded: T-0056 cancelled, T-0057 cancelled. T-0052–T-0055 are done but their scope (config edits) is superseded.
-  - Ready queue: T-0058 (rank 1) — M8 design spec (feedback → patch → diff UI → apply/rollback). Implementation tickets created from spec.
+- **Active milestone: M8 — "Agentic Code Self-Modification Loop" (E-0010)**
+  - **Implementation complete (2026-03-02).** All four tickets shipped: T-0058 (spec), T-0059 (harness), T-0060 (apply/rollback), T-0061 (notification UI + Changelog Undo).
+  - The loop is live: user submits feedback → clicks "Fix with AI →" → agent generates patch → applied automatically → notification with Undo banner → persistent Changelog.
+  - **Note**: M8 spec (T-0058) pivoted to a non-review flow: agent applies automatically, user sees a toast with Undo rather than a diff-review gate. The Undo action persists in the Changelog.
+  - **Next**: tier-2 micro-validation (primary user probe per E-0010 Validation Plan) and T-0062 (P2: notification dismiss + human-readable failure reasons).
+  - Previous: M7 (E-0009) superseded 2026-03-01; T-0056 cancelled, T-0057 cancelled. T-0052–T-0055 done but scope superseded.
 - Previous: M7 — "Improvement Class Expansion" (E-0009) (superseded 2026-03-01; T-0052–T-0055 done, T-0056 cancelled)
 - Previous: M6.1 — "Loop Legibility and UX Clarity" (E-0008) (completed 2026-03-01)
   - T-0048, T-0049, T-0050 (M6.1 batch), T-0051 (tier-2 re-probe). Comprehension gate passed.

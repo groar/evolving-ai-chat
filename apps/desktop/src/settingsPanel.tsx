@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type { ProviderId } from "./apiKeyStore";
+import type { PatchEntry } from "./PatchNotification";
 
 type RuntimeSettings = {
   channel: "stable" | "experimental";
@@ -83,6 +84,7 @@ type SettingsPanelProps = {
   changelog: ChangelogEntry[];
   proposals: ChangeProposal[];
   personaAdditions: PersonaAddition[];
+  patches?: PatchEntry[];
   /** Feedback items for Generate-from-feedback and proposal form datalist */
   feedbackItems: Array<{ id: string; text: string; tags?: string[] }>;
   /** When set, auto-generate proposal from this feedback id and open form (e.g. from Improve section) */
@@ -102,6 +104,7 @@ type SettingsPanelProps = {
   onAddValidationRun: (proposalId: string, input: AddValidationRunInput) => void;
   onUpdateProposalDecision: (proposalId: string, status: "accepted" | "rejected", notes: string, proposal?: ChangeProposal) => void;
   onRemovePersonaAddition: (index: number) => Promise<void>;
+  onRollbackPatch?: (patchId: string) => void;
   /** API key configuration (Connections subsection) */
   apiKeys: { openai: boolean; anthropic: boolean };
   onSaveApiKey: (provider: ProviderId, key: string) => Promise<void>;
@@ -179,6 +182,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     changelog,
     proposals,
     personaAdditions,
+    patches = [],
     feedbackItems,
     pendingGenerateFeedbackId,
     onClearPendingGenerate,
@@ -196,12 +200,23 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onAddValidationRun,
     onUpdateProposalDecision,
     onRemovePersonaAddition,
+    onRollbackPatch = () => undefined,
     apiKeys,
     onSaveApiKey,
     onRemoveApiKey,
     apiKeyError,
     isSavingApiKey
   } = props;
+
+  const [expandedDiffIds, setExpandedDiffIds] = useState<Set<string>>(new Set());
+  function togglePatchDiff(patchId: string) {
+    setExpandedDiffIds((current) => {
+      const next = new Set(current);
+      if (next.has(patchId)) next.delete(patchId);
+      else next.add(patchId);
+      return next;
+    });
+  }
 
   const [switchToStableConfirmOpen, setSwitchToStableConfirmOpen] = useState(false);
   const [apiKeyInputs, setApiKeyInputs] = useState<Record<ProviderId, string>>({ openai: "", anthropic: "" });
@@ -849,9 +864,105 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
       <div className="border-t border-dashed border-border pt-2.5 grid gap-2.5">
         <p className="m-0 text-sm font-semibold text-foreground">Changelog</p>
-        {changelog.length === 0 ? (
-          <p className="m-0 text-xs text-muted-foreground">No changes recorded yet.</p>
-        ) : (
+
+        {/* M8 patch entries — applied code changes with Undo and diff toggle */}
+        {patches.length > 0 && (
+          <ul className="list-none m-0 p-0 grid gap-2" aria-label="Applied code changes">
+            {patches.map((patch) => {
+              const isApplied = patch.status === "applied";
+              const isReverted = patch.status === "reverted";
+              const isError =
+                patch.status === "apply_failed" ||
+                patch.status === "scope_blocked" ||
+                patch.status === "rollback_conflict" ||
+                patch.status === "rollback_unavailable";
+              const diffOpen = expandedDiffIds.has(patch.id);
+              const hasDiff = Boolean(patch.unified_diff);
+              const patchStatusLabel: Record<string, string> = {
+                pending_apply: "Pending",
+                pending: "Pending",
+                applying: "Applying…",
+                applied: "Applied",
+                apply_failed: "Failed",
+                scope_blocked: "Blocked",
+                reverting: "Undoing…",
+                reverted: "Undone",
+                rollback_conflict: "Conflict",
+                rollback_unavailable: "Unavailable"
+              };
+              return (
+                <li
+                  key={patch.id}
+                  className={`border rounded-lg bg-white p-2.5 grid gap-1.5 ${
+                    isApplied
+                      ? "border-[#9ebf97]"
+                      : isReverted
+                        ? "border-[#c8d3c1]"
+                        : isError
+                          ? "border-[#f4a58b]"
+                          : "border-border"
+                  }`}
+                >
+                  <div className="flex justify-between gap-2 items-center">
+                    <p className="m-0 text-sm font-bold truncate flex-1">{patch.title}</p>
+                    <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground shrink-0">
+                      {patchStatusLabel[patch.status] ?? patch.status}
+                    </span>
+                  </div>
+                  {patch.description && (
+                    <p className="m-0 text-sm text-foreground">{patch.description}</p>
+                  )}
+                  <p className="m-0 text-xs text-muted-foreground">
+                    {formatTimestamp(patch.created_at)}
+                    {patch.applied_at ? ` · Applied ${formatTimestamp(patch.applied_at)}` : ""}
+                    {patch.reverted_at ? ` · Undone ${formatTimestamp(patch.reverted_at)}` : ""}
+                    {patch.failure_reason ? ` · ${patch.failure_reason}` : ""}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {isApplied && (
+                      <button
+                        type="button"
+                        className={`${railBtn} text-sm`}
+                        onClick={() => onRollbackPatch(patch.id)}
+                        disabled={isBusy}
+                        aria-label={`Undo: ${patch.title}`}
+                      >
+                        Undo
+                      </button>
+                    )}
+                    {(isApplied || isReverted) && hasDiff && (
+                      <button
+                        type="button"
+                        className={`${railBtn} text-sm`}
+                        onClick={() => togglePatchDiff(patch.id)}
+                        aria-expanded={diffOpen}
+                        aria-controls={`patch-diff-${patch.id}`}
+                      >
+                        {diffOpen
+                          ? "Hide changes ↑"
+                          : isReverted
+                            ? "See what was reverted ↓"
+                            : "See what changed ↓"}
+                      </button>
+                    )}
+                  </div>
+                  {diffOpen && hasDiff && (
+                    <div id={`patch-diff-${patch.id}`}>
+                      <pre className="m-0 text-xs leading-relaxed overflow-auto max-h-60 bg-[#f4f5f0] border border-border rounded-lg p-2.5 font-mono whitespace-pre">
+                        <code>{patch.unified_diff}</code>
+                      </pre>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {/* System changelog entries (proposals, flags, etc.) */}
+        {changelog.length === 0 && patches.length === 0 ? (
+          <p className="m-0 text-xs text-muted-foreground">No changes applied yet.</p>
+        ) : changelog.length > 0 ? (
           <ul className="list-none m-0 p-0 grid gap-2">
             {changelog.map((entry) => (
               <li key={`${entry.created_at}-${entry.title}`} className="border border-border rounded-lg bg-white p-2.5 grid gap-1">
@@ -871,7 +982,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
               </li>
             ))}
           </ul>
-        )}
+        ) : null}
       </div>
     </section>
   );

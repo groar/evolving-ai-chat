@@ -60,6 +60,19 @@ class PersonaAddition(BaseModel):
     added_at: str
 
 
+class PatchSummary(BaseModel):
+    """Lightweight patch artifact summary for the /state response and Changelog UI."""
+    id: str
+    status: str
+    title: str
+    description: str
+    unified_diff: str = ""
+    created_at: str
+    failure_reason: str | None = None
+    applied_at: str | None = None
+    reverted_at: str | None = None
+
+
 class RuntimeStateResponse(BaseModel):
     active_conversation_id: str
     conversations: list[ConversationSummary]
@@ -72,6 +85,7 @@ class RuntimeStateResponse(BaseModel):
     api_keys: ApiKeysStatus = Field(default_factory=ApiKeysStatus)
     models: list[ModelEntry] = Field(default_factory=list)
     conversation_cost_total: float | None = None  # Sum of assistant message costs (approx)
+    patches: list[PatchSummary] = Field(default_factory=list)
 
 
 class RuntimeSettings(BaseModel):
@@ -188,7 +202,7 @@ class CodePatchRequest(BaseModel):
     feedback_title: str = Field(min_length=1, max_length=240)
     feedback_summary: str = Field(default="", max_length=4000)
     feedback_area: str = Field(min_length=1, max_length=120)
-    base_ref: str = Field(min_length=1, max_length=120)
+    base_ref: str = Field(default="", max_length=120)
 
 
 class CodePatchResponse(BaseModel):
@@ -207,6 +221,7 @@ class PatchStatusResponse(BaseModel):
     status: str
     title: str | None = None
     description: str | None = None
+    unified_diff: str = ""
     files_changed: list[str] | None = None
     scope_violations: list[str] | None = None
     failure_reason: str | None = None

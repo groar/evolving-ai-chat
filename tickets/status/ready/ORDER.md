@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0061 | P1 | M8 non-review UI — depends on T-0059 and T-0060 (both done). |
+| — | _(empty)_ | — | T-0061 moved to review 2026-03-02. Await PM queue replenishment. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

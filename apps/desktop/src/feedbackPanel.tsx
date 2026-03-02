@@ -21,6 +21,8 @@ type FeedbackPanelProps = {
   onSubmitFeedback: () => void;
   /** When provided, show "Generate suggestion" button per item to create a proposal from feedback */
   onGenerateFromFeedback?: (feedbackId: string) => void;
+  /** When provided, show "Fix with AI" button per item to trigger an M8 code patch */
+  onRequestCodePatch?: (feedbackId: string, feedbackTitle: string, feedbackSummary: string) => void;
 };
 
 function formatTimestamp(value: string): string {
@@ -58,7 +60,8 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
     onChangeDraftText,
     onToggleTag,
     onSubmitFeedback,
-    onGenerateFromFeedback
+    onGenerateFromFeedback,
+    onRequestCodePatch
   } = props;
 
   const canSubmit = draftText.trim().length > 0 && !isBusy;
@@ -169,15 +172,32 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                   {item.tags.length > 0 ? item.tags.join(", ") : "untagged"}
                   {item.context_pointer ? ` · ${item.context_pointer}` : ""}
                 </p>
-                {onGenerateFromFeedback && (
-                  <button
-                    type="button"
-                    className="text-xs underline text-primary hover:text-primary/80 mt-1 w-fit"
-                    onClick={() => onGenerateFromFeedback(item.id)}
-                  >
-                    Generate suggestion from this
-                  </button>
-                )}
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {onGenerateFromFeedback && (
+                    <button
+                      type="button"
+                      className="text-xs underline text-primary hover:text-primary/80 w-fit"
+                      onClick={() => onGenerateFromFeedback(item.id)}
+                    >
+                      Generate suggestion from this
+                    </button>
+                  )}
+                  {onRequestCodePatch && (
+                    <button
+                      type="button"
+                      className="text-xs font-medium border border-[#d25722] bg-[#fff7f3] text-[#d25722] rounded-lg py-1 px-2 cursor-pointer transition-colors hover:bg-[#ffe8de] focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-1"
+                      onClick={() =>
+                        onRequestCodePatch(
+                          item.id,
+                          item.text.slice(0, 240),
+                          item.text,
+                        )
+                      }
+                    >
+                      Fix with AI →
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

@@ -74,7 +74,7 @@ describe("SettingsPanel", () => {
 
   it("renders changelog and proposals empty states", () => {
     const emptyMarkup = renderToStaticMarkup(renderPanel());
-    expect(emptyMarkup).toContain("No changes recorded yet.");
+    expect(emptyMarkup).toContain("No changes applied yet.");
     expect(emptyMarkup).toContain("No suggestions yet.");
   });
 

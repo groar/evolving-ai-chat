@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { PanelLeftIcon, PencilIcon, SettingsIcon } from "lucide-react";
 import { FeedbackPanel } from "./feedbackPanel";
 import { MarkdownMessage } from "./MarkdownMessage";
+import { PatchNotification } from "./PatchNotification";
 import { SettingsPanel } from "./settingsPanel";
 import {
   Sheet,
@@ -32,6 +33,7 @@ export function App() {
   const feedbackSectionRef = useRef<HTMLElement>(null);
 
   const runtime = useRuntime();
+  const { requestPatch, rollbackPatch } = runtime;
   const { conversations, activeConversationId, messages, createConversation, activateConversation } = useConversations();
   const { updateConversationTitle } = runtime;
 
@@ -55,6 +57,9 @@ export function App() {
   const changelog = useSettingsStore((s) => s.changelog);
   const proposals = useSettingsStore((s) => s.proposals);
   const personaAdditions = useSettingsStore((s) => s.personaAdditions);
+  const patches = useSettingsStore((s) => s.patches);
+  const notificationPatchId = useSettingsStore((s) => s.notificationPatchId);
+  const setNotificationPatchId = useSettingsStore((s) => s.setNotificationPatchId);
   const settingsNotice = useSettingsStore((s) => s.settingsNotice);
   const settingsError = useSettingsStore((s) => s.settingsError);
   const isProposalBusy = useSettingsStore((s) => s.isProposalBusy);
@@ -115,6 +120,11 @@ export function App() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  const notificationPatch = useMemo(
+    () => patches.find((p) => p.id === notificationPatchId) ?? null,
+    [patches, notificationPatchId]
+  );
 
   const hasMessages = messages.length > 0;
   const isRuntimeOffline = runtimeIssue?.kind === "offline";
@@ -278,6 +288,7 @@ export function App() {
               changelog={changelog}
               proposals={proposals}
               personaAdditions={personaAdditions}
+              patches={patches}
               feedbackItems={feedback.items.map((item) => ({ id: item.id, text: item.text, tags: item.tags }))}
               pendingGenerateFeedbackId={pendingGenerateFeedbackId}
               onClearPendingGenerate={() => setPendingGenerateFeedbackId(null)}
@@ -297,6 +308,7 @@ export function App() {
                 void runtime.updateProposalDecision(proposalId, status, notes, proposal)
               }
               onRemovePersonaAddition={(index) => void runtime.removePersonaAddition(index)}
+              onRollbackPatch={(patchId) => void rollbackPatch(patchId)}
               apiKeys={apiKeys}
               onSaveApiKey={(provider, key) => void runtime.saveApiKey(provider, key)}
               onRemoveApiKey={(provider) => void runtime.removeApiKey(provider)}
@@ -327,6 +339,9 @@ export function App() {
                     behavior: "smooth",
                     block: "start"
                   });
+                }}
+              onRequestCodePatch={(feedbackId, feedbackTitle, feedbackSummary) => {
+                  void requestPatch(feedbackId, feedbackTitle, feedbackSummary, "ui");
                 }}
               />
             </section>
@@ -566,6 +581,14 @@ export function App() {
           </div>
         </footer>
       </section>
+      {/* M8 patch notification — floating banner for in-flight and terminal patch states */}
+      {notificationPatch && (
+        <PatchNotification
+          patch={notificationPatch}
+          onUndo={(patchId) => void rollbackPatch(patchId)}
+          onDismiss={() => setNotificationPatchId(null)}
+        />
+      )}
     </main>
   );
 }

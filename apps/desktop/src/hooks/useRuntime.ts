@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   type ProviderId,
   getAllApiKeysFromStore,
@@ -26,6 +26,7 @@ import { useRuntimeStore } from "../stores/runtimeStore";
 import { defaultSettings, useSettingsStore } from "../stores/settingsStore";
 import type { AddValidationRunInput, ChangeProposal, ChangelogEntry, CreateProposalInput, RuntimeSettings } from "../settingsPanel";
 import type { RuntimeIssue } from "../stores/runtimeStore";
+import type { PatchEntry, PatchStatus } from "../PatchNotification";
 
 const runtimeBase = "http://127.0.0.1:8787";
 const diagnosticsFlagKey = "show_runtime_diagnostics";
@@ -57,6 +58,18 @@ async function readErrorDetail(response: Response): Promise<string> {
 
 type PersonaAddition = { text: string; added_at: string };
 
+type PatchSummaryPayload = {
+  id: string;
+  status: string;
+  title: string;
+  description: string;
+  unified_diff: string;
+  created_at: string;
+  failure_reason?: string | null;
+  applied_at?: string | null;
+  reverted_at?: string | null;
+};
+
 type RuntimeStatePayload = {
   active_conversation_id: string;
   conversations: Array<{
@@ -79,6 +92,7 @@ type RuntimeStatePayload = {
   api_keys?: { openai?: boolean; anthropic?: boolean };
   models?: Array<{ provider: string; model_id: string; display_name: string }>;
   conversation_cost_total?: number | null;
+  patches?: PatchSummaryPayload[];
 };
 
 function applyState(
@@ -102,6 +116,21 @@ function applyState(
   settingsStore.setChangelog(payload.changelog ?? []);
   settingsStore.setProposals(payload.proposals ?? []);
   settingsStore.setPersonaAdditions(payload.persona_additions ?? []);
+  if (payload.patches) {
+    settingsStore.setPatches(
+      payload.patches.map((p) => ({
+        id: p.id,
+        status: p.status as PatchStatus,
+        title: p.title,
+        description: p.description,
+        unified_diff: p.unified_diff,
+        created_at: p.created_at,
+        failure_reason: p.failure_reason,
+        applied_at: p.applied_at,
+        reverted_at: p.reverted_at
+      }))
+    );
+  }
   runtimeStore.setApiKeyConfigured(Boolean(payload.api_key_configured));
   if (payload.api_keys) {
     runtimeStore.setApiKeys({
@@ -691,6 +720,192 @@ export function useRuntime() {
     return () => window.clearInterval(timerId);
   }, [refreshState, runtimeIssue, activeConversationId]);
 
+  // ---------------------------------------------------------------------------
+  // M8 patch polling — tracks an in-flight patch and updates store on changes
+  // ---------------------------------------------------------------------------
+
+  const patchPollRef = useRef<{ patchId: string; timerId: number } | null>(null);
+
+  const stopPatchPoll = useCallback(() => {
+    if (patchPollRef.current) {
+      window.clearTimeout(patchPollRef.current.timerId);
+      patchPollRef.current = null;
+    }
+  }, []);
+
+  const schedulePatchPoll = useCallback(
+    (patchId: string, intervalMs = 1500) => {
+      stopPatchPoll();
+      const timerId = window.setTimeout(async () => {
+        const setts = useSettingsStore.getState();
+        try {
+          const response = await fetch(`${runtimeBase}/agent/patch-status/${patchId}`);
+          if (!response.ok) {
+            stopPatchPoll();
+            return;
+          }
+          const data = (await response.json()) as {
+            patch_id: string;
+            status: string;
+            title?: string | null;
+            description?: string | null;
+            unified_diff?: string;
+            failure_reason?: string | null;
+            applied_at?: string | null;
+            reverted_at?: string | null;
+          };
+          const updatedPatch: PatchEntry = {
+            id: data.patch_id,
+            status: data.status as PatchStatus,
+            title: data.title ?? "",
+            description: data.description ?? "",
+            unified_diff: data.unified_diff ?? "",
+            created_at: new Date().toISOString(),
+            failure_reason: data.failure_reason,
+            applied_at: data.applied_at,
+            reverted_at: data.reverted_at
+          };
+          // Upsert into patches list
+          const existingPatches = setts.patches;
+          const idx = existingPatches.findIndex((p) => p.id === patchId);
+          const nextPatches: PatchEntry[] =
+            idx >= 0
+              ? existingPatches.map((p) => (p.id === patchId ? updatedPatch : p))
+              : [updatedPatch, ...existingPatches];
+          setts.setPatches(nextPatches);
+          setts.setNotificationPatchId(patchId);
+
+          const terminalStatuses: PatchStatus[] = [
+            "applied",
+            "apply_failed",
+            "scope_blocked",
+            "reverted",
+            "rollback_conflict",
+            "rollback_unavailable"
+          ];
+          if (terminalStatuses.includes(updatedPatch.status)) {
+            stopPatchPoll();
+            // Refresh full state so Changelog reflects the latest
+            await refreshState(useConversationStore.getState().activeConversationId);
+          } else {
+            schedulePatchPoll(patchId, intervalMs);
+          }
+        } catch {
+          // Transient error — retry
+          schedulePatchPoll(patchId, Math.min(intervalMs * 2, 8000));
+        }
+      }, intervalMs);
+      patchPollRef.current = { patchId, timerId };
+    },
+    [stopPatchPoll, refreshState]
+  );
+
+  // Stop polling when component unmounts
+  useEffect(() => stopPatchPoll, [stopPatchPoll]);
+
+  const requestPatch = useCallback(
+    async (
+      feedbackId: string,
+      feedbackTitle: string,
+      feedbackSummary: string,
+      feedbackArea: string
+    ) => {
+      const setts = useSettingsStore.getState();
+      const rt = useRuntimeStore.getState();
+      if (rt.isSending || rt.isResetting) return;
+      setts.setSettingsError(null);
+      try {
+        const response = await fetch(`${runtimeBase}/agent/code-patch`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            feedback_id: feedbackId,
+            feedback_title: feedbackTitle,
+            feedback_summary: feedbackSummary,
+            feedback_area: feedbackArea,
+            base_ref: ""
+          })
+        });
+
+        if (!response.ok) {
+          const payload = (await response.json()) as { error?: string; detail?: string };
+          if (payload.error === "patch_in_progress") {
+            setts.setSettingsNotice("A code change is already being processed. Try again once it finishes.");
+          } else {
+            setts.setSettingsError(payload.detail ?? "Could not start code fix. Try again later.");
+          }
+          return;
+        }
+
+        const data = (await response.json()) as {
+          patch_id: string;
+          status: string;
+          title?: string | null;
+          description?: string | null;
+        };
+
+        // Optimistically add a pending entry and start polling
+        const pendingEntry: PatchEntry = {
+          id: data.patch_id,
+          status: data.status as PatchStatus,
+          title: data.title ?? feedbackTitle,
+          description: data.description ?? "",
+          unified_diff: "",
+          created_at: new Date().toISOString()
+        };
+        const existingPatches = setts.patches;
+        setts.setPatches([pendingEntry, ...existingPatches]);
+        setts.setNotificationPatchId(data.patch_id);
+
+        if (data.status !== "scope_blocked") {
+          schedulePatchPoll(data.patch_id);
+        } else {
+          await refreshState(useConversationStore.getState().activeConversationId);
+        }
+      } catch {
+        setts.setSettingsError("Couldn't reach the change agent right now. Try again later.");
+      }
+    },
+    [schedulePatchPoll, refreshState]
+  );
+
+  const rollbackPatch = useCallback(
+    async (patchId: string) => {
+      const setts = useSettingsStore.getState();
+      // Optimistically show reverting state in the notification
+      const existingPatches = setts.patches;
+      const optimistic = existingPatches.map((p) =>
+        p.id === patchId ? { ...p, status: "reverting" as PatchStatus } : p
+      );
+      setts.setPatches(optimistic);
+
+      try {
+        const response = await fetch(`${runtimeBase}/agent/rollback`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ patch_id: patchId })
+        });
+        const data = (await response.json()) as {
+          patch_id: string;
+          status: string;
+          reason?: string | null;
+        };
+        const updatedStatus = data.status as PatchStatus;
+        const nextPatches = setts.patches.map((p) =>
+          p.id === patchId ? { ...p, status: updatedStatus } : p
+        );
+        setts.setPatches(nextPatches);
+        setts.setNotificationPatchId(patchId);
+        await refreshState(useConversationStore.getState().activeConversationId);
+      } catch {
+        // Restore previous status on failure
+        await refreshState(useConversationStore.getState().activeConversationId);
+        setts.setSettingsError("Couldn't reach the change agent right now. Try again later.");
+      }
+    },
+    [refreshState]
+  );
+
   return {
     refreshState,
     retryRuntime,
@@ -708,6 +923,8 @@ export function useRuntime() {
     saveApiKey,
     removeApiKey,
     setSelectedModel,
-    sendMessage
+    sendMessage,
+    requestPatch,
+    rollbackPatch
   };
 }
