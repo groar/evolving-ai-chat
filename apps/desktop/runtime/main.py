@@ -1,8 +1,9 @@
 import json
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import AsyncIterator
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from openai import AuthenticationError, RateLimitError
@@ -11,6 +12,7 @@ from .adapters.anthropic_adapter import MissingApiKeyError as AnthropicMissingAp
 from .adapters.openai_adapter import MissingApiKeyError as OpenAIMissingApiKeyError
 from .adapters.registry import list_models
 from .adapters.router import ChatRouter
+from .agent.apply_pipeline import ApplyPipeline, RollbackError
 from .agent.patch_agent import HarnessUnavailableError, MalformedPatchError, PiDevPatchAgent, validate_scope
 from .agent.patch_storage import PatchStorage
 from .models import (
@@ -31,6 +33,8 @@ from .models import (
     NewConversationResponse,
     PatchStatusResponse,
     PersonaAddition,
+    RollbackRequest,
+    RollbackResponse,
     UpdateConversationRequest,
     ReleaseChannelUpdateRequest,
     RuntimeSettingsResponse,
@@ -39,9 +43,12 @@ from .models import (
 )
 from .storage import RuntimeStorage
 
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+
 chat_router = ChatRouter()
 patch_agent = PiDevPatchAgent()
 patch_storage = PatchStorage()
+apply_pipeline = ApplyPipeline(repo_root=_REPO_ROOT, patch_storage=patch_storage)
 
 
 def _format_assistant_meta(
@@ -421,12 +428,14 @@ def delete_local_data() -> DeleteDataResponse:
 # ---------------------------------------------------------------------------
 
 @app.post("/agent/code-patch", response_model=CodePatchResponse)
-def agent_code_patch(payload: CodePatchRequest) -> CodePatchResponse | JSONResponse:
+def agent_code_patch(
+    payload: CodePatchRequest, background_tasks: BackgroundTasks
+) -> CodePatchResponse | JSONResponse:
     """Generate a code patch from a feedback payload (spec §4).
 
     Triggers the agent harness, validates scope (Layer 2), stores the artifact,
-    and returns immediately. Apply runs asynchronously (T-0060); the frontend
-    polls GET /agent/patch-status/{patch_id} for status transitions.
+    and returns immediately. The apply pipeline starts automatically in the
+    background (T-0060); the frontend polls GET /agent/patch-status/{patch_id}.
     """
     if patch_storage.has_patch_in_flight():
         storage.append_event(
@@ -490,6 +499,8 @@ def agent_code_patch(payload: CodePatchRequest) -> CodePatchResponse | JSONRespo
         "patch_created",
         {"patch_id": artifact.id, "feedback_id": payload.feedback_id},
     )
+    # Auto-start the apply pipeline in the background (spec §3.3, AC: no manual trigger)
+    background_tasks.add_task(apply_pipeline.apply, artifact)
     return CodePatchResponse(
         patch_id=artifact.id,
         status=artifact.status,
@@ -521,3 +532,42 @@ def agent_patch_status(patch_id: str) -> PatchStatusResponse | JSONResponse:
         reverted_at=artifact.reverted_at,
         revert_commit_sha=artifact.revert_commit_sha,
     )
+
+
+@app.post("/agent/rollback", response_model=RollbackResponse)
+def agent_rollback(payload: RollbackRequest) -> RollbackResponse | JSONResponse:
+    """Rollback an applied patch artifact via git revert (spec §3.4).
+
+    Accepts { patch_id } and runs `git revert <git_commit_sha> --no-edit`.
+    Returns the new artifact status and revert commit SHA on success.
+    """
+    artifact = patch_storage.load(payload.patch_id)
+    if artifact is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": "patch_not_found", "patch_id": payload.patch_id},
+        )
+
+    try:
+        updated = apply_pipeline.rollback(artifact)
+        storage.append_event(
+            "patch_reverted",
+            {"patch_id": updated.id, "revert_commit_sha": updated.revert_commit_sha},
+        )
+        return RollbackResponse(
+            patch_id=updated.id,
+            status=updated.status,
+            revert_commit_sha=updated.revert_commit_sha,
+        )
+    except RollbackError as exc:
+        storage.append_event(
+            "patch_rollback_failed",
+            {"patch_id": payload.patch_id, "reason": exc.reason},
+        )
+        # Artifact was updated in storage by rollback(); reload for latest status
+        latest = patch_storage.load(payload.patch_id) or artifact
+        return RollbackResponse(
+            patch_id=latest.id,
+            status=latest.status,
+            reason=exc.reason,
+        )

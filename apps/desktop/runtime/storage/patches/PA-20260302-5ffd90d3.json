@@ -1,0 +1,21 @@
+{
+  "id": "PA-20260302-5ffd90d3",
+  "created_at": "2026-03-02T19:24:47.376876+00:00",
+  "feedback_id": "FB-status-test",
+  "base_ref": "abc1234",
+  "status": "apply_failed",
+  "title": "[stub] UI adjustment: Test",
+  "description": "Stub patch for feedback 'Test'. No real files modified (offline/test mode).\n\nFailure details: Patch base_ref='abc1234' but current HEAD='29b9ca4616513962c20d6dc4ceee89af94523666'",
+  "files_changed": [
+    "apps/desktop/src/App.tsx"
+  ],
+  "unified_diff": "--- a/apps/desktop/src/App.tsx\n+++ b/apps/desktop/src/App.tsx\n@@ -1,3 +1,3 @@\n-// Evolving AI Chat\n+// Evolving AI Chat \u2014 your personal assistant\n import React from 'react';\n",
+  "scope_violations": [],
+  "agent_model": "stub",
+  "agent_harness": "stub-v1",
+  "applied_at": null,
+  "git_commit_sha": null,
+  "reverted_at": null,
+  "revert_commit_sha": null,
+  "failure_reason": "base_ref_mismatch"
+}

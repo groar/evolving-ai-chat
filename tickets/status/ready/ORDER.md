@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0060 | P1 | M8 git-backed apply/rollback — depends on T-0059 (done). |
-| 2 | T-0061 | P1 | M8 non-review UI — depends on T-0059 (done); can run in parallel with T-0060 using mocked API. |
+| 1 | T-0061 | P1 | M8 non-review UI — depends on T-0059 and T-0060 (both done). |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -25,4 +24,5 @@ This file is the source of truth for ready-ticket pickup order.
 ## Notes
 - T-0058 (M8 design spec) completed 2026-03-01; canonical spec in `docs/m8-code-loop.md`.
 - T-0059 (M8 agent harness integration) completed 2026-03-01.
-- T-0060 and T-0061 are scoped from T-0058. The spec is the source of truth — do not invent behavior not described there.
+- T-0060 (M8 git-backed apply/rollback) completed 2026-03-02.
+- T-0061 is scoped from T-0058. The spec is the source of truth — do not invent behavior not described there.

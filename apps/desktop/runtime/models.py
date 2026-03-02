@@ -216,3 +216,20 @@ class PatchStatusResponse(BaseModel):
     revert_commit_sha: str | None = None
 
 
+# ---------------------------------------------------------------------------
+# M8 rollback models (T-0060)
+# ---------------------------------------------------------------------------
+
+class RollbackRequest(BaseModel):
+    """Request body for POST /agent/rollback (spec §3.4)."""
+    patch_id: str = Field(min_length=1, max_length=120)
+
+
+class RollbackResponse(BaseModel):
+    """Response body for POST /agent/rollback."""
+    patch_id: str
+    status: str  # reverted | rollback_conflict | rollback_unavailable | not_applied
+    revert_commit_sha: str | None = None
+    reason: str | None = None
+
+

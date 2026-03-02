@@ -40,6 +40,7 @@ pnpm-debug.log*
 tmp/
 temp/
 *.pid
+.test-tmp/
 
 # Python local artifacts (tooling/tests)
 __pycache__/
