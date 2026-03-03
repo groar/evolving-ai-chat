@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0065 | P2 | Settings: reduce crowding, clarify Changelog and Updates/Early Access (F-20260303-002). |
+| _none_ | | | T-0065 picked up 2026-03-03; in review. Replenish when PM adds ready tickets. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

@@ -51,7 +51,7 @@ describe("SettingsPanel", () => {
 
   it("renders changelog empty state", () => {
     const emptyMarkup = renderToStaticMarkup(renderPanel());
-    expect(emptyMarkup).toContain("No changes applied yet.");
+    expect(emptyMarkup).toContain("No changes yet.");
   });
 
   it("renders changelog rows with proposal linkage", () => {
@@ -89,6 +89,15 @@ describe("SettingsPanel", () => {
   it("uses progressive disclosure for advanced concepts", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Early Access");
+  });
+
+  it("explains Updates and Early Access clearly (T-0065)", () => {
+    const markup = renderToStaticMarkup(renderPanel());
+    expect(markup).toContain("Choose which version of the app you get");
+    expect(markup).toContain("Stable = recommended");
+    expect(markup).toContain("Beta = early access to new features");
+    expect(markup).toContain("Early Access (optional beta features when on Beta channel)");
+    expect(markup).toContain("Only available when you choose the Beta channel above");
   });
 
   it("renders Works offline section with at least 2 concrete items", () => {

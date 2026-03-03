@@ -135,13 +135,13 @@ export function SettingsPanel(props: SettingsPanelProps) {
   }
 
   return (
-    <section className="grid gap-5 max-h-none min-h-0 overflow-visible min-w-0" aria-label="Settings">
-      <div className="flex justify-between items-center gap-2">
+    <section className="grid gap-6 max-h-none min-h-0 overflow-visible min-w-0" aria-label="Settings">
+      {/* Connections */}
+      <div className="grid gap-3">
         <p className="m-0 text-sm font-semibold text-foreground">Connections</p>
-      </div>
-      <p className="m-0 text-sm text-foreground">
-        OpenAI: {apiKeys.openai ? "Set ✓" : "Not configured"} · Anthropic: {apiKeys.anthropic ? "Set ✓" : "Not configured"}
-      </p>
+        <p className="m-0 text-sm text-foreground">
+          OpenAI: {apiKeys.openai ? "Set ✓" : "Not configured"} · Anthropic: {apiKeys.anthropic ? "Set ✓" : "Not configured"}
+        </p>
       {(["openai", "anthropic"] as const).map((provider) => (
         <div key={provider} className="grid gap-2">
           <p className="m-0 text-sm font-medium text-foreground">
@@ -192,23 +192,25 @@ export function SettingsPanel(props: SettingsPanelProps) {
           )}
         </div>
       ))}
+      </div>
 
-      <div className="flex justify-between items-center gap-2">
+      {/* Works offline */}
+      <div className="border-t border-border pt-5 grid gap-3">
         <p className="m-0 text-sm font-semibold text-foreground">Works offline</p>
+        <ul className="m-0 ml-4 p-0 text-sm text-foreground leading-relaxed [&>li]:mb-1">
+          <li>Browse and search conversations</li>
+          <li>Change settings and early-access options</li>
+          <li>Capture and review feedback</li>
+        </ul>
       </div>
-      <ul className="m-0 ml-4 p-0 text-sm text-foreground leading-relaxed [&>li]:mb-1">
-        <li>Browse and search conversations</li>
-        <li>Change settings and early-access options</li>
-        <li>Capture and review feedback</li>
-      </ul>
 
-      <div className="flex justify-between items-center gap-2">
-        <p className="m-0 text-sm font-semibold text-foreground">Updates & Safety</p>
-      </div>
-      <p className="m-0 text-sm font-semibold text-foreground">Updates</p>
-      <p className="m-0 text-sm text-foreground">Choose which updates you receive. Your conversations and history are never affected.</p>
-
-      <div className="channel-toggle grid grid-cols-2 gap-2">
+      {/* Updates: channel choice */}
+      <div className="border-t border-border pt-5 grid gap-3">
+        <p className="m-0 text-sm font-semibold text-foreground">Updates</p>
+        <p className="m-0 text-sm text-foreground">
+          Choose which version of the app you get. Stable = recommended; Beta = early access to new features. Your conversations and history are never affected.
+        </p>
+        <div className="channel-toggle grid grid-cols-2 gap-2">
         <button
           type="button"
           className={`border rounded-xl py-2.5 px-3 text-sm font-medium font-inherit cursor-pointer transition-all disabled:opacity-55 disabled:cursor-not-allowed ${
@@ -233,11 +235,14 @@ export function SettingsPanel(props: SettingsPanelProps) {
         >
           Beta (early access)
         </button>
+        </div>
       </div>
 
-      <details className="border-t border-dashed border-border pt-2.5 grid gap-2.5">
-        <summary className="cursor-pointer text-sm font-semibold text-foreground">Early Access</summary>
-        <p className="m-0 text-sm text-foreground">Optional beta toggles. Your data is never affected.</p>
+      <details className="border-t border-dashed border-border pt-4 mt-1 grid gap-3" open>
+        <summary className="cursor-pointer text-sm font-semibold text-foreground list-none">
+          Early Access (optional beta features when on Beta channel)
+        </summary>
+        <p className="m-0 text-sm text-foreground">Optional toggles for beta features. Only available when you choose the Beta channel above. Your data is never affected.</p>
         <label className="flex items-center gap-1.5 text-sm">
           <input
             type="checkbox"
@@ -248,7 +253,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
           Show behind-the-scenes info (early-access)
         </label>
         {settings.channel !== "experimental" && (
-          <p className="m-0 text-xs text-muted-foreground">Switch to Beta (early access) to adjust early-access feature toggles.</p>
+          <p className="m-0 text-xs text-muted-foreground">Switch to Beta above to adjust these toggles.</p>
         )}
         <div className="grid gap-1.5">
           <button type="button" className={railBtn} disabled={isBusy} onClick={requestResetExperiments}>
@@ -291,38 +296,40 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </DialogContent>
       </Dialog>
 
-      <div className="border-t border-dashed border-border pt-2.5 grid gap-2.5">
-        <p className="m-0 text-sm font-semibold text-foreground">Changelog</p>
+      <details className="border-t border-border pt-5 grid gap-4" open aria-label="Changelog">
+        <summary className="cursor-pointer text-sm font-semibold text-foreground list-none">Changelog</summary>
 
-        {/* M8 patch entries — applied code changes with Undo and diff toggle */}
+        {/* Applied code changes (M8 patches) */}
         {patches.length > 0 && (
-          <ul className="list-none m-0 p-0 grid gap-2" aria-label="Applied code changes">
-            {patches.map((patch) => {
-              const isApplied = patch.status === "applied";
-              const isReverted = patch.status === "reverted";
-              const isError =
-                patch.status === "apply_failed" ||
-                patch.status === "scope_blocked" ||
-                patch.status === "rollback_conflict" ||
-                patch.status === "rollback_unavailable";
-              const diffOpen = expandedDiffIds.has(patch.id);
-              const hasDiff = Boolean(patch.unified_diff);
-              const patchStatusLabel: Record<string, string> = {
-                pending_apply: "Pending",
-                pending: "Pending",
-                applying: "Applying…",
-                applied: "Applied",
-                apply_failed: "Failed",
-                scope_blocked: "Blocked",
-                reverting: "Undoing…",
-                reverted: "Undone",
-                rollback_conflict: "Conflict",
-                rollback_unavailable: "Unavailable"
-              };
-              return (
-                <li
-                  key={patch.id}
-                  className={`border rounded-lg bg-white p-2.5 grid gap-1.5 ${
+          <div className="grid gap-3">
+            <p className="m-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Applied code changes</p>
+            <ul className="list-none m-0 p-0 grid gap-3" aria-label="Applied code changes">
+              {patches.map((patch) => {
+                const isApplied = patch.status === "applied";
+                const isReverted = patch.status === "reverted";
+                const isError =
+                  patch.status === "apply_failed" ||
+                  patch.status === "scope_blocked" ||
+                  patch.status === "rollback_conflict" ||
+                  patch.status === "rollback_unavailable";
+                const diffOpen = expandedDiffIds.has(patch.id);
+                const hasDiff = Boolean(patch.unified_diff);
+                const patchStatusLabel: Record<string, string> = {
+                  pending_apply: "Pending",
+                  pending: "Pending",
+                  applying: "Applying…",
+                  applied: "Applied",
+                  apply_failed: "Failed",
+                  scope_blocked: "Blocked",
+                  reverting: "Undoing…",
+                  reverted: "Undone",
+                  rollback_conflict: "Conflict",
+                  rollback_unavailable: "Unavailable"
+                };
+                return (
+                  <li
+                    key={patch.id}
+                    className={`border rounded-lg bg-white p-3 grid gap-2 ${
                     isApplied
                       ? "border-[#9ebf97]"
                       : isReverted
@@ -384,35 +391,39 @@ export function SettingsPanel(props: SettingsPanelProps) {
                   )}
                 </li>
               );
-            })}
-          </ul>
+              })}
+            </ul>
+          </div>
         )}
 
-        {/* Changelog entries (flags, channel, etc.) */}
+        {/* What's new: release / runtime changelog */}
         {changelog.length === 0 && patches.length === 0 ? (
-          <p className="m-0 text-xs text-muted-foreground">No changes applied yet.</p>
+          <p className="m-0 text-sm text-muted-foreground">No changes yet.</p>
         ) : changelog.length > 0 ? (
-          <ul className="list-none m-0 p-0 grid gap-2">
-            {changelog.map((entry) => (
-              <li key={`${entry.created_at}-${entry.title}`} className="border border-border rounded-lg bg-white p-2.5 grid gap-1">
-                <div className="flex justify-between gap-2 items-center">
-                  <p className="m-0 text-sm font-bold">{entry.title}</p>
-                  <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground">
-                    {entry.channel === "experimental" ? "Beta" : "Stable"}
-                  </span>
-                </div>
-                <p className="m-0 text-sm text-foreground">{entry.summary}</p>
-                <p className="m-0 text-xs text-muted-foreground">
-                  {formatTimestamp(entry.created_at)}
-                  {entry.ticket_id ? ` · ${entry.ticket_id}` : ""}
-                  {entry.proposal_id ? ` · ${entry.proposal_id}` : ""}
-                  {entry.flags_changed && entry.flags_changed.length > 0 ? " · early-access changes" : ""}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <div className="grid gap-3">
+            <p className="m-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">What&apos;s new</p>
+            <ul className="list-none m-0 p-0 grid gap-3" aria-label="What's new">
+              {changelog.map((entry) => (
+                <li key={`${entry.created_at}-${entry.title}`} className="border border-border rounded-lg bg-white p-3 grid gap-2">
+                  <div className="flex justify-between gap-2 items-center">
+                    <p className="m-0 text-sm font-bold">{entry.title}</p>
+                    <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground">
+                      {entry.channel === "experimental" ? "Beta" : "Stable"}
+                    </span>
+                  </div>
+                  <p className="m-0 text-sm text-foreground">{entry.summary}</p>
+                  <p className="m-0 text-xs text-muted-foreground">
+                    {formatTimestamp(entry.created_at)}
+                    {entry.ticket_id ? ` · ${entry.ticket_id}` : ""}
+                    {entry.proposal_id ? ` · ${entry.proposal_id}` : ""}
+                    {entry.flags_changed && entry.flags_changed.length > 0 ? " · early-access changes" : ""}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : null}
-      </div>
+      </details>
     </section>
   );
 }

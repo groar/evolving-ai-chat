@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0065
-- Status: ready
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -61,36 +61,36 @@ User feedback (F-20260303-002): the Settings panel still feels too crowded; the 
 - F-20260303-002
 
 ## Acceptance Criteria
-- [ ] Settings panel has reduced visual density (e.g. spacing between sections, less cramped cards in Changelog).
-- [ ] Changelog section is easier to understand: clearer headings and/or separation between applied patches and other changelog entries; copy/labels understandable to a non-technical user.
-- [ ] "Updates" is clearly explained (e.g. one line: which version of the app you get; Stable vs Beta).
-- [ ] "Early Access" is clearly tied to Beta channel (e.g. summary line states it applies when on Beta; no implied data loss).
-- [ ] All existing behavior preserved (channel toggle, flag toggles, patch Undo, Connections, Danger Zone).
+- [x] Settings panel has reduced visual density (e.g. spacing between sections, less cramped cards in Changelog).
+- [x] Changelog section is easier to understand: clearer headings and/or separation between applied patches and other changelog entries; copy/labels understandable to a non-technical user.
+- [x] "Updates" is clearly explained (e.g. one line: which version of the app you get; Stable vs Beta).
+- [x] "Early Access" is clearly tied to Beta channel (e.g. summary line states it applies when on Beta; no implied data loss).
+- [x] All existing behavior preserved (channel toggle, flag toggles, patch Undo, Connections, Danger Zone).
 
 ## UX Acceptance Criteria (Only If `Area: ui`)
-- [ ] Primary flow is keyboard-usable (no mouse required for core actions).
-- [ ] Empty/error states are clear and actionable.
-- [ ] Copy/microcopy is consistent and unambiguous.
-- [ ] Layout works at common breakpoints (desktop; mobile if Settings is used there).
+- [x] Primary flow is keyboard-usable (no mouse required for core actions).
+- [x] Empty/error states are clear and actionable.
+- [x] Copy/microcopy is consistent and unambiguous.
+- [x] Layout works at common breakpoints (desktop; mobile if Settings is used there).
 
 ## Dependencies / Sequencing
 - None. Ready after PM triage.
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
-- QA checkpoint:
-- Screenshots/artifacts:
+- QA checkpoint: `tickets/meta/qa/2026-03-03-qa-T-0065.md` (PASS).
+- Screenshots/artifacts: (design/code review; screenshots not captured)
 
 ## Evidence (Verification)
-- Tests run:
-- Manual checks performed:
-- Screenshots/logs/notes:
-- Doc review (for docs-only changes):
+- Tests run: `npm test -- --run settingsPanel` — 12 tests passed (including new test "explains Updates and Early Access clearly (T-0065)").
+- Manual checks performed: Section spacing (gap-6, border-t pt-5), Updates copy, Early Access summary and body copy, Changelog as collapsible with "Applied code changes" / "What's new" sub-headings, empty state "No changes yet."
+- Screenshots/logs/notes: Implementation in `apps/desktop/src/settingsPanel.tsx`; test in `settingsPanel.test.tsx`.
+- Doc review (for docs-only changes): N/A.
 
 ## Subtasks
-- [ ] Design/layout and copy pass
-- [ ] Implementation
-- [ ] Tests
-- [ ] Documentation updates (if copy changes)
+- [x] Design/layout and copy pass
+- [x] Implementation
+- [x] Tests
+- [x] Documentation updates (if copy changes)
 
 ## Notes
 - Implementation may use smaller typography or collapsible sections only where it reduces crowding without hiding critical actions.
@@ -98,3 +98,5 @@ User feedback (F-20260303-002): the Settings panel still feels too crowded; the 
 
 ## Change Log
 - 2026-03-03: Ticket created from F-20260303-002.
+- 2026-03-03: Implementation complete. Reduced crowding (gap-6, section borders, Changelog/patches card padding); clarified Updates copy and Early Access tied to Beta; Changelog collapsible with "Applied code changes" / "What's new" sub-headings; tests updated and added. Moved to review.
+- 2026-03-03: QA checkpoint PASS (2026-03-03-qa-T-0065.md). PM acceptance: acceptance criteria and UX checklist satisfied; moved to done.
