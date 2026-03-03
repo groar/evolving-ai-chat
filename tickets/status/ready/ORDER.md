@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| (none) | — | — | Ready queue empty. T-0064 accepted 2026-03-03. |
+| 1 | T-0065 | P2 | Settings: reduce crowding, clarify Changelog and Updates/Early Access (F-20260303-002). |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -29,3 +29,4 @@ This file is the source of truth for ready-ticket pickup order.
 - T-0062 (notification dismiss + failure reason copy) completed 2026-03-03.
 - T-0063 (settings legacy cleanup) completed 2026-03-03.
 - T-0064 (central improvement button + sheet) accepted 2026-03-03. E-0010 (M8) complete.
+- T-0065 added to ready (rank 1) from user feedback 2026-03-03: settings crowded, changelog and early access/updates unclear.
