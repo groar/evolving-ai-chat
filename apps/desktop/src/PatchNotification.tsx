@@ -60,6 +60,21 @@ type Props = {
   onDismiss: () => void;
 };
 
+function getFailureReasonCopy(reason?: string | null): string {
+  switch (reason) {
+    case "validation_failed":
+      return "checks didn't pass";
+    case "base_ref_mismatch":
+      return "the codebase changed since this was generated — resubmit your feedback";
+    case "empty_or_malformed_patch":
+      return "the agent returned an unusable response";
+    case "harness_unavailable":
+      return "the AI agent couldn't be reached";
+    default:
+      return "an unexpected error occurred";
+  }
+}
+
 export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
   const [diffExpanded, setDiffExpanded] = useState(false);
   const { status } = patch;
@@ -109,7 +124,7 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
                 : status === "applied"
                   ? `${patch.description || patch.title}. Undo?`
                   : status === "apply_failed"
-                    ? `Couldn't apply the change${patch.failure_reason ? `: ${patch.failure_reason}` : ""}. No files were modified.`
+                    ? `Couldn't apply the change: ${getFailureReasonCopy(patch.failure_reason)}. No files were modified.`
                     : status === "scope_blocked"
                       ? "The agent tried to modify files outside the allowed area. Change blocked."
                       : status === "reverted"
@@ -146,6 +161,14 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
                   {diffExpanded ? "Hide changes ↑" : "See what changed ↓"}
                 </button>
               )}
+              <button
+                type="button"
+                className={secondaryBtn}
+                onClick={onDismiss}
+                aria-label="Dismiss notification"
+              >
+                Done
+              </button>
             </>
           )}
 

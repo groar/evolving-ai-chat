@@ -70,8 +70,10 @@ describe("PatchNotification — UI states (spec §5 copy compliance)", () => {
         onDismiss={noop}
       />
     );
-    expect(markup).toContain("apply the change");
+    expect(markup).toContain("Couldn't apply the change");
+    expect(markup).toContain("checks didn't pass");
     expect(markup).toContain("No files were modified");
+    expect(markup).not.toContain("validation_failed");
   });
 
   it("scope_blocked shows spec copy", () => {
@@ -195,6 +197,17 @@ describe("PatchNotification — Dismiss action", () => {
       <PatchNotification patch={makePatch({ status: "apply_failed" })} onUndo={noop} onDismiss={onDismiss} />
     );
     await userEvent.click(screen.getByRole("button", { name: /Dismiss/i }));
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows Done dismiss button in applied state and calls onDismiss", async () => {
+    const onDismiss = vi.fn();
+    render(
+      <PatchNotification patch={makePatch({ status: "applied" })} onUndo={noop} onDismiss={onDismiss} />
+    );
+    const doneButton = screen.getByRole("button", { name: /^Done$/i });
+    expect(doneButton).toBeTruthy();
+    await userEvent.click(doneButton);
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
 });

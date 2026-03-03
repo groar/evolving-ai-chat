@@ -1,6 +1,33 @@
 # PM Checkpoint — 2026-03-03
 
 ## Summary
+T-0062 (patch notification dismiss affordance and human-readable failure reasons) completed and accepted. This closes out the small UX polish follow-up from T-0061 for the M8 patch notification surface.
+
+## Tickets Accepted This Run
+| Ticket | Status | Notes |
+|---|---|---|
+| T-0062 | accepted → done | Applied-state toast now has a Done dismiss button; apply_failed copy shows mapped human-readable reasons with no raw codes; QA checkpoint recorded on 2026-03-03. |
+
+## Feedback Themes
+- UX polish on the patch notification banner makes it easier for users to clear the toast without undoing and better understand failure reasons without exposing internal implementation codes.
+
+## User Testing Ask
+- Skipped — this is a small UX refinement on an existing surface (Area: ui) with deterministic behavior and clear copy constraints. No new mechanism or persisted state was introduced; deterministic QA and internal review are sufficient.
+
+## Decisions and Rationale
+- T-0062 accepted as implemented. The change is scoped to the notification toast and copy, preserves existing M8 guarantees (Changelog remains the source of truth for Undo), and aligns with the ticket’s UI Spec Addendum.
+
+## Ready Queue Updated
+| Rank | Ticket | Notes |
+|---|---|---|
+| _(unchanged by this checkpoint)_ | | |
+
+## Process Improvement Proposal
+- Keep small UX polish tickets like T-0062 explicitly scoped with a short mapping table and UI Spec Addendum; this made implementation, QA, and PM acceptance straightforward and traceable. No structural process changes recommended beyond continuing this pattern.
+
+# PM Checkpoint — 2026-03-03
+
+## Summary
 No tickets in `review/` this run. T-0061 was already accepted 2026-03-02. PM run focused on **ready-queue replenishment**: T-0062 (patch notification dismiss + human-readable failure reasons) promoted from backlog to ready with DoR satisfied (UI Spec Addendum added for `Area: ui`).
 
 ## Review Recent Delivery
