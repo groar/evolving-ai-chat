@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| (none) | — | — | T-0064 in progress. |
+| (none) | — | — | Ready queue empty. T-0064 accepted 2026-03-03. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -28,4 +28,4 @@ This file is the source of truth for ready-ticket pickup order.
 - T-0061 (M8 non-review UI) accepted 2026-03-02.
 - T-0062 (notification dismiss + failure reason copy) completed 2026-03-03.
 - T-0063 (settings legacy cleanup) completed 2026-03-03.
-- T-0064: E-0010 polish from F-20260303-001 (central improvement button); added 2026-03-03.
+- T-0064 (central improvement button + sheet) accepted 2026-03-03. E-0010 (M8) complete.

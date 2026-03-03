@@ -96,12 +96,11 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Local complexity: self-modifying systems accumulate cruft without periodic refactors and pruning.
 
 ### Near-Term Plan
-- **Active milestone: M8 — "Agentic Code Self-Modification Loop" (E-0010)**
-  - **Implementation complete (2026-03-02).** All four tickets shipped: T-0058 (spec), T-0059 (harness), T-0060 (apply/rollback), T-0061 (notification UI + Changelog Undo).
-  - The loop is live: user submits feedback → clicks "Fix with AI →" → agent generates patch → applied automatically → notification with Undo banner → persistent Changelog.
-  - **Note**: M8 spec (T-0058) pivoted to a non-review flow: agent applies automatically, user sees a toast with Undo rather than a diff-review gate. The Undo action persists in the Changelog.
-  - **Next**: tier-2 micro-validation (primary user probe per E-0010 Validation Plan) and T-0062 (P2: notification dismiss + human-readable failure reasons).
-  - Previous: M7 (E-0009) superseded 2026-03-01; T-0056 cancelled, T-0057 cancelled. T-0052–T-0055 done but scope superseded.
+- **M8 — "Agentic Code Self-Modification Loop" (E-0010) — complete (2026-03-03)**
+  - All tickets shipped: T-0058 (spec), T-0059 (harness), T-0060 (apply/rollback), T-0061 (notification UI + Changelog Undo), T-0062 (dismiss + failure copy), T-0063 (settings legacy cleanup), T-0064 (central improvement button).
+  - Tier-2 micro-validation PASS (sponsor): diff → accept → apply → undo validated; patch quality noted as variable (model/prompt tuning can be a follow-up).
+  - **Next**: scope next milestone and replenish `tickets/status/ready/` from backlog (currently empty).
+- Previous: M7 (E-0009) superseded 2026-03-01; T-0056 cancelled, T-0057 cancelled. T-0052–T-0055 done but scope superseded.
 - Previous: M7 — "Improvement Class Expansion" (E-0009) (superseded 2026-03-01; T-0052–T-0055 done, T-0056 cancelled)
 - Previous: M6.1 — "Loop Legibility and UX Clarity" (E-0008) (completed 2026-03-01)
   - T-0048, T-0049, T-0050 (M6.1 batch), T-0051 (tier-2 re-probe). Comprehension gate passed.
