@@ -1,0 +1,21 @@
+{
+  "id": "PA-20260302-e2c78628",
+  "created_at": "2026-03-02T21:51:30.223866+00:00",
+  "feedback_id": "fb-2026-03-02T20:19:02.937Z-70cs4ryn",
+  "base_ref": "099975496477ee1205cf25dca01932d28fbcca6c",
+  "status": "applied",
+  "title": "[stub] UI adjustment: I\u2019d like to re-run an AI response with a different model",
+  "description": "Stub patch for feedback 'I\u2019d like to re-run an AI response with a different model'. No real files modified (offline/test mode).",
+  "files_changed": [
+    "apps/desktop/src/App.tsx"
+  ],
+  "unified_diff": "--- a/apps/desktop/src/App.tsx\n+++ b/apps/desktop/src/App.tsx\n@@ -19,4 +19,4 @@\n import type { RuntimeIssue } from \"./stores/runtimeStore\";\n \n-const appName = \"Evolving AI Chat\";\n+const appName = \"Evolving AI Chat \u2014 your personal assistant\";\n const diagnosticsFlagKey = \"show_runtime_diagnostics\";\n",
+  "scope_violations": [],
+  "agent_model": "stub",
+  "agent_harness": "stub-v1",
+  "applied_at": "2026-03-02T21:51:36.880357+00:00",
+  "git_commit_sha": "16b3c617c0ebfc036b0279cc3ff786134f122d46",
+  "reverted_at": null,
+  "revert_commit_sha": null,
+  "failure_reason": null
+}

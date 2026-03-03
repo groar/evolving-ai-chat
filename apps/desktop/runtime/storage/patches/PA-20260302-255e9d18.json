@@ -1,0 +1,21 @@
+{
+  "id": "PA-20260302-255e9d18",
+  "created_at": "2026-03-02T21:50:35.394451+00:00",
+  "feedback_id": "fb-2026-03-02T20:19:02.937Z-70cs4ryn",
+  "base_ref": "099975496477ee1205cf25dca01932d28fbcca6c",
+  "status": "apply_failed",
+  "title": "[stub] UI adjustment: I\u2019d like to re-run an AI response with a different model",
+  "description": "Stub patch for feedback 'I\u2019d like to re-run an AI response with a different model'. No real files modified (offline/test mode).\n\nFailure details: npm error Missing script: \"validate\"\nnpm error\nnpm error To see a list of scripts, run:\nnpm error   npm run\nnpm error A complete log of this run can be found in: /Users/alois/.npm/_logs/2026-03-02T21_50_39_588Z-debug-0.log",
+  "files_changed": [
+    "apps/desktop/src/App.tsx"
+  ],
+  "unified_diff": "--- a/apps/desktop/src/App.tsx\n+++ b/apps/desktop/src/App.tsx\n@@ -19,4 +19,4 @@\n import type { RuntimeIssue } from \"./stores/runtimeStore\";\n \n-const appName = \"Evolving AI Chat\";\n+const appName = \"Evolving AI Chat \u2014 your personal assistant\";\n const diagnosticsFlagKey = \"show_runtime_diagnostics\";\n",
+  "scope_violations": [],
+  "agent_model": "stub",
+  "agent_harness": "stub-v1",
+  "applied_at": null,
+  "git_commit_sha": null,
+  "reverted_at": null,
+  "revert_commit_sha": null,
+  "failure_reason": "validation_failed"
+}

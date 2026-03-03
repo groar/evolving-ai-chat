@@ -1,0 +1,21 @@
+{
+  "id": "PA-20260302-1f1806e6",
+  "created_at": "2026-03-02T21:50:14.174325+00:00",
+  "feedback_id": "FB-20260301-001",
+  "base_ref": "abc1234",
+  "status": "apply_failed",
+  "title": "[stub] UI adjustment: Welcome message feels robotic",
+  "description": "Stub patch for feedback 'Welcome message feels robotic'. No real files modified (offline/test mode).\n\nFailure details: Patch base_ref='abc1234' but current HEAD='099975496477ee1205cf25dca01932d28fbcca6c'",
+  "files_changed": [
+    "apps/desktop/src/App.tsx"
+  ],
+  "unified_diff": "--- a/apps/desktop/src/App.tsx\n+++ b/apps/desktop/src/App.tsx\n@@ -19,4 +19,4 @@\n import type { RuntimeIssue } from \"./stores/runtimeStore\";\n \n-const appName = \"Evolving AI Chat\";\n+const appName = \"Evolving AI Chat \u2014 your personal assistant\";\n const diagnosticsFlagKey = \"show_runtime_diagnostics\";\n",
+  "scope_violations": [],
+  "agent_model": "stub",
+  "agent_harness": "stub-v1",
+  "applied_at": null,
+  "git_commit_sha": null,
+  "reverted_at": null,
+  "revert_commit_sha": null,
+  "failure_reason": "base_ref_mismatch"
+}

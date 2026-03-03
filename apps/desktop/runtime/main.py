@@ -4,6 +4,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import AsyncIterator
 
+from dotenv import load_dotenv
+
+# Load .env from runtime dir so PATCH_AGENT_*, OPENAI_API_KEY, etc. are available
+_load_env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(_load_env_path)
+
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse

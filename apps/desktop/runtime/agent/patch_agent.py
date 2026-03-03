@@ -30,13 +30,14 @@ from typing import Any
 # ---------------------------------------------------------------------------
 SCOPE_GUARD_SYSTEM_PROMPT = """\
 You are a UI code assistant for an Electron/React desktop application.
+Your working directory is the desktop package root. The React source tree is at src/.
 You may ONLY modify files in the following allowlist:
-  - apps/desktop/src/ (React components, stores, hooks, styles)
+  - src/ (React components, stores, hooks, styles)
 You MUST NOT modify:
-  - Any file outside apps/desktop/src/
+  - Any file outside src/
   - Any Python file (.py)
   - package.json, package-lock.json, tsconfig.json, vite.config.ts, or any build/config file
-  - Any file in apps/desktop/runtime/
+  - Any file in runtime/
   - Any file in tickets/, docs/, or tests/
 Changes must be limited to: UI copy, component layout, CSS/styles, and small logic changes within existing components.
 Do not add new npm dependencies. Do not delete files.\
@@ -258,10 +259,12 @@ class PiDevPatchAgent(PatchAgent):
         stub_diff = (
             "--- a/apps/desktop/src/App.tsx\n"
             "+++ b/apps/desktop/src/App.tsx\n"
-            "@@ -1,3 +1,3 @@\n"
-            "-// Evolving AI Chat\n"
-            "+// Evolving AI Chat — your personal assistant\n"
-            " import React from 'react';\n"
+            "@@ -19,4 +19,4 @@\n"
+            " import type { RuntimeIssue } from \"./stores/runtimeStore\";\n"
+            " \n"
+            "-const appName = \"Evolving AI Chat\";\n"
+            "+const appName = \"Evolving AI Chat — your personal assistant\";\n"
+            " const diagnosticsFlagKey = \"show_runtime_diagnostics\";\n"
         )
         return PatchArtifact(
             id=_new_patch_id(),
