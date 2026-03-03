@@ -111,6 +111,12 @@ Copy constraints: must not say "approved", must not hide Undo after applied, mus
 - Spec review checklist (tier-1 validation plan): ✓ six sections filled · ✓ UI states enumerated · ✓ scope guard defined (dual-layer) · ✓ seven edge cases resolved · ✓ implementation tickets drafted · ✓ copy constraints documented.
 - No software/behavior changes in this ticket — doc review only; QA automation run waived per AGENTS.md §6.
 
+### E-0010 Tier-2 Micro-Validation (2026-03-03)
+- Audience: project sponsor. Probes run per E-0010 Validation Plan § Tier 2.
+- Probe 1 (diff look right?): Yes — matched what sponsor had in mind.
+- Probe 2 (outcome expected? could undo?): Outcome not fully up to expectation (style change applied but "wasn't great"; sponsor used GPT-4o-mini). Rollback: "I rolled back the feature easily."
+- Pass criteria: read diff ✓, accepted ✓, observed change ✓, knows rollback possible ✓. **Verdict: PASS.** Evidence: `tickets/meta/feedback/2026-03-03-pm-checkpoint-e0010-tier2-validation.md`.
+
 ## Change Log
 - 2026-03-01: Created by PM checkpoint (M8 pivot, F-20260301-008). Rank 1 in ready queue.
 - 2026-03-01: Moved to `in-progress/`. Design spec written in `docs/m8-code-loop.md`. Key direction from user: agent harness (pi.dev), git-backed rollback, no user code review. All AC checked. Implementation tickets T-0059/T-0060/T-0061 drafted.

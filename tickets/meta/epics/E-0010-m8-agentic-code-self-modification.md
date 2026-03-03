@@ -2,10 +2,10 @@
 
 ## Metadata
 - ID: E-0010
-- Status: active (tier-2 validation pending)
+- Status: active (tier-2 complete)
 - Owner: pm-agent
 - Created: 2026-03-01
-- Updated: 2026-03-03 (T-0062 promoted to ready; tier-2 micro-validation pending)
+- Updated: 2026-03-03 (tier-2 micro-validation PASS — sponsor)
 
 ## Goal
 Wire the real self-evolution loop end-to-end: the app receives user feedback, an agent drafts actual source-code changes, the user reviews a diff and accepts or rejects, and on acceptance the code is applied and the app rebuilds. This is the vision described in STATUS.md ("agentic coding in the background") made concrete for the first time.
@@ -68,8 +68,8 @@ The previous approach (M6/M7) only modified runtime config (system prompt string
   - T-0059: Agent harness integration — `PatchAgent` ABC, `POST /agent/code-patch`, `PiDevPatchAgent`, scope guard Layer 1+2, artifact storage
   - T-0060: Git-backed apply/rollback — sandboxed build gate, `git commit` apply, `git revert` rollback, `POST /agent/rollback`
   - T-0061: Non-review UI — `PatchNotification` (8 states), Changelog Undo, diff toggle, "Fix with AI →" feedback trigger, polling
+- 2026-03-03: Tier-2 micro-validation PASS (sponsor). Probes 1–2 answered; all pass criteria met; sponsor rolled back one style change easily. Patch quality noted as variable (model: GPT-4o-mini). Evidence: `tickets/meta/feedback/2026-03-03-pm-checkpoint-e0010-tier2-validation.md`, T-0058 Evidence.
 - Pending:
-  - Tier-2 micro-validation: primary user probe (per Validation Plan)
   - T-0062 (ready, P2): notification dismiss affordance + human-readable failure reason copy
 
 ## Notes
