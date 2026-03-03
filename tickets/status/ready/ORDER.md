@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| — | _(empty)_ | — | T-0061 moved to review 2026-03-02. Await PM queue replenishment. |
+| 1 | T-0062 | P2 | Notification dismiss + human-readable failure reasons (E-0010 follow-up from T-0061 QA). |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -25,4 +25,5 @@ This file is the source of truth for ready-ticket pickup order.
 - T-0058 (M8 design spec) completed 2026-03-01; canonical spec in `docs/m8-code-loop.md`.
 - T-0059 (M8 agent harness integration) completed 2026-03-01.
 - T-0060 (M8 git-backed apply/rollback) completed 2026-03-02.
-- T-0061 is scoped from T-0058. The spec is the source of truth — do not invent behavior not described there.
+- T-0061 (M8 non-review UI) accepted 2026-03-02.
+- T-0062: E-0010 polish; UI Spec Addendum added 2026-03-03 for DoR.
