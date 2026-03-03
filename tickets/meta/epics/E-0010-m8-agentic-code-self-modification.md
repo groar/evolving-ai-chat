@@ -2,10 +2,10 @@
 
 ## Metadata
 - ID: E-0010
-- Status: active (tier-2 complete)
+- Status: active (tier-2 complete; polish in progress)
 - Owner: pm-agent
 - Created: 2026-03-01
-- Updated: 2026-03-03 (tier-2 micro-validation PASS — sponsor)
+- Updated: 2026-03-03 (T-0062 done; T-0063/T-0064 queued from F-20260303-001)
 
 ## Goal
 Wire the real self-evolution loop end-to-end: the app receives user feedback, an agent drafts actual source-code changes, the user reviews a diff and accepts or rejects, and on acceptance the code is applied and the app rebuilds. This is the vision described in STATUS.md ("agentic coding in the background") made concrete for the first time.
@@ -60,7 +60,9 @@ The previous approach (M6/M7) only modified runtime config (system prompt string
 - T-0059: Agent harness integration — `PatchAgent` interface, `POST /agent/code-patch`, harness client, scope-guard, patch artifact schema (**done**)
 - T-0060: Git-backed apply/rollback — sandboxed build gate, `git commit` on apply, `git revert` on rollback, `POST /agent/rollback` (**done**)
 - T-0061: Non-review UI — in-app notification states, Changelog Undo action, diff toggle, all copy strings (**done**)
-- T-0062: Notification dismiss + human-readable failure reasons (ready, P2, follow-up from T-0061 QA)
+- T-0062: Notification dismiss + human-readable failure reasons (**done** 2026-03-03)
+- T-0063: Settings panel legacy cleanup — remove AI Persona + Proposals pipeline + backing code (ready, P2, from F-20260303-001)
+- T-0064: Central always-visible improvement request button (ready, P2, depends on T-0063, from F-20260303-001)
 
 ## Progress
 - Done (2026-03-01/02):
@@ -69,8 +71,11 @@ The previous approach (M6/M7) only modified runtime config (system prompt string
   - T-0060: Git-backed apply/rollback — sandboxed build gate, `git commit` apply, `git revert` rollback, `POST /agent/rollback`
   - T-0061: Non-review UI — `PatchNotification` (8 states), Changelog Undo, diff toggle, "Fix with AI →" feedback trigger, polling
 - 2026-03-03: Tier-2 micro-validation PASS (sponsor). Probes 1–2 answered; all pass criteria met; sponsor rolled back one style change easily. Patch quality noted as variable (model: GPT-4o-mini). Evidence: `tickets/meta/feedback/2026-03-03-pm-checkpoint-e0010-tier2-validation.md`, T-0058 Evidence.
+- Done (2026-03-03):
+  - T-0062: notification dismiss affordance + human-readable failure reason copy
 - Pending:
-  - T-0062 (ready, P2): notification dismiss affordance + human-readable failure reason copy
+  - T-0063 (ready, P2): Settings panel legacy cleanup — AI Persona + Proposals pipeline removed, backing code deleted
+  - T-0064 (ready, P2): Central always-visible improvement button — FeedbackPanel promoted to dedicated Sheet, top-bar Improve button
 
 ## Notes
 - T-0009 (agentic harness baseline) established the pi.dev-like loop concept. The key gap is that the harness was never wired against real source files with a user-facing diff review UI. M8 closes that gap.

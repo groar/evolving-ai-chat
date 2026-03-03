@@ -15,7 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0062 | P2 | Notification dismiss + human-readable failure reasons (E-0010 follow-up from T-0061 QA). |
+| 1 | T-0063 | P2 | Settings legacy cleanup: remove AI Persona + Proposals pipeline + backing code (E-0010 polish). |
+| 2 | T-0064 | P2 | Central always-visible improvement button (depends on T-0063; E-0010 polish). |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -26,4 +27,5 @@ This file is the source of truth for ready-ticket pickup order.
 - T-0059 (M8 agent harness integration) completed 2026-03-01.
 - T-0060 (M8 git-backed apply/rollback) completed 2026-03-02.
 - T-0061 (M8 non-review UI) accepted 2026-03-02.
-- T-0062: E-0010 polish; UI Spec Addendum added 2026-03-03 for DoR.
+- T-0062 (notification dismiss + failure reason copy) completed 2026-03-03.
+- T-0063 + T-0064: E-0010 polish from F-20260303-001 (settings cleanup + central improvement button); added 2026-03-03.
