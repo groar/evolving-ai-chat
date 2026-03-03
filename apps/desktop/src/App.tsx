@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import { PanelLeftIcon, PencilIcon, SettingsIcon } from "lucide-react";
+import { PanelLeftIcon, PencilIcon, SettingsIcon, SparklesIcon } from "lucide-react";
 import { FeedbackPanel } from "./feedbackPanel";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { PatchNotification } from "./PatchNotification";
@@ -30,7 +30,6 @@ export function isApiKeyNotSet(runtimeIssue: RuntimeIssue | null): boolean {
 export function App() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
-  const feedbackSectionRef = useRef<HTMLElement>(null);
 
   const runtime = useRuntime();
   const { requestPatch, rollbackPatch } = runtime;
@@ -66,6 +65,7 @@ export function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [improvementSheetOpen, setImprovementSheetOpen] = useState(false);
   const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
   const [renameError, setRenameError] = useState<string | null>(null);
@@ -86,16 +86,15 @@ export function App() {
     }
   }, [streamingText]);
 
-  // When opening settings from the per-message Improve button, scroll to the Improve section.
+  // When opening the improvement sheet, show the form and focus the textarea.
   useEffect(() => {
-    if (!settingsOpen || !feedback.isOpen || !feedback.contextPointer?.includes(":")) {
-      return;
-    }
+    if (!improvementSheetOpen) return;
+    feedback.setIsOpen(true);
     const timeoutId = window.setTimeout(() => {
-      feedbackSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 350);
+      document.getElementById("feedback-input")?.focus();
+    }, 150);
     return () => window.clearTimeout(timeoutId);
-  }, [settingsOpen, feedback.isOpen, feedback.contextPointer]);
+  }, [improvementSheetOpen]);
 
   useEffect(() => {
     function handleKeyDown(e: globalThis.KeyboardEvent) {
@@ -267,7 +266,38 @@ export function App() {
         </SheetContent>
       </Sheet>
 
-      {/* Settings sheet (Settings, Improve, Danger Zone) */}
+      {/* Improvement sheet (Suggest an improvement — independent of Settings) */}
+      <Sheet open={improvementSheetOpen} onOpenChange={setImprovementSheetOpen}>
+        <SheetContent side="right" className="w-[min(400px,90vw)] overflow-y-auto flex flex-col bg-panel border-l border-border" data-testid="improvement-sheet">
+          <SheetHeader className="px-5 pt-5 pb-2 shrink-0">
+            <SheetTitle>Suggest an improvement</SheetTitle>
+          </SheetHeader>
+          <div className="grid gap-4 pb-8 px-5">
+            <FeedbackPanel
+              isOpen={feedback.isOpen}
+              isBusy={isFeedbackBusy}
+              draftText={feedback.draftText}
+              selectedTags={feedback.tags}
+              contextPointer={feedback.contextPointer}
+              items={feedback.items}
+              notice={feedback.notice}
+              error={feedback.error}
+              onToggleOpen={() => {
+                if (feedback.isOpen) feedback.clearPendingContext();
+                feedback.setIsOpen((o) => !o);
+              }}
+              onChangeDraftText={feedback.setDraftText}
+              onToggleTag={feedback.toggleTag}
+              onSubmitFeedback={feedback.submitFeedback}
+              onRequestCodePatch={(feedbackId, feedbackTitle, feedbackSummary) => {
+                void requestPatch(feedbackId, feedbackTitle, feedbackSummary, "ui");
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Settings sheet (Settings, Danger Zone) */}
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         <SheetContent side="right" className="w-[min(400px,90vw)] overflow-y-auto flex flex-col bg-panel border-l border-border">
           <SheetHeader className="px-5 pt-5 pb-2 shrink-0">
@@ -295,29 +325,6 @@ export function App() {
               apiKeyError={apiKeyError}
               isSavingApiKey={isSavingApiKey}
             />
-            <section ref={feedbackSectionRef} className="border-t border-border pt-4">
-              <h3 className="text-sm font-semibold mb-2">Improve</h3>
-              <FeedbackPanel
-                isOpen={feedback.isOpen}
-                isBusy={isFeedbackBusy}
-                draftText={feedback.draftText}
-                selectedTags={feedback.tags}
-                contextPointer={feedback.contextPointer}
-                items={feedback.items}
-                notice={feedback.notice}
-                error={feedback.error}
-                onToggleOpen={() => {
-                  if (feedback.isOpen) feedback.clearPendingContext();
-                  feedback.setIsOpen((o) => !o);
-                }}
-                onChangeDraftText={feedback.setDraftText}
-                onToggleTag={feedback.toggleTag}
-                onSubmitFeedback={feedback.submitFeedback}
-                onRequestCodePatch={(feedbackId, feedbackTitle, feedbackSummary) => {
-                  void requestPatch(feedbackId, feedbackTitle, feedbackSummary, "ui");
-                }}
-              />
-            </section>
             <section className="border-t border-border pt-4">
               <details className="group grid gap-2.5" name="settings-danger-zone">
                 <summary className="cursor-pointer text-sm font-semibold text-destructive">Danger Zone</summary>
@@ -354,6 +361,14 @@ export function App() {
               ~${conversationCostTotal >= 0.01 ? conversationCostTotal.toFixed(2) : conversationCostTotal.toFixed(4)}
             </span>
           )}
+          <button
+            type="button"
+            onClick={() => setImprovementSheetOpen(true)}
+            className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2"
+            aria-label="Suggest an improvement"
+          >
+            <SparklesIcon className="size-5" />
+          </button>
           <button
             type="button"
             onClick={() => setSettingsOpen(true)}
@@ -465,7 +480,7 @@ export function App() {
                     className="shrink-0 text-xs text-muted-foreground hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-1 rounded"
                     aria-label="Help improve this software"
                     onClick={() => {
-                      setSettingsOpen(true);
+                      setImprovementSheetOpen(true);
                       feedback.openFeedbackForMessage(activeConversationId, message.id);
                     }}
                   >

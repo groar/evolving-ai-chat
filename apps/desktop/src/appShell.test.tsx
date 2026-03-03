@@ -18,6 +18,11 @@ describe("App shell IA", () => {
     expect(markup).toContain("Cmd+,");
   });
 
+  it("shows Suggest an improvement button in top bar", () => {
+    const markup = renderToStaticMarkup(<App />);
+    expect(markup).toContain("Suggest an improvement");
+  });
+
   it("does not render secondary-surface content by default (chat pane only)", () => {
     const markup = renderToStaticMarkup(<App />);
     expect(markup).not.toContain("+ New Conversation");

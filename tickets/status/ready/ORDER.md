@@ -15,10 +15,10 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0064 | P2 | Central always-visible improvement button (depends on T-0063; E-0010 polish). |
+| (none) | — | — | T-0064 in progress. |
 
 ## Agent Pickup Rule
-- Unless the user explicitly reprioritizes, implementers should select rank 1 next (T-0064).
+- Unless the user explicitly reprioritizes, implementers should select rank 1 next.
 - If the table is empty, pause new implementation pickup and wait for PM queue updates.
 
 ## Notes
