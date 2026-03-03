@@ -7,22 +7,22 @@
 
 /* Theme: warm neutrals + orange accent (preserved from original) */
 @theme {
-  --color-bg: #1a1a2e;
-  --color-panel: #16213e;
-  --color-panel-strong: #0f3460;
-  --color-ink: #e94560;
-  --color-muted: #6c757d;
-  --color-accent: #fca311;
-  --color-accent-soft: #fff3b0;
-  --color-border: #30336b;
-  --color-danger-bg: #e94560;
-  --color-danger-ink: #ff0000;
-  --color-success-border: #4caf50;
-  --color-success-bg: #baffc9;
+  --color-bg: #f5f3ea;
+  --color-panel: #fff8e6;
+  --color-panel-strong: #f5e7b8;
+  --color-ink: #26211a;
+  --color-muted: #6c6352;
+  --color-accent: #d25722;
+  --color-accent-soft: #efbe91;
+  --color-border: #cfbda3;
+  --color-danger-bg: #ffe4dd;
+  --color-danger-ink: #8d2400;
+  --color-success-border: #9ebf97;
+  --color-success-bg: #effbe8;
   --color-success-ink: #2e5a2b;
-  --color-warning-border: #ffcc00;
-  --color-warning-bg: #fff8e1;
-  --color-warning-ink: #ff6700;
+  --color-warning-border: #dfbe78;
+  --color-warning-bg: #fff7e6;
+  --color-warning-ink: #6b4e00;
 }
 
 * {
@@ -35,8 +35,8 @@ body {
   font-family: "Avenir Next", "Segoe UI", sans-serif;
   color: var(--color-ink);
   background:
-    radial-gradient(circle at 20% 20%, #0f3460 0%, transparent 40%),
-    radial-gradient(circle at 80% 15%, #16213e 0%, transparent 30%),
+    radial-gradient(circle at 18% 18%, #fff5d8 0%, transparent 40%),
+    radial-gradient(circle at 85% 10%, #f7d8bc 0%, transparent 32%),
     var(--color-bg);
 }
 
