@@ -6,7 +6,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { SettingsPanel, type ChangeProposal, type ChangelogEntry, type RuntimeSettings } from "./settingsPanel";
+import { SettingsPanel, type ChangelogEntry, type RuntimeSettings } from "./settingsPanel";
 
 function makeSettings(overrides: Partial<RuntimeSettings> = {}): RuntimeSettings {
   return {
@@ -17,29 +17,11 @@ function makeSettings(overrides: Partial<RuntimeSettings> = {}): RuntimeSettings
   };
 }
 
-function makeProposal(overrides: Partial<ChangeProposal> = {}): ChangeProposal {
-  return {
-    proposal_id: "proposal-1",
-    created_at: "2026-02-27T10:00:00.000Z",
-    title: "Improve settings trust copy",
-    rationale: "Users need clearer rollback wording.",
-    source_feedback_ids: ["F-20260226-001"],
-    diff_summary: "",
-    risk_notes: "",
-    validation_runs: [],
-    decision: { status: "pending", decided_at: null, notes: null },
-    ...overrides
-  };
-}
-
 function renderPanel(overrides: Partial<ComponentProps<typeof SettingsPanel>> = {}) {
   return (
     <SettingsPanel
       settings={makeSettings()}
       changelog={[]}
-      proposals={[]}
-      personaAdditions={[]}
-      feedbackItems={[]}
       isBusy={false}
       canToggleFlags={true}
       configuredDiagnosticsFlag={true}
@@ -50,10 +32,6 @@ function renderPanel(overrides: Partial<ComponentProps<typeof SettingsPanel>> = 
       onSelectChannel={() => undefined}
       onToggleDiagnostics={() => undefined}
       onResetExperiments={() => undefined}
-      onCreateProposal={() => undefined}
-      onAddValidationRun={() => undefined}
-      onUpdateProposalDecision={() => undefined}
-      onRemovePersonaAddition={async () => undefined}
       apiKeys={{ openai: false, anthropic: false }}
       onSaveApiKey={async () => undefined}
       onRemoveApiKey={async () => undefined}
@@ -69,34 +47,11 @@ describe("SettingsPanel", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Settings");
     expect(markup).toContain("Updates");
-    expect(markup).toContain("Improvements");
   });
 
-  it("renders changelog and proposals empty states", () => {
+  it("renders changelog empty state", () => {
     const emptyMarkup = renderToStaticMarkup(renderPanel());
     expect(emptyMarkup).toContain("No changes applied yet.");
-    expect(emptyMarkup).toContain("No suggestions yet.");
-  });
-
-  it("disables accept when no validation run exists", () => {
-    const markup = renderToStaticMarkup(renderPanel({ proposals: [makeProposal()] }));
-    expect(markup).toContain("Accept disabled: run validation first.");
-  });
-
-  it("disables accept when latest validation is failing", () => {
-    const proposal = makeProposal({
-      validation_runs: [
-        {
-          validation_run_id: "run-1",
-          status: "failing",
-          summary: "Gate failed",
-          artifact_refs: ["tickets/meta/qa/artifacts/validate/fail.log"],
-          created_at: "2026-02-27T10:03:00.000Z"
-        }
-      ]
-    });
-    const markup = renderToStaticMarkup(renderPanel({ proposals: [proposal] }));
-    expect(markup).toContain("Accept disabled: latest validation is failing.");
   });
 
   it("renders changelog rows with proposal linkage", () => {
@@ -134,8 +89,6 @@ describe("SettingsPanel", () => {
   it("uses progressive disclosure for advanced concepts", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Early Access");
-    expect(markup).toContain("Improvements");
-    expect(markup).toContain("Suggestion = local proposal you review.");
   });
 
   it("renders Works offline section with at least 2 concrete items", () => {
@@ -165,50 +118,6 @@ describe("SettingsPanel", () => {
     expect(markup).toContain("Connections");
     expect(markup).toContain("Set ✓");
     expect(markup).toContain("Remove");
-  });
-
-  it("renders Suggested improvements section header and Suggest an improvement button", () => {
-    const markup = renderToStaticMarkup(renderPanel());
-    expect(markup).toContain("Suggested improvements");
-    expect(markup).toContain("Suggest an improvement");
-  });
-
-  it("proposal form shows purpose description and Save for review when opened", async () => {
-    render(renderPanel());
-    const openBtn = screen.getByRole("button", { name: /Suggest an improvement/i });
-    await userEvent.click(openBtn);
-    expect(screen.getByText(/Review this suggested improvement\. Edit if needed, then save/)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Save for review/i })).toBeTruthy();
-    expect(screen.getByText(/You can review or accept this later/)).toBeTruthy();
-  });
-
-  it("shows Generate from feedback dropdown when feedback exists", () => {
-    const items = [{ id: "fb-1", text: "Improvements section is confusing" }];
-    const markup = renderToStaticMarkup(renderPanel({ feedbackItems: items }));
-    expect(markup).toContain("Generate from feedback");
-    expect(markup).toContain("fb-1");
-  });
-
-  it("generate from feedback opens form and shows purpose, Title, Rationale, Advanced section", async () => {
-    const onCreateProposal = vi.fn();
-    const items = [{ id: "fb-20260301-abc", text: "Improvements section is confusing" }];
-    const { container } = render(
-      renderPanel({
-        feedbackItems: items,
-        onCreateProposal
-      })
-    );
-    const improvementsDetails = container.querySelector('[name="settings-improvements"]');
-    const improvementsSummary = within(improvementsDetails as HTMLElement).getByText("Improvements");
-    await userEvent.click(improvementsSummary);
-    const select = screen.getByLabelText(/Select feedback to generate proposal from/i);
-    await userEvent.selectOptions(select, "fb-20260301-abc");
-    expect(screen.getAllByText(/Review this suggested improvement\. Edit if needed, then save/).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole("button", { name: /Save for review/i }).length).toBeGreaterThanOrEqual(1);
-    const improvementsSection = container.querySelector('[name="settings-improvements"]');
-    expect(within(improvementsSection as HTMLElement).getByLabelText("Title")).toBeTruthy();
-    expect(within(improvementsSection as HTMLElement).getByLabelText("Rationale")).toBeTruthy();
-    expect(within(improvementsSection as HTMLElement).getByText("Advanced")).toBeTruthy();
   });
 
   it("Beta → Stable transition: clicking Stable when on Beta opens confirm dialog, confirming calls onSelectChannel", async () => {

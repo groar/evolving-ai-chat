@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ChangeProposal, ChangelogEntry, RuntimeSettings } from "../settingsPanel";
+import type { ChangelogEntry, RuntimeSettings } from "../settingsPanel";
 import type { PatchEntry } from "../PatchNotification";
 
 export const defaultSettings: RuntimeSettings = {
@@ -8,47 +8,33 @@ export const defaultSettings: RuntimeSettings = {
   active_flags: {}
 };
 
-type PersonaAddition = { text: string; added_at: string };
-
 type SettingsStore = {
   settings: RuntimeSettings;
   changelog: ChangelogEntry[];
-  proposals: ChangeProposal[];
-  personaAdditions: PersonaAddition[];
   patches: PatchEntry[];
   /** ID of the patch currently shown in the notification banner (null when dismissed) */
   notificationPatchId: string | null;
   settingsNotice: string | null;
   settingsError: string | null;
-  isProposalBusy: boolean;
   setSettings: (settings: RuntimeSettings) => void;
   setChangelog: (changelog: ChangelogEntry[]) => void;
-  setProposals: (proposals: ChangeProposal[]) => void;
-  setPersonaAdditions: (additions: PersonaAddition[]) => void;
   setPatches: (patches: PatchEntry[]) => void;
   setNotificationPatchId: (id: string | null) => void;
   setSettingsNotice: (value: string | null) => void;
   setSettingsError: (value: string | null) => void;
-  setIsProposalBusy: (value: boolean) => void;
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
   settings: defaultSettings,
   changelog: [],
-  proposals: [],
-  personaAdditions: [],
   patches: [],
   notificationPatchId: null,
   settingsNotice: null,
   settingsError: null,
-  isProposalBusy: false,
   setSettings: (settings) => set({ settings }),
   setChangelog: (changelog) => set({ changelog }),
-  setProposals: (proposals) => set({ proposals }),
-  setPersonaAdditions: (personaAdditions) => set({ personaAdditions }),
   setPatches: (patches) => set({ patches }),
   setNotificationPatchId: (notificationPatchId) => set({ notificationPatchId }),
   setSettingsNotice: (value) => set({ settingsNotice: value }),
-  setSettingsError: (value) => set({ settingsError: value }),
-  setIsProposalBusy: (value) => set({ isProposalBusy: value })
+  setSettingsError: (value) => set({ settingsError: value })
 }));

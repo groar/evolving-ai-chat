@@ -55,21 +55,17 @@ export function App() {
 
   const settings = useSettingsStore((s) => s.settings);
   const changelog = useSettingsStore((s) => s.changelog);
-  const proposals = useSettingsStore((s) => s.proposals);
-  const personaAdditions = useSettingsStore((s) => s.personaAdditions);
   const patches = useSettingsStore((s) => s.patches);
   const notificationPatchId = useSettingsStore((s) => s.notificationPatchId);
   const setNotificationPatchId = useSettingsStore((s) => s.setNotificationPatchId);
   const settingsNotice = useSettingsStore((s) => s.settingsNotice);
   const settingsError = useSettingsStore((s) => s.settingsError);
-  const isProposalBusy = useSettingsStore((s) => s.isProposalBusy);
 
   const isFeedbackBusy = isSending || isResetting;
   const feedback = useFeedback(isFeedbackBusy);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [pendingGenerateFeedbackId, setPendingGenerateFeedbackId] = useState<string | null>(null);
   const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
   const [renameError, setRenameError] = useState<string | null>(null);
@@ -90,21 +86,16 @@ export function App() {
     }
   }, [streamingText]);
 
-  // When opening settings from the per-message Improve button, scroll to the right section.
-  // If there are captured feedback items, scroll to Improvements so user can generate a suggestion.
+  // When opening settings from the per-message Improve button, scroll to the Improve section.
   useEffect(() => {
     if (!settingsOpen || !feedback.isOpen || !feedback.contextPointer?.includes(":")) {
       return;
     }
     const timeoutId = window.setTimeout(() => {
-      const target =
-        feedback.items.length > 0
-          ? document.getElementById("settings-improvements")
-          : feedbackSectionRef.current;
-      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      feedbackSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 350);
     return () => window.clearTimeout(timeoutId);
-  }, [settingsOpen, feedback.isOpen, feedback.contextPointer, feedback.items.length]);
+  }, [settingsOpen, feedback.isOpen, feedback.contextPointer]);
 
   useEffect(() => {
     function handleKeyDown(e: globalThis.KeyboardEvent) {
@@ -286,13 +277,8 @@ export function App() {
             <SettingsPanel
               settings={settings}
               changelog={changelog}
-              proposals={proposals}
-              personaAdditions={personaAdditions}
               patches={patches}
-              feedbackItems={feedback.items.map((item) => ({ id: item.id, text: item.text, tags: item.tags }))}
-              pendingGenerateFeedbackId={pendingGenerateFeedbackId}
-              onClearPendingGenerate={() => setPendingGenerateFeedbackId(null)}
-              isBusy={isSending || isResetting || isProposalBusy}
+              isBusy={isSending || isResetting}
               canToggleFlags={canToggleFlags}
               configuredDiagnosticsFlag={configuredDiagnosticsFlag}
               notice={settingsNotice}
@@ -302,12 +288,6 @@ export function App() {
               onSelectChannel={(channel) => void runtime.updateChannel(channel)}
               onToggleDiagnostics={(enabled) => void runtime.updateExperimentalFlag(enabled)}
               onResetExperiments={() => void runtime.resetExperiments()}
-              onCreateProposal={(input) => void runtime.createProposal(input)}
-              onAddValidationRun={(proposalId, input) => void runtime.addProposalValidationRun(proposalId, input)}
-              onUpdateProposalDecision={(proposalId, status, notes, proposal) =>
-                void runtime.updateProposalDecision(proposalId, status, notes, proposal)
-              }
-              onRemovePersonaAddition={(index) => void runtime.removePersonaAddition(index)}
               onRollbackPatch={(patchId) => void rollbackPatch(patchId)}
               apiKeys={apiKeys}
               onSaveApiKey={(provider, key) => void runtime.saveApiKey(provider, key)}
@@ -333,14 +313,7 @@ export function App() {
                 onChangeDraftText={feedback.setDraftText}
                 onToggleTag={feedback.toggleTag}
                 onSubmitFeedback={feedback.submitFeedback}
-                onGenerateFromFeedback={(id) => {
-                  setPendingGenerateFeedbackId(id);
-                  document.getElementById("settings-improvements")?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                  });
-                }}
-              onRequestCodePatch={(feedbackId, feedbackTitle, feedbackSummary) => {
+                onRequestCodePatch={(feedbackId, feedbackTitle, feedbackSummary) => {
                   void requestPatch(feedbackId, feedbackTitle, feedbackSummary, "ui");
                 }}
               />

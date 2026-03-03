@@ -1,9 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { railBtn, railBtnDanger, settingsInput, settingsTextarea } from "@/lib/ui-classes";
-import { getClassById } from "./improvementClasses";
-import { routeFeedbackToClass } from "./improvementClasses";
-import { generateProposalFromFeedback } from "./proposalGenerator";
-import { isConcreteProposal } from "./proposalQualityGuard";
+import { useState } from "react";
+import { railBtn, railBtnDanger, settingsInput } from "@/lib/ui-classes";
 import {
   Dialog,
   DialogContent,
@@ -32,64 +28,10 @@ type ChangelogEntry = {
   flags_changed?: string[];
 };
 
-type ValidationRunSummary = {
-  validation_run_id: string;
-  status: "passing" | "failing";
-  summary: string;
-  artifact_refs: string[];
-  created_at: string;
-};
-
-type ProposalDecision = {
-  status: "pending" | "accepted" | "rejected";
-  decided_at?: string | null;
-  notes?: string | null;
-};
-
-type ChangeProposal = {
-  proposal_id: string;
-  created_at: string;
-  title: string;
-  rationale: string;
-  source_feedback_ids: string[];
-  diff_summary: string;
-  risk_notes: string;
-  validation_runs: ValidationRunSummary[];
-  decision: ProposalDecision;
-  improvement_class?: string | null;
-};
-
-type CreateProposalInput = {
-  title: string;
-  rationale: string;
-  source_feedback_ids: string[];
-  diff_summary?: string;
-  risk_notes?: string;
-  improvement_class?: string;
-};
-
-type AddValidationRunInput = {
-  status: "passing" | "failing";
-  summary: string;
-  artifact_refs: string[];
-};
-
-type PersonaAddition = {
-  text: string;
-  added_at: string;
-};
-
 type SettingsPanelProps = {
   settings: RuntimeSettings;
   changelog: ChangelogEntry[];
-  proposals: ChangeProposal[];
-  personaAdditions: PersonaAddition[];
   patches?: PatchEntry[];
-  /** Feedback items for Generate-from-feedback and proposal form datalist */
-  feedbackItems: Array<{ id: string; text: string; tags?: string[] }>;
-  /** When set, auto-generate proposal from this feedback id and open form (e.g. from Improve section) */
-  pendingGenerateFeedbackId?: string | null;
-  onClearPendingGenerate?: () => void;
   isBusy: boolean;
   canToggleFlags: boolean;
   configuredDiagnosticsFlag: boolean;
@@ -100,10 +42,6 @@ type SettingsPanelProps = {
   onSelectChannel: (channel: "stable" | "experimental") => void;
   onToggleDiagnostics: (enabled: boolean) => void;
   onResetExperiments: () => void;
-  onCreateProposal: (input: CreateProposalInput) => void;
-  onAddValidationRun: (proposalId: string, input: AddValidationRunInput) => void;
-  onUpdateProposalDecision: (proposalId: string, status: "accepted" | "rejected", notes: string, proposal?: ChangeProposal) => void;
-  onRemovePersonaAddition: (index: number) => Promise<void>;
   onRollbackPatch?: (patchId: string) => void;
   /** API key configuration (Connections subsection) */
   apiKeys: { openai: boolean; anthropic: boolean };
@@ -111,20 +49,6 @@ type SettingsPanelProps = {
   onRemoveApiKey: (provider: ProviderId) => Promise<void>;
   apiKeyError: string | null;
   isSavingApiKey: boolean;
-};
-
-type ProposalEditorState = {
-  validationStatus: "passing" | "failing";
-  validationSummary: string;
-  validationArtifactRefs: string;
-  decisionNotes: string;
-};
-
-const defaultProposalEditorState: ProposalEditorState = {
-  validationStatus: "passing",
-  validationSummary: "",
-  validationArtifactRefs: "",
-  decisionNotes: ""
 };
 
 function formatTimestamp(value: string): string {
@@ -135,57 +59,11 @@ function formatTimestamp(value: string): string {
   return parsed.toLocaleString();
 }
 
-function parseCsvIds(rawValue: string): string[] {
-  return rawValue
-    .split(",")
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0);
-}
-
-function latestValidationRun(proposal: ChangeProposal): ValidationRunSummary | null {
-  if (proposal.validation_runs.length === 0) {
-    return null;
-  }
-  return proposal.validation_runs[proposal.validation_runs.length - 1];
-}
-
-function proposalStateLabel(proposal: ChangeProposal): string {
-  if (proposal.decision.status === "accepted") {
-    return "Accepted";
-  }
-  if (proposal.decision.status === "rejected") {
-    return "Rejected";
-  }
-
-  const latestValidation = latestValidationRun(proposal);
-  if (!latestValidation) {
-    return "Pending validation";
-  }
-
-  return latestValidation.status === "passing" ? "Ready for decision" : "Validation failed";
-}
-
-function acceptBlockReason(proposal: ChangeProposal): string | null {
-  const latestValidation = latestValidationRun(proposal);
-  if (!latestValidation) {
-    return "Accept disabled: run validation first.";
-  }
-  if (latestValidation.status !== "passing") {
-    return "Accept disabled: latest validation is failing.";
-  }
-  return null;
-}
-
 export function SettingsPanel(props: SettingsPanelProps) {
   const {
     settings,
     changelog,
-    proposals,
-    personaAdditions,
     patches = [],
-    feedbackItems,
-    pendingGenerateFeedbackId,
-    onClearPendingGenerate,
     isBusy,
     canToggleFlags,
     configuredDiagnosticsFlag,
@@ -196,10 +74,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onSelectChannel,
     onToggleDiagnostics,
     onResetExperiments,
-    onCreateProposal,
-    onAddValidationRun,
-    onUpdateProposalDecision,
-    onRemovePersonaAddition,
     onRollbackPatch = () => undefined,
     apiKeys,
     onSaveApiKey,
@@ -220,48 +94,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
   const [switchToStableConfirmOpen, setSwitchToStableConfirmOpen] = useState(false);
   const [apiKeyInputs, setApiKeyInputs] = useState<Record<ProviderId, string>>({ openai: "", anthropic: "" });
-  const [proposalTitle, setProposalTitle] = useState("");
-  const [proposalRationale, setProposalRationale] = useState("");
-  const [proposalFeedbackIdsCsv, setProposalFeedbackIdsCsv] = useState("");
-  const [proposalDiffSummary, setProposalDiffSummary] = useState("");
-  const [proposalRiskNotes, setProposalRiskNotes] = useState("");
-  const [proposalImprovementClass, setProposalImprovementClass] = useState<string>("settings-trust-microcopy-v1");
-  const [proposalFormError, setProposalFormError] = useState<string | null>(null);
-  const [proposalEditors, setProposalEditors] = useState<Record<string, ProposalEditorState>>({});
-  const [isCreateDraftOpen, setIsCreateDraftOpen] = useState(false);
-
-  const sortedFeedbackItems = useMemo(
-    () => [...feedbackItems].sort((a, b) => b.id.localeCompare(a.id)),
-    [feedbackItems]
-  );
-
-  // When Improve section requests "generate from" a feedback id, run generation and open form
-  useEffect(() => {
-    if (!pendingGenerateFeedbackId || !onClearPendingGenerate) return;
-    const item = feedbackItems.find((f) => f.id === pendingGenerateFeedbackId);
-    onClearPendingGenerate();
-    if (!item) return;
-    generateFromFeedback(item);
-    // generateFromFeedback is stable (uses state setters); omit to avoid effect churn
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingGenerateFeedbackId, onClearPendingGenerate, feedbackItems]);
-
-  function editorFor(proposalId: string): ProposalEditorState {
-    return proposalEditors[proposalId] ?? defaultProposalEditorState;
-  }
-
-  function updateProposalEditor(proposalId: string, updates: Partial<ProposalEditorState>) {
-    setProposalEditors((current) => {
-      const existing = current[proposalId] ?? defaultProposalEditorState;
-      return {
-        ...current,
-        [proposalId]: {
-          ...existing,
-          ...updates
-        }
-      };
-    });
-  }
 
   async function handleSaveApiKey(provider: ProviderId) {
     const key = apiKeyInputs[provider].trim();
@@ -300,104 +132,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
       return;
     }
     onResetExperiments();
-  }
-
-  function submitCreateProposal() {
-    const title = proposalTitle.trim();
-    const rationale = proposalRationale.trim();
-    const diffSummary = proposalDiffSummary.trim();
-    const sourceFeedbackIds = parseCsvIds(proposalFeedbackIdsCsv);
-    if (title.length === 0) {
-      setProposalFormError("Draft title is required.");
-      return;
-    }
-
-    if (sourceFeedbackIds.length === 0 && rationale.length === 0) {
-      setProposalFormError("Provide a rationale when creating without linked feedback IDs.");
-      return;
-    }
-
-    if (sourceFeedbackIds.length > 0) {
-      const firstFeedback = feedbackItems.find((f) => f.id === sourceFeedbackIds[0]);
-      if (firstFeedback && !isConcreteProposal({ title, rationale, diffSummary, feedbackText: firstFeedback.text })) {
-        setProposalFormError(GENERATION_FAILED_MESSAGE);
-        return;
-      }
-    }
-
-    onCreateProposal({
-      title,
-      rationale,
-      source_feedback_ids: sourceFeedbackIds,
-      diff_summary: diffSummary || undefined,
-      risk_notes: proposalRiskNotes.trim() || undefined,
-      improvement_class: proposalImprovementClass || "settings-trust-microcopy-v1"
-    });
-    setProposalTitle("");
-    setProposalRationale("");
-    setProposalFeedbackIdsCsv("");
-    setProposalDiffSummary("");
-    setProposalRiskNotes("");
-    setProposalImprovementClass("settings-trust-microcopy-v1");
-    setProposalFormError(null);
-    setIsCreateDraftOpen(false);
-  }
-
-  const GENERATION_FAILED_MESSAGE =
-    "We couldn't generate a specific improvement for this feedback. Try describing the issue in more detail.";
-
-  function generateFromFeedback(feedback: { id: string; text: string; tags?: string[] }) {
-    const improvementClass = routeFeedbackToClass({ text: feedback.text, tags: feedback.tags });
-    if (!improvementClass) {
-      setProposalFormError(
-        "No applicable improvement class for this feedback type. Try tone/style for AI persona, or settings/copy for labels."
-      );
-      setIsCreateDraftOpen(true);
-      return;
-    }
-    const result = generateProposalFromFeedback(feedback, 2, improvementClass);
-    if (!result.ok) {
-      setProposalFormError(result.message);
-      setIsCreateDraftOpen(true);
-      return;
-    }
-    setProposalTitle(result.title);
-    setProposalRationale(result.rationale);
-    setProposalFeedbackIdsCsv(feedback.id);
-    setProposalDiffSummary(result.diffSummary ?? "");
-    setProposalRiskNotes(result.riskNotes ?? "Copy-only change; must not imply autonomous shipping or data deletion.");
-    setProposalImprovementClass(result.improvementClass ?? improvementClass);
-    setProposalFormError(null);
-    setIsCreateDraftOpen(true);
-  }
-
-  function submitValidationRun(proposal: ChangeProposal) {
-    const editor = editorFor(proposal.proposal_id);
-    const summary = editor.validationSummary.trim();
-    if (summary.length === 0) {
-      return;
-    }
-
-    onAddValidationRun(proposal.proposal_id, {
-      status: editor.validationStatus,
-      summary,
-      artifact_refs: parseCsvIds(editor.validationArtifactRefs)
-    });
-
-    updateProposalEditor(proposal.proposal_id, {
-      validationSummary: "",
-      validationArtifactRefs: ""
-    });
-  }
-
-  function submitProposalDecision(proposal: ChangeProposal, status: "accepted" | "rejected") {
-    const editor = editorFor(proposal.proposal_id);
-    const notes = editor.decisionNotes.trim();
-    if (status === "rejected" && notes.length < 10) {
-      return;
-    }
-
-    onUpdateProposalDecision(proposal.proposal_id, status, notes, proposal);
   }
 
   return (
@@ -458,35 +192,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
           )}
         </div>
       ))}
-
-      <div className="flex justify-between items-center gap-2">
-        <p className="m-0 text-sm font-semibold text-foreground">AI Persona</p>
-      </div>
-      <p className="m-0 text-sm text-foreground">Customize response tone and style. Changes apply to the next message.</p>
-      {personaAdditions.length === 0 ? (
-        <p className="m-0 text-xs text-muted-foreground">
-          No persona customizations yet. Use the Improve button on any AI response to start.
-        </p>
-      ) : (
-        <ul className="m-0 p-0 list-none grid gap-2">
-          {personaAdditions.map((addition, index) => (
-            <li
-              key={`${addition.added_at}-${index}`}
-              className="border border-border rounded-lg bg-white p-2.5 flex justify-between items-start gap-2"
-            >
-              <span className="text-sm text-foreground flex-1">{addition.text}</span>
-              <button
-                type="button"
-                className={railBtnDanger}
-                onClick={() => void onRemovePersonaAddition(index)}
-                disabled={isBusy}
-              >
-                Remove
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
 
       <div className="flex justify-between items-center gap-2">
         <p className="m-0 text-sm font-semibold text-foreground">Works offline</p>
@@ -563,282 +268,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
           {error}
         </p>
       )}
-
-      <details
-        id="settings-improvements"
-        className="border-t border-dashed border-border pt-2.5 grid gap-2.5"
-        name="settings-improvements"
-        open={sortedFeedbackItems.length > 0}
-      >
-        <summary className="cursor-pointer text-sm font-semibold text-foreground">Improvements</summary>
-        <p className="m-0 text-sm text-foreground">Suggestion = local proposal you review. Nothing ships automatically.</p>
-        <p className="m-0 text-xs text-muted-foreground">Feedback → Draft → Run checks → Decide</p>
-        <div className="flex justify-between items-center gap-2">
-          <p className="m-0 text-sm font-semibold text-foreground">Suggested improvements</p>
-          <button type="button" className={railBtn} onClick={onRefresh} disabled={isBusy}>
-            Refresh
-          </button>
-        </div>
-        {sortedFeedbackItems.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            <label htmlFor="generate-from-feedback-select" className="text-sm font-medium text-foreground">
-              Generate from feedback:
-            </label>
-            <select
-              id="generate-from-feedback-select"
-              className={settingsInput}
-              value=""
-              onChange={(e) => {
-                const id = e.target.value;
-                if (id) {
-                  const item = sortedFeedbackItems.find((f) => f.id === id);
-                  if (item) generateFromFeedback(item);
-                  e.target.value = "";
-                }
-              }}
-              disabled={isBusy}
-              aria-label="Select feedback to generate proposal from"
-            >
-              <option value="">Select…</option>
-              {sortedFeedbackItems.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.id}: {f.text.slice(0, 40)}
-                  {f.text.length > 40 ? "…" : ""}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        <button type="button" className={railBtn} onClick={() => setIsCreateDraftOpen((current) => !current)} disabled={isBusy}>
-          {isCreateDraftOpen ? "Hide form" : "Suggest an improvement"}
-        </button>
-
-        {isCreateDraftOpen && (
-          <div className="border border-border rounded-lg bg-white p-2.5 grid gap-2">
-            <p className="m-0 text-sm text-foreground">
-              Review this suggested improvement. Edit if needed, then save — you can review and accept or discard it later.
-            </p>
-            <label className="text-sm font-semibold text-foreground" htmlFor="proposal-title-input">
-              Title
-            </label>
-            <input
-              id="proposal-title-input"
-              className={settingsInput}
-              type="text"
-              placeholder="Short title for this suggestion"
-              value={proposalTitle}
-              onChange={(event) => setProposalTitle(event.target.value)}
-              disabled={isBusy}
-            />
-            <label className="text-sm font-semibold text-foreground" htmlFor="proposal-rationale-input">
-              Rationale
-            </label>
-            <textarea
-              id="proposal-rationale-input"
-              className={settingsTextarea}
-              placeholder="Why this change (required if no feedback IDs linked)"
-              rows={3}
-              value={proposalRationale}
-              onChange={(event) => setProposalRationale(event.target.value)}
-              disabled={isBusy}
-            />
-            <details className="grid gap-2 text-muted-foreground" name="proposal-advanced">
-              <summary className="cursor-pointer text-sm font-medium text-foreground">Advanced</summary>
-              <div className="grid gap-2 pt-1">
-                <label className="text-xs font-medium text-foreground" htmlFor="proposal-feedback-ids-input">
-                  Feedback IDs (comma-separated, optional)
-                </label>
-                <input
-                  id="proposal-feedback-ids-input"
-                  className={settingsInput}
-                  type="text"
-                  list="feedback-id-options"
-                  placeholder="F-YYYYMMDD-NNN,…"
-                  value={proposalFeedbackIdsCsv}
-                  onChange={(event) => setProposalFeedbackIdsCsv(event.target.value)}
-                  disabled={isBusy}
-                />
-                <datalist id="feedback-id-options">
-                  {sortedFeedbackItems.map((f) => (
-                    <option key={f.id} value={f.id} />
-                  ))}
-                </datalist>
-                <label className="text-xs font-medium text-foreground" htmlFor="proposal-diff-summary-input">
-                  Diff summary (optional)
-                </label>
-                <textarea
-                  id="proposal-diff-summary-input"
-                  className={settingsTextarea}
-                  placeholder="What changes will this proposal make?"
-                  rows={2}
-                  value={proposalDiffSummary}
-                  onChange={(e) => setProposalDiffSummary(e.target.value)}
-                  disabled={isBusy}
-                />
-                <label className="text-xs font-medium text-foreground" htmlFor="proposal-risk-notes-input">
-                  Risk notes (optional)
-                </label>
-                <textarea
-                  id="proposal-risk-notes-input"
-                  className={settingsTextarea}
-                  placeholder="Copy-only; must not imply…"
-                  rows={2}
-                  value={proposalRiskNotes}
-                  onChange={(e) => setProposalRiskNotes(e.target.value)}
-                  disabled={isBusy}
-                />
-              </div>
-            </details>
-            {proposalFormError && (
-              <p className="m-0 border border-[#f4a58b] rounded-lg bg-[#fff0ea] text-destructive text-xs py-2 px-2.5">
-                {proposalFormError}
-              </p>
-            )}
-            <div className="grid gap-0.5">
-              <button type="button" className={railBtn} onClick={submitCreateProposal} disabled={isBusy}>
-                Save for review
-              </button>
-              <p className="m-0 text-xs text-muted-foreground">You can review or accept this later.</p>
-            </div>
-          </div>
-        )}
-
-        {proposals.length === 0 ? (
-          <p className="m-0 text-xs text-muted-foreground">No suggestions yet.</p>
-        ) : (
-          <ul className="list-none m-0 p-0 grid gap-2">
-            {proposals.map((proposal) => {
-              const latestValidation = latestValidationRun(proposal);
-              const acceptReason = acceptBlockReason(proposal);
-              const editor = editorFor(proposal.proposal_id);
-              const isRejectDisabled = editor.decisionNotes.trim().length < 10;
-              return (
-                <li key={proposal.proposal_id} className="border border-border rounded-lg bg-white p-2.5 grid gap-2.5">
-                  <div className="flex justify-between items-center gap-2 flex-wrap">
-                    <p className="m-0 text-sm font-bold">{proposal.title}</p>
-                    <div className="flex items-center gap-2">
-                      {proposal.improvement_class && (
-                        <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground">
-                          {getClassById(proposal.improvement_class as "system-prompt-persona-v1" | "settings-trust-microcopy-v1")?.label ?? proposal.improvement_class}
-                        </span>
-                      )}
-                      <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground uppercase">
-                        {proposalStateLabel(proposal)}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="m-0 text-xs text-muted-foreground">
-                    {formatTimestamp(proposal.created_at)} · {proposal.proposal_id}
-                  </p>
-                  <p className="m-0 text-sm text-foreground">{proposal.rationale || "No rationale provided."}</p>
-                  <p className="m-0 text-xs text-muted-foreground">
-                    Feedback links: {proposal.source_feedback_ids.length > 0 ? proposal.source_feedback_ids.join(", ") : "none"}
-                  </p>
-
-                  <div className="border-t border-dashed border-border pt-2.5 grid gap-2">
-                    <p className="m-0 text-sm font-semibold text-foreground">Checks</p>
-                    <p className="m-0 text-xs text-muted-foreground">
-                      {latestValidation
-                        ? `Latest: ${latestValidation.status} (${formatTimestamp(latestValidation.created_at)})`
-                        : "Checks have not run."}
-                    </p>
-                    <div className="grid gap-1.5">
-                      <select
-                        className={settingsInput}
-                        value={editor.validationStatus}
-                        onChange={(event) =>
-                          updateProposalEditor(proposal.proposal_id, {
-                            validationStatus: event.target.value === "failing" ? "failing" : "passing"
-                          })
-                        }
-                        disabled={isBusy}
-                      >
-                        <option value="passing">Passing</option>
-                        <option value="failing">Failing</option>
-                      </select>
-                      <input
-                        className={settingsInput}
-                        type="text"
-                        placeholder="Validation summary"
-                        value={editor.validationSummary}
-                        onChange={(event) =>
-                          updateProposalEditor(proposal.proposal_id, {
-                            validationSummary: event.target.value
-                          })
-                        }
-                        disabled={isBusy}
-                      />
-                      <input
-                        className={settingsInput}
-                        type="text"
-                        placeholder="Artifact refs (comma-separated)"
-                        value={editor.validationArtifactRefs}
-                        onChange={(event) =>
-                          updateProposalEditor(proposal.proposal_id, {
-                            validationArtifactRefs: event.target.value
-                          })
-                        }
-                        disabled={isBusy}
-                      />
-                      <button
-                        type="button"
-                        className={railBtn}
-                        onClick={() => submitValidationRun(proposal)}
-                        disabled={isBusy || editor.validationSummary.trim().length === 0}
-                      >
-                        Add check run
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-dashed border-border pt-2.5 grid gap-2">
-                    <p className="m-0 text-sm font-semibold text-foreground">Decision</p>
-                    <textarea
-                      className={settingsTextarea}
-                      rows={2}
-                      placeholder="Decision notes (required to reject)"
-                      value={editor.decisionNotes}
-                      onChange={(event) =>
-                        updateProposalEditor(proposal.proposal_id, {
-                          decisionNotes: event.target.value
-                        })
-                      }
-                      disabled={isBusy}
-                    />
-                    {acceptReason && <p className="m-0 text-xs text-muted-foreground">{acceptReason}</p>}
-                    <div className="grid grid-cols-2 gap-1.5">
-                      <button
-                        type="button"
-                        className={railBtn}
-                        onClick={() => submitProposalDecision(proposal, "accepted")}
-                        disabled={isBusy || acceptReason !== null}
-                      >
-                        Accept
-                      </button>
-                      <button
-                        type="button"
-                        className={railBtnDanger}
-                        onClick={() => submitProposalDecision(proposal, "rejected")}
-                        disabled={isBusy || isRejectDisabled}
-                      >
-                        Reject
-                      </button>
-                    </div>
-                    {proposal.decision.decided_at && (
-                      <p className="m-0 text-xs text-muted-foreground">
-                        Decision: {proposal.decision.status} at {formatTimestamp(proposal.decision.decided_at)}
-                      </p>
-                    )}
-                    {proposal.decision.notes && (
-                      <p className="m-0 text-xs text-muted-foreground">Notes: {proposal.decision.notes}</p>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </details>
 
       <Dialog open={switchToStableConfirmOpen} onOpenChange={setSwitchToStableConfirmOpen}>
         <DialogContent showCloseButton={false} className="sm:max-w-md">
@@ -959,7 +388,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </ul>
         )}
 
-        {/* System changelog entries (proposals, flags, etc.) */}
+        {/* Changelog entries (flags, channel, etc.) */}
         {changelog.length === 0 && patches.length === 0 ? (
           <p className="m-0 text-xs text-muted-foreground">No changes applied yet.</p>
         ) : changelog.length > 0 ? (
@@ -988,4 +417,4 @@ export function SettingsPanel(props: SettingsPanelProps) {
   );
 }
 
-export type { AddValidationRunInput, ChangeProposal, ChangelogEntry, CreateProposalInput, RuntimeSettings };
+export type { ChangelogEntry, RuntimeSettings };
