@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import { PanelLeftIcon, PencilIcon, SettingsIcon, SparklesIcon } from "lucide-react";
+import { HistoryIcon, PanelLeftIcon, PencilIcon, SettingsIcon, SparklesIcon } from "lucide-react";
 import { FeedbackPanel } from "./feedbackPanel";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { PatchNotification } from "./PatchNotification";
+import { ActivitySheet } from "./activitySheet";
 import { SettingsPanel } from "./settingsPanel";
 import {
   Sheet,
@@ -65,6 +66,7 @@ export function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [activitySheetOpen, setActivitySheetOpen] = useState(false);
   const [improvementSheetOpen, setImprovementSheetOpen] = useState(false);
   const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
@@ -104,7 +106,13 @@ export function App() {
       }
       if ((e.metaKey || e.ctrlKey) && e.key === ",") {
         e.preventDefault();
+        setActivitySheetOpen(false);
         setSettingsOpen((o) => !o);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "h") {
+        e.preventDefault();
+        setSettingsOpen(false);
+        setActivitySheetOpen((o) => !o);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
@@ -297,8 +305,24 @@ export function App() {
         </SheetContent>
       </Sheet>
 
+      {/* Activity sheet (patch + release history) */}
+      <ActivitySheet
+        open={activitySheetOpen}
+        onOpenChange={setActivitySheetOpen}
+        patches={patches}
+        changelog={changelog}
+        isBusy={isSending || isResetting}
+        onRollbackPatch={(patchId) => rollbackPatch(patchId)}
+      />
+
       {/* Settings sheet (Settings, Danger Zone) */}
-      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
+      <Sheet
+        open={settingsOpen}
+        onOpenChange={(open) => {
+          setSettingsOpen(open);
+          if (open) setActivitySheetOpen(false);
+        }}
+      >
         <SheetContent side="right" className="w-[min(400px,90vw)] overflow-y-auto flex flex-col bg-panel border-l border-border">
           <SheetHeader className="px-5 pt-5 pb-2 shrink-0">
             <SheetTitle>Settings</SheetTitle>
@@ -319,6 +343,10 @@ export function App() {
               onToggleDiagnostics={(enabled) => void runtime.updateExperimentalFlag(enabled)}
               onResetExperiments={() => void runtime.resetExperiments()}
               onRollbackPatch={(patchId) => void rollbackPatch(patchId)}
+              onOpenActivity={() => {
+                setSettingsOpen(false);
+                setActivitySheetOpen(true);
+              }}
               apiKeys={apiKeys}
               onSaveApiKey={(provider, key) => void runtime.saveApiKey(provider, key)}
               onRemoveApiKey={(provider) => void runtime.removeApiKey(provider)}
@@ -371,7 +399,21 @@ export function App() {
           </button>
           <button
             type="button"
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => {
+              setSettingsOpen(false);
+              setActivitySheetOpen(true);
+            }}
+            className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2"
+            aria-label="Open Activity (Cmd+H)"
+          >
+            <HistoryIcon className="size-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActivitySheetOpen(false);
+              setSettingsOpen(true);
+            }}
             className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2"
             aria-label="Open Settings (Cmd+,)"
           >

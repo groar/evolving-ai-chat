@@ -15,9 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0067 | P1 | Changelog UX redesign — Activity sheet; depends conceptually on T-0066 |
-| 2 | T-0068 | P1 | Settings UX rethink — depends on T-0066 (labels) and T-0067 (Activity compact summary) |
-| 3 | T-0069 | P2 | Agent execution logs — depends on T-0067 (Activity sheet as UI home) |
+| 1 | T-0068 | P1 | Settings UX rethink — depends on T-0066 (labels) and T-0067 (Activity compact summary) |
+| 2 | T-0069 | P2 | Agent execution logs — depends on T-0067 (Activity sheet as UI home) |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -33,3 +32,4 @@ This file is the source of truth for ready-ticket pickup order.
 - T-0064 (central improvement button + sheet) accepted 2026-03-03. E-0010 (M8) complete.
 - T-0065 (settings crowding + changelog/updates copy) completed 2026-03-03. E-0010 (M8) fully closed.
 - T-0066–T-0069 added 2026-03-04: E-0011 (M9 Design System & UX Polish) from user feedback F-20260304-001 to 004.
+- T-0067 (Activity sheet) accepted 2026-03-04; removed from ready queue.

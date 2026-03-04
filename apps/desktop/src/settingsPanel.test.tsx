@@ -49,12 +49,30 @@ describe("SettingsPanel", () => {
     expect(markup).toContain("Updates");
   });
 
-  it("renders changelog empty state", () => {
+  it("renders changelog compact summary when no patches", () => {
     const emptyMarkup = renderToStaticMarkup(renderPanel());
     expect(emptyMarkup).toContain("No changes yet.");
+    expect(emptyMarkup).toContain("View activity →");
+    expect(emptyMarkup).toContain("Changelog");
   });
 
-  it("renders changelog rows with proposal linkage", () => {
+  it("renders changelog compact summary with patch count when patches exist", () => {
+    const patches = [
+      {
+        id: "p1",
+        status: "applied" as const,
+        title: "Fix button",
+        description: "Updated label",
+        unified_diff: "",
+        created_at: "2026-03-01T12:00:00.000Z"
+      }
+    ];
+    const markup = renderToStaticMarkup(renderPanel({ patches }));
+    expect(markup).toContain("1 change applied.");
+    expect(markup).toContain("View activity →");
+  });
+
+  it("does not render changelog wall (full history lives in Activity sheet)", () => {
     const changelog: ChangelogEntry[] = [
       {
         created_at: "2026-02-26T10:00:00.000Z",
@@ -66,10 +84,10 @@ describe("SettingsPanel", () => {
         flags_changed: ["show_runtime_diagnostics"]
       }
     ];
-    const filledMarkup = renderToStaticMarkup(renderPanel({ changelog }));
-    expect(filledMarkup).toContain("Experiments reset");
-    expect(filledMarkup).toContain("Disabled all experimental feature toggles.");
-    expect(filledMarkup).toContain("proposal-123");
+    const markup = renderToStaticMarkup(renderPanel({ changelog }));
+    expect(markup).toContain("View activity →");
+    expect(markup).not.toContain("Experiments reset");
+    expect(markup).not.toContain("Disabled all experimental feature toggles.");
   });
 
   it("renders rollback guardrail copy", () => {
@@ -127,6 +145,14 @@ describe("SettingsPanel", () => {
     expect(markup).toContain("Connections");
     expect(markup).toContain("Set ✓");
     expect(markup).toContain("Remove");
+  });
+
+  it("View activity button calls onOpenActivity when clicked", async () => {
+    const onOpenActivity = vi.fn();
+    render(renderPanel({ onOpenActivity }));
+    const viewActivity = screen.getByTestId("settings-view-activity");
+    await userEvent.click(viewActivity);
+    expect(onOpenActivity).toHaveBeenCalledTimes(1);
   });
 
   it("Beta → Stable transition: clicking Stable when on Beta opens confirm dialog, confirming calls onSelectChannel", async () => {
