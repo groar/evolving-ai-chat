@@ -3,7 +3,7 @@
 ## Metadata
 - ID: E-0013
 - Milestone: M10
-- Status: in-progress
+- Status: done
 - Priority: P1
 - Owner: ai-agent
 - Created: 2026-03-04
@@ -51,3 +51,6 @@ These three gaps limit the "daily improvements" velocity and trust goals in SUCC
 ## Change Log
 - 2026-03-04: Epic created; T-0074 (design spec) added as first ready ticket.
 - 2026-03-04: T-0074 design spec completed and accepted (done). T-0075 and T-0076 created and added to ready/. Epic status → in-progress.
+- 2026-03-04: T-0075 (live apply/hot-reload) completed; QA PASS; PM accepted; moved to done.
+- 2026-03-04: T-0076 (patch quality + scope allowlist + diff UI) completed; QA PASS; PM accepted; moved to done.
+- 2026-03-04: All implementation tickets done. Tier-1 note: component-level tests pass (55 vitest, 30 pytest); full E2E manual validation deferred (steps documented in QA checkpoint T-0075). Epic status → done.

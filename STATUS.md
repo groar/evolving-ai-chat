@@ -69,7 +69,7 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
 - Safe execution: run agent-proposed changes and tests in an isolated sandbox (e.g., Docker) before applying patches to the working copy.
 - Model adapters: thin provider wrappers per vendor (OpenAI/Anthropic/Google), with a later option to unify via LiteLLM if needed.
 
-### Current State (2026-03-02)
+### Current State (2026-03-04)
 - Shipped / working:
   - This repository scaffold: ticketing board + PM/QA workflow docs.
   - Desktop app skeleton (Tauri + React) with polished chat UI shell (T-0003, T-0026).
@@ -84,11 +84,12 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - In-app API key configuration in Settings → Connections (T-0030); key stored via Tauri plugin-store; composer disabled when no key.
   - Real AI chat: OpenAI adapter (T-0027), streaming (T-0028), multi-turn context (T-0029). Full end-to-end chat when API key is set.
 - Known gaps:
-  - **UI is system-centric** — meta-surfaces (Settings, proposals, flags) dominate over chat (M4 addresses this).
+  - ~~UI is system-centric~~ — addressed by M4, M9, M9.1.
   - ~~Tech stack mismatch~~ — Tailwind + shadcn/ui adopted (T-0031); Zustand pending (T-0032).
-  - **No Markdown rendering** — assistant responses are plain text; no code highlighting or copy (M5 addresses this).
+  - ~~No Markdown rendering~~ — addressed by M5.
   - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).
-  - An evaluation harness (tests/evals) that can gate changes automatically.
+  - **Pre-existing test failures**: `test_chat.py` (502/API mocking), `test_proposals.py` (sqlite3.Row schema mismatch), `test_apply_rollback.py` (git sandbox restrictions). Reduces CI trustworthiness. M11 addresses.
+  - **No eval harness** — lightweight prompt/behavior eval runner to gate agent-proposed changes automatically. M11 lays groundwork.
 - Known risks:
   - UX churn: frequent changes can annoy more than help without stability controls.
   - Regressions: agent-written changes can break core flows without strong tests/evals.
@@ -99,13 +100,15 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
 - **M8 — "Agentic Code Self-Modification Loop" (E-0010) — complete (2026-03-03)**
   - All tickets shipped: T-0058 (spec), T-0059 (harness), T-0060 (apply/rollback), T-0061 (notification UI + Changelog Undo), T-0062 (dismiss + failure copy), T-0063 (settings legacy cleanup), T-0064 (central improvement button).
   - Tier-2 micro-validation PASS (sponsor): diff → accept → apply → undo validated; patch quality noted as variable (model/prompt tuning can be a follow-up).
-  - **Next**: scope next milestone and replenish `tickets/status/ready/` from backlog (currently empty).
 - **M9 — "Design System & UX Polish" (E-0011) — complete (2026-03-04)**
   - T-0066 (design guidelines), T-0067 (Activity sheet), T-0068 (Settings rethink), T-0069 (agent execution logs), T-0070 (tier-2 validation) done. Tier-2 micro-validation PASS; follow-up cleanups captured in E-0012.
 - **M9.1 — "E-0011 Follow-Up UX Cleanup" (E-0012) — complete (2026-03-04)**
   - T-0071 (Settings release-channel/early-access cleanup) done: section clarified to "Updates"; Beta channel description added. T-0072 (Activity/history stub clutter) done: stubs grouped under collapsible "In progress (N)" / "Other activity (N)" sections. T-0073 (Fix with AI progress/error visibility) done — F-20260304-005.
-- **M10 — "Agentic Loop Polish" (E-0013) — scoping (2026-03-04)**
-  - T-0074 (design spec) in ready; resolves 3 open M8 questions: live-apply/hot-reload, patch quality, scope guardrails. Implementation tickets (T-0075+) to follow after spec is accepted.
+- **M10 — "Agentic Loop Polish" (E-0013) — complete (2026-03-04)**
+  - T-0074 (design spec) resolved 3 open M8 questions. T-0075: live-apply hot-reload (400ms delay + `window.location.reload()`; reloading display state). T-0076: prompt engineering + config-driven scope allowlist + `patch_metrics` table + color-coded DiffBlock. All QA PASS. Tier-2 micro-validation deferred pending manual E2E (PATCH_AGENT_STUB=true steps documented in QA checkpoint T-0075).
+  - **Next**: scope next milestone. Ready queue replenishment in progress (T-0077).
+- **M11 — "Test Suite Green Baseline" (E-0014) — scoping (2026-03-04)**
+  - T-0077 (M11 design spec / triage) in ready. Fixes 3 pre-existing pytest failures; lays eval harness groundwork. Restores reliable CI for self-modification loop.
 - Previous: M7 (E-0009) superseded 2026-03-01; T-0056 cancelled, T-0057 cancelled. T-0052–T-0055 done but scope superseded.
 - Previous: M7 — "Improvement Class Expansion" (E-0009) (superseded 2026-03-01; T-0052–T-0055 done, T-0056 cancelled)
 - Previous: M6.1 — "Loop Legibility and UX Clarity" (E-0008) (completed 2026-03-01)
@@ -132,6 +135,8 @@ Record important decisions so future agents do not re-litigate context.
 | 2026-03-01 | Chat-first, then self-evolve | Self-evolution infrastructure was over-invested before core chat works; course-correct by shipping M3 fast, then M4 (UI simplification) and M5 (chat UX table stakes) before resuming self-evolution work | F-20260301-002, E-0005, E-0006 |
 
 ## Open Questions (Pick early; unblock architecture)
-- M8 design spec (T-0058): what is the right patch scope guard in M8 (UI-only allowlist, prompt constraint, or both)?
-- M8 build step: hot-reload on patch accept, or full Tauri rebuild? What's the minimum viable "change is live" signal?
-- M8 diff UI: unified diff view inline in the app, or a dedicated "Proposed Changes" panel?
+- ~~M8 patch scope guard: UI-only allowlist, prompt constraint, or both?~~ — Resolved by T-0074/T-0076: both (prompt constraint + config-driven `^apps/desktop/src/` allowlist via `patch-allowlist.json`).
+- ~~M8 build step: hot-reload on patch accept, or full Tauri rebuild?~~ — Resolved by T-0074/T-0075: `window.location.reload()` after 400ms (frontend-only; no Tauri restart); "change is live" signal = `reloading` display state → reload.
+- ~~M8 diff UI: unified diff view inline, or dedicated panel?~~ — Resolved by T-0074/T-0076: color-coded `DiffBlock` inline in `PatchNotification`; no dedicated panel needed.
+- **M11**: Are `test_chat.py` / `test_proposals.py` / `test_apply_rollback.py` failures caused by missing mocks, schema drift, or genuine code bugs? → T-0077 (triage) will answer before implementation.
+- **M11**: What is the minimum viable eval harness for gating agent-proposed patches? → T-0077 will scope.
