@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -53,6 +54,8 @@ from .models import (
 from .storage import RuntimeStorage
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
+# Canonical patch id from patch_agent._new_patch_id(): PA-YYYYMMDD-<8 hex>
+_CANONICAL_PATCH_ID_RE = re.compile(r"^PA-\d{8}-[a-f0-9]{8}$")
 
 chat_router = ChatRouter()
 patch_agent = PiDevPatchAgent()
@@ -122,6 +125,7 @@ def state() -> RuntimeStateResponse:
             reverted_at=a.reverted_at,
         )
         for a in patch_storage.list_all()
+        if _CANONICAL_PATCH_ID_RE.match(a.id)
     ]
     return RuntimeStateResponse(**state_data)
 
