@@ -9,6 +9,7 @@ export type PatchStatus =
   | "pending"
   | "applying"
   | "applied"
+  | "reloading" // display-only: transient state before window.location.reload(); never stored in backend/Zustand
   | "apply_failed"
   | "scope_blocked"
   | "reverted"
@@ -37,7 +38,8 @@ function isSpinnerStatus(status: PatchStatus): boolean {
     status === "pending_apply" ||
     status === "pending" ||
     status === "applying" ||
-    status === "reverting"
+    status === "reverting" ||
+    status === "reloading"
   );
 }
 
@@ -86,6 +88,7 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
 
   const stateVariant: Record<string, string> = {
     applied: "border-[#9ebf97] bg-[#effbe8]",
+    reloading: "border-[#9ebf97] bg-[#effbe8]",
     reverted: "border-[#9ebf97] bg-[#effbe8]",
     apply_failed: "border-[#f4a58b] bg-[#fff0ea]",
     scope_blocked: "border-[#f4a58b] bg-[#fff0ea]",
@@ -121,7 +124,9 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
               ? "Applying change…"
               : status === "reverting"
                 ? "Undoing change…"
-                : status === "applied"
+                : status === "reloading"
+                  ? "Applying your update — reloading…"
+                  : status === "applied"
                   ? `${patch.description || patch.title}. Undo?`
                   : status === "apply_failed"
                     ? `Couldn't apply the change: ${getFailureReasonCopy(patch.failure_reason)}. No files were modified.`
@@ -137,10 +142,10 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
         </p>
       </div>
 
-      {/* Actions row */}
-      {!isSpinnerStatus(status) && (
+      {/* Actions row — also show Undo during reloading so user can cancel reload + rollback */}
+      {(!isSpinnerStatus(status) || status === "reloading") && (
         <div className="flex flex-wrap gap-2">
-          {status === "applied" && (
+          {(status === "applied" || status === "reloading") && (
             <>
               <button
                 type="button"
@@ -150,7 +155,7 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
               >
                 Undo
               </button>
-              {hasDiff && (
+              {hasDiff && status === "applied" && (
                 <button
                   type="button"
                   className={secondaryBtn}
@@ -161,14 +166,16 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
                   {diffExpanded ? "Hide changes ↑" : "See what changed ↓"}
                 </button>
               )}
-              <button
-                type="button"
-                className={secondaryBtn}
-                onClick={onDismiss}
-                aria-label="Done"
-              >
-                Done
-              </button>
+              {status === "applied" && (
+                <button
+                  type="button"
+                  className={secondaryBtn}
+                  onClick={onDismiss}
+                  aria-label="Done"
+                >
+                  Done
+                </button>
+              )}
             </>
           )}
 

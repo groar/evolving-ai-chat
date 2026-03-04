@@ -33,7 +33,7 @@ export function App() {
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   const runtime = useRuntime();
-  const { requestPatch, rollbackPatch } = runtime;
+  const { requestPatch, rollbackPatch, reloadingPatchId } = runtime;
   const { conversations, activeConversationId, messages, createConversation, activateConversation } = useConversations();
   const { updateConversationTitle } = runtime;
 
@@ -618,7 +618,11 @@ export function App() {
       {/* M8 patch notification — floating banner for in-flight and terminal patch states */}
       {notificationPatch && (
         <PatchNotification
-          patch={notificationPatch}
+          patch={
+            reloadingPatchId === notificationPatch.id
+              ? { ...notificationPatch, status: "reloading" }
+              : notificationPatch
+          }
           onUndo={(patchId) => void rollbackPatch(patchId)}
           onDismiss={() => setNotificationPatchId(null)}
         />

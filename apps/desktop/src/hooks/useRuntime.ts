@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   type ProviderId,
   getAllApiKeysFromStore,
@@ -594,11 +594,21 @@ export function useRuntime() {
   // ---------------------------------------------------------------------------
 
   const patchPollRef = useRef<{ patchId: string; timerId: number } | null>(null);
+  const [reloadingPatchId, setReloadingPatchId] = useState<string | null>(null);
+  const reloadTimeoutRef = useRef<number | null>(null);
 
   const stopPatchPoll = useCallback(() => {
     if (patchPollRef.current) {
       window.clearTimeout(patchPollRef.current.timerId);
       patchPollRef.current = null;
+    }
+  }, []);
+
+  const cancelReloadIfScheduled = useCallback(() => {
+    if (reloadTimeoutRef.current != null) {
+      window.clearTimeout(reloadTimeoutRef.current);
+      reloadTimeoutRef.current = null;
+      setReloadingPatchId(null);
     }
   }, []);
 
@@ -654,8 +664,17 @@ export function useRuntime() {
           ];
           if (terminalStatuses.includes(updatedPatch.status)) {
             stopPatchPoll();
-            // Refresh full state so Changelog reflects the latest
-            await refreshState(useConversationStore.getState().activeConversationId);
+            if (updatedPatch.status === "applied") {
+              // M10: show reloading for ~400ms, then reload so change is visible
+              setReloadingPatchId(patchId);
+              reloadTimeoutRef.current = window.setTimeout(() => {
+                reloadTimeoutRef.current = null;
+                setReloadingPatchId(null);
+                window.location.reload();
+              }, 400);
+            } else {
+              await refreshState(useConversationStore.getState().activeConversationId);
+            }
           } else {
             schedulePatchPoll(patchId, intervalMs);
           }
@@ -669,8 +688,17 @@ export function useRuntime() {
     [stopPatchPoll, refreshState]
   );
 
-  // Stop polling when component unmounts
-  useEffect(() => stopPatchPoll, [stopPatchPoll]);
+  // Stop polling and cancel reload when component unmounts
+  useEffect(
+    () => () => {
+      stopPatchPoll();
+      if (reloadTimeoutRef.current != null) {
+        window.clearTimeout(reloadTimeoutRef.current);
+        reloadTimeoutRef.current = null;
+      }
+    },
+    [stopPatchPoll]
+  );
 
   const requestPatch = useCallback(
     async (
@@ -759,6 +787,7 @@ export function useRuntime() {
 
   const rollbackPatch = useCallback(
     async (patchId: string) => {
+      cancelReloadIfScheduled();
       const setts = useSettingsStore.getState();
       // Optimistically show reverting state in the notification
       const existingPatches = setts.patches;
@@ -791,7 +820,7 @@ export function useRuntime() {
         setts.setSettingsError("Couldn't reach the change agent right now. Try again later.");
       }
     },
-    [refreshState]
+    [cancelReloadIfScheduled, refreshState]
   );
 
   return {
@@ -809,6 +838,7 @@ export function useRuntime() {
     setSelectedModel,
     sendMessage,
     requestPatch,
-    rollbackPatch
+    rollbackPatch,
+    reloadingPatchId
   };
 }

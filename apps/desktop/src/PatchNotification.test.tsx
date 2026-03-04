@@ -24,7 +24,7 @@ function makePatch(overrides: Partial<PatchEntry> = {}): PatchEntry {
 const noop = () => undefined;
 
 describe("PatchNotification — UI states (spec §5 copy compliance)", () => {
-  const spinnerStates: PatchStatus[] = ["pending_apply", "pending", "applying", "reverting"];
+  const spinnerStates: PatchStatus[] = ["pending_apply", "pending", "applying", "reverting", "reloading"];
 
   it.each(spinnerStates)("shows spinner for %s state", (status) => {
     const markup = renderToStaticMarkup(
@@ -60,6 +60,14 @@ describe("PatchNotification — UI states (spec §5 copy compliance)", () => {
     );
     expect(markup).toContain("Changed the greeting in the chat header");
     expect(markup).toContain("Undo?");
+  });
+
+  it("reloading shows spec copy: 'Applying your update — reloading…'", () => {
+    const markup = renderToStaticMarkup(
+      <PatchNotification patch={makePatch({ status: "reloading" })} onUndo={noop} onDismiss={noop} />
+    );
+    expect(markup).toContain("Applying your update");
+    expect(markup).toContain("reloading");
   });
 
   it("apply_failed shows spec copy: 'Couldn't apply the change'", () => {
@@ -113,6 +121,7 @@ describe("PatchNotification — copy constraints (spec §5 must-not violations)"
     "pending",
     "applying",
     "applied",
+    "reloading",
     "apply_failed",
     "scope_blocked",
     "reverted",
@@ -135,7 +144,7 @@ describe("PatchNotification — copy constraints (spec §5 must-not violations)"
     expect(markup.toLowerCase()).not.toContain("permanent");
   });
 
-  it.each(["pending_apply", "pending", "applying"] as PatchStatus[])(
+  it.each(["pending_apply", "pending", "applying", "reloading"] as PatchStatus[])(
     "must not say 'Done' in spinner state %s",
     (status) => {
       const markup = renderToStaticMarkup(
@@ -150,6 +159,13 @@ describe("PatchNotification — Undo action", () => {
   it("shows Undo button in applied state", () => {
     render(
       <PatchNotification patch={makePatch({ status: "applied" })} onUndo={noop} onDismiss={noop} />
+    );
+    expect(screen.getByRole("button", { name: /Undo/i })).toBeTruthy();
+  });
+
+  it("shows Undo button in reloading state (allows cancel before reload)", () => {
+    render(
+      <PatchNotification patch={makePatch({ status: "reloading" })} onUndo={noop} onDismiss={noop} />
     );
     expect(screen.getByRole("button", { name: /Undo/i })).toBeTruthy();
   });
