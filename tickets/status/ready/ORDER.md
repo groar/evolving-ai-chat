@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| (none) | — | — | Queue empty; T-0072 in review 2026-03-04. |
+| 1 | T-0074 | P1 | M10 design spec — resolves 3 open M8 questions before implementation. Pick up first. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -34,3 +34,5 @@ This file is the source of truth for ready-ticket pickup order.
 - T-0067 (Activity sheet) accepted 2026-03-04; removed from ready queue.
 - T-0068, T-0069 accepted 2026-03-04. E-0011 implementation complete; T-0070 (tier-2 validation) added 2026-03-04 as sole ready item.
 - T-0070 completed 2026-03-04; E-0011 closed. E-0012 (E-0011 follow-up) created; T-0071, T-0072 moved from backlog to ready 2026-03-04. T-0073 (Fix with AI progress/error) created and marked done for F-20260304-005 traceability. T-0071 completed 2026-03-04 (Settings Updates/Early Access cleanup); removed from ready queue.
+- T-0072 (Activity/history stub clutter cleanup) completed 2026-03-04. E-0012 closed.
+- T-0074 (M10 design spec) added 2026-03-04 as first E-0013 (M10 Agentic Loop Polish) pickup. Queue replenished.

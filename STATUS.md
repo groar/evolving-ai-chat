@@ -102,8 +102,10 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - **Next**: scope next milestone and replenish `tickets/status/ready/` from backlog (currently empty).
 - **M9 — "Design System & UX Polish" (E-0011) — complete (2026-03-04)**
   - T-0066 (design guidelines), T-0067 (Activity sheet), T-0068 (Settings rethink), T-0069 (agent execution logs), T-0070 (tier-2 validation) done. Tier-2 micro-validation PASS; follow-up cleanups captured in E-0012.
-- **M9.1 — "E-0011 Follow-Up UX Cleanup" (E-0012) — in progress (2026-03-04)**
-  - T-0071 (Settings release-channel/early-access cleanup), T-0072 (Activity/history stub clutter) in ready. T-0073 (Fix with AI progress/error visibility) done — F-20260304-005.
+- **M9.1 — "E-0011 Follow-Up UX Cleanup" (E-0012) — complete (2026-03-04)**
+  - T-0071 (Settings release-channel/early-access cleanup) done: section clarified to "Updates"; Beta channel description added. T-0072 (Activity/history stub clutter) done: stubs grouped under collapsible "In progress (N)" / "Other activity (N)" sections. T-0073 (Fix with AI progress/error visibility) done — F-20260304-005.
+- **M10 — "Agentic Loop Polish" (E-0013) — scoping (2026-03-04)**
+  - T-0074 (design spec) in ready; resolves 3 open M8 questions: live-apply/hot-reload, patch quality, scope guardrails. Implementation tickets (T-0075+) to follow after spec is accepted.
 - Previous: M7 (E-0009) superseded 2026-03-01; T-0056 cancelled, T-0057 cancelled. T-0052–T-0055 done but scope superseded.
 - Previous: M7 — "Improvement Class Expansion" (E-0009) (superseded 2026-03-01; T-0052–T-0055 done, T-0056 cancelled)
 - Previous: M6.1 — "Loop Legibility and UX Clarity" (E-0008) (completed 2026-03-01)

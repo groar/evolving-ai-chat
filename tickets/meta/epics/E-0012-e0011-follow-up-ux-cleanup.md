@@ -3,7 +3,7 @@
 ## Metadata
 - ID: E-0012
 - Milestone: M9.1 (follow-up)
-- Status: in progress
+- Status: done
 - Priority: P3
 - Owner: ai-agent
 - Created: 2026-03-04
@@ -22,11 +22,12 @@ E-0011 tier-2 validation passed with notes: user suggested removing or clarifyin
 ## Linked Tickets
 | Ticket | Title | Status |
 |--------|--------|--------|
-| T-0071 | Settings release-channel / early-access cleanup | ready |
-| T-0072 | Activity/history stub clutter cleanup | ready |
+| T-0071 | Settings release-channel / early-access cleanup | done |
+| T-0072 | Activity/history stub clutter cleanup | done |
 
 ## Feedback References
 - E-0011 tier-2 validation: `tickets/meta/feedback/2026-03-04-pm-checkpoint-e0011-tier2-validation.md`
 
 ## Change Log
 - 2026-03-04: Epic created; T-0071 and T-0072 moved to ready queue.
+- 2026-03-04: T-0071 and T-0072 both shipped and accepted. DoD fully met. Epic closed.
