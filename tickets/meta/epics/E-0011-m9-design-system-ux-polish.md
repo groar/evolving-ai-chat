@@ -3,7 +3,7 @@
 ## Metadata
 - ID: E-0011
 - Milestone: M9
-- Status: in-progress
+- Status: done
 - Priority: P1
 - Owner: ai-agent
 - Created: 2026-03-04
@@ -20,7 +20,7 @@ As the app self-evolves, features accumulate without a shared design language. T
 - [x] The changelog/history is moved out of Settings into a dedicated Activity sheet, scales gracefully, and supports expandable diffs.
 - [x] Settings is redesigned: focused on config only, clean section hierarchy, no stale/misplaced content.
 - [x] Per-patch agent execution logs are accessible as expandable hidden detail inside the Activity sheet.
-- [ ] Tier-2 micro-validation: user is asked "Does the app feel as polished and coherent as you'd expect from a tool like Claude?" (T-0070).
+- [x] Tier-2 micro-validation: user is asked "Does the app feel as polished and coherent as you'd expect from a tool like Claude?" (T-0070).
 
 ## Linked Tickets
 | Ticket | Title | Status |
@@ -29,7 +29,7 @@ As the app self-evolves, features accumulate without a shared design language. T
 | T-0067 | Changelog UX redesign — dedicated Activity sheet | done |
 | T-0068 | Settings UX holistic rethink | done |
 | T-0069 | Agent execution logs — per-patch hidden log in Activity sheet | done |
-| T-0070 | E-0011 tier-2 validation — epic closure | ready |
+| T-0070 | E-0011 tier-2 validation — epic closure | done |
 
 ## Feedback References
 - F-20260304-001 (changelog unusable)
@@ -60,3 +60,4 @@ As the app self-evolves, features accumulate without a shared design language. T
 ## Change Log
 - 2026-03-04: Epic created from user feedback F-20260304-001 through F-20260304-004.
 - 2026-03-04: T-0066–T-0069 all done; T-0070 (tier-2 validation closure) added to ready queue. Epic DoD 4/5 complete; tier-2 validation (T-0070) remains.
+- 2026-03-04: T-0070 tier-2 micro-validation run with primary user; probes recorded in T-0070 evidence and PM checkpoint; epic marked done. Notes: Settings release-channel/early-access controls may be removable if no-op; change history UX passes but stub clutter should be reduced.

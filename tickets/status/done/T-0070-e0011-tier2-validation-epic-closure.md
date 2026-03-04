@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0070
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: validation
 - Area: core
@@ -23,11 +23,11 @@ Run the tier-2 micro-validation defined in E-0011 (M9 Design System & UX Polish)
 - F-20260304-001 through F-20260304-004
 
 ## Acceptance Criteria
-- [ ] Probe 1 run: "Does this feel as polished and calm as a tool like Claude or Notion AI?" — answer and short notes recorded.
-- [ ] Probe 2 run: "Does the Settings panel feel focused and easy to navigate?" — answer and short notes recorded.
-- [ ] Probe 3 run: "Can you easily find the change history and understand what changed?" — answer and short notes recorded.
-- [ ] Results recorded in this ticket's Evidence section and in a dated PM checkpoint in `tickets/meta/feedback/`.
-- [ ] Epic E-0011 updated: Validation Plan results linked; epic status set to complete.
+- [x] Probe 1 run: "Does this feel as polished and calm as a tool like Claude or Notion AI?" — answer and short notes recorded.
+- [x] Probe 2 run: "Does the Settings panel feel focused and easy to navigate?" — answer and short notes recorded.
+- [x] Probe 3 run: "Can you easily find the change history and understand what changed?" — answer and short notes recorded.
+- [x] Results recorded in this ticket's Evidence section and in a dated PM checkpoint in `tickets/meta/feedback/`.
+- [x] Epic E-0011 updated: Validation Plan results linked; epic status set to complete.
 
 ## Micro-Validation Probes (Tier 2)
 - **Probe 1:** Does this feel as polished and calm as a tool like Claude or Notion AI?
@@ -42,8 +42,12 @@ Run the tier-2 micro-validation defined in E-0011 (M9 Design System & UX Polish)
 - Sequencing: last in E-0011; no implementation work after this.
 
 ## Evidence (Verification)
-- Probes run: pending
-- Results: (to be filled when probes are run)
+- Probes run: 2026-03-04 with primary user
+- Results:
+  - Probe 1 (overall polish & calm): **PASS.** User: "Yes I would say it's pretty good." App feels polished/calm enough relative to Claude/Notion AI.
+  - Probe 2 (Settings focus & navigation): **MIXED.** User understands release channel/early-access but is unsure they do anything in practice; suggests removing them if they are inert.
+  - Probe 3 (change history findability & clarity): **PASS WITH NOTE.** User can find history and understands what changed, but reports "a lot of stub things" cluttering the interface.
 
 ## Change Log
 - 2026-03-04: Validation closure ticket created; E-0011 implementation complete, tier-2 pending.
+- 2026-03-04: Tier-2 probes run with primary user; evidence recorded; E-0011 epic updated to complete; ticket moved to done. Notes: consider cleaning up release-channel/early-access controls if no-op, and reducing stub clutter in history.
