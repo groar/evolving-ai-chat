@@ -60,9 +60,16 @@ export function App() {
   const setNotificationPatchId = useSettingsStore((s) => s.setNotificationPatchId);
   const settingsNotice = useSettingsStore((s) => s.settingsNotice);
   const settingsError = useSettingsStore((s) => s.settingsError);
+  const isRequestingPatch = useSettingsStore((s) => s.isRequestingPatch);
 
-  const isFeedbackBusy = isSending || isResetting;
+  const patchInProgress = patches.some((p) =>
+    ["pending_apply", "pending", "applying", "reverting"].includes(p.status)
+  );
+  const isFeedbackBusy =
+    isSending || isResetting || isRequestingPatch || patchInProgress;
   const feedback = useFeedback(isFeedbackBusy);
+  const improvementSheetPatchNotice =
+    isRequestingPatch ? "Starting code change…" : patchInProgress ? "Code change in progress…" : null;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -281,6 +288,16 @@ export function App() {
             <SheetTitle>Suggest an improvement</SheetTitle>
           </SheetHeader>
           <div className="grid gap-4 pb-8 px-5">
+            {settingsError && (
+              <p role="alert" className="m-0 border border-[#f4a58b] rounded-lg bg-[#fff0ea] text-destructive text-xs py-2 px-2.5">
+                {settingsError}
+              </p>
+            )}
+            {settingsNotice && !settingsError && (
+              <p role="status" className="m-0 border border-[#9ebf97] rounded-lg bg-[#effbe8] text-[#2e5a2b] text-xs py-2 px-2.5">
+                {settingsNotice}
+              </p>
+            )}
             <FeedbackPanel
               isOpen={feedback.isOpen}
               isBusy={isFeedbackBusy}
@@ -288,7 +305,7 @@ export function App() {
               selectedTags={feedback.tags}
               contextPointer={feedback.contextPointer}
               items={feedback.items}
-              notice={feedback.notice}
+              notice={improvementSheetPatchNotice ?? feedback.notice}
               error={feedback.error}
               onToggleOpen={() => {
                 if (feedback.isOpen) feedback.clearPendingContext();

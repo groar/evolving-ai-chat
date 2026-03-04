@@ -683,6 +683,7 @@ export function useRuntime() {
       const rt = useRuntimeStore.getState();
       if (rt.isSending || rt.isResetting) return;
       setts.setSettingsError(null);
+      setts.setRequestingPatch(true);
       try {
         const response = await fetch(`${runtimeBase}/agent/code-patch`, {
           method: "POST",
@@ -696,22 +697,34 @@ export function useRuntime() {
           })
         });
 
+        let errorPayload: { error?: string; detail?: string } = {};
+        try {
+          errorPayload = (await response.json()) as { error?: string; detail?: string };
+        } catch {
+          // non-JSON body (e.g. server error page)
+        }
+
         if (!response.ok) {
-          const payload = (await response.json()) as { error?: string; detail?: string };
-          if (payload.error === "patch_in_progress") {
+          if (errorPayload.error === "patch_in_progress") {
             setts.setSettingsNotice("A code change is already being processed. Try again once it finishes.");
           } else {
-            setts.setSettingsError(payload.detail ?? "Could not start code fix. Try again later.");
+            setts.setSettingsError(
+              errorPayload.detail ?? `Could not start code fix (${response.status}). Try again later.`
+            );
           }
           return;
         }
 
-        const data = (await response.json()) as {
-          patch_id: string;
-          status: string;
+        const data = errorPayload as {
+          patch_id?: string;
+          status?: string;
           title?: string | null;
           description?: string | null;
         };
+        if (!data.patch_id || !data.status) {
+          setts.setSettingsError("Invalid response from change agent. Try again later.");
+          return;
+        }
 
         // Optimistically add a pending entry and start polling
         const pendingEntry: PatchEntry = {
@@ -722,7 +735,7 @@ export function useRuntime() {
           unified_diff: "",
           created_at: new Date().toISOString()
         };
-        const existingPatches = setts.patches;
+        const existingPatches = useSettingsStore.getState().patches;
         setts.setPatches([pendingEntry, ...existingPatches]);
         setts.setNotificationPatchId(data.patch_id);
 
@@ -733,6 +746,8 @@ export function useRuntime() {
         }
       } catch {
         setts.setSettingsError("Couldn't reach the change agent right now. Try again later.");
+      } finally {
+        setts.setRequestingPatch(false);
       }
     },
     [schedulePatchPoll, refreshState]
