@@ -315,7 +315,7 @@ export function App() {
         onRollbackPatch={(patchId) => rollbackPatch(patchId)}
       />
 
-      {/* Settings sheet (Settings, Danger Zone) */}
+      {/* Settings sheet */}
       <Sheet
         open={settingsOpen}
         onOpenChange={(open) => {
@@ -333,6 +333,7 @@ export function App() {
               changelog={changelog}
               patches={patches}
               isBusy={isSending || isResetting}
+              isResetting={isResetting}
               canToggleFlags={canToggleFlags}
               configuredDiagnosticsFlag={configuredDiagnosticsFlag}
               notice={settingsNotice}
@@ -347,27 +348,13 @@ export function App() {
                 setSettingsOpen(false);
                 setActivitySheetOpen(true);
               }}
+              onDeleteLocalData={() => void runtime.deleteLocalData(inputRef, feedback.clearAll)}
               apiKeys={apiKeys}
               onSaveApiKey={(provider, key) => void runtime.saveApiKey(provider, key)}
               onRemoveApiKey={(provider) => void runtime.removeApiKey(provider)}
               apiKeyError={apiKeyError}
               isSavingApiKey={isSavingApiKey}
             />
-            <section className="border-t border-border pt-4">
-              <details className="group grid gap-2.5" name="settings-danger-zone">
-                <summary className="cursor-pointer text-sm font-semibold text-destructive">Danger Zone</summary>
-                <div className="grid gap-2.5 pl-0">
-                  <button
-                    type="button"
-                    className="border border-[#cc7748] bg-[#fff1e8] text-destructive rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:bg-[#ffe4d8] hover:border-[#b85a2a] disabled:opacity-55 disabled:cursor-not-allowed"
-                    onClick={() => void runtime.deleteLocalData(inputRef, feedback.clearAll)}
-                    disabled={isSending || isResetting}
-                  >
-                    {isResetting ? "Resetting..." : "Delete Local Data"}
-                  </button>
-                </div>
-              </details>
-            </section>
           </div>
         </SheetContent>
       </Sheet>

@@ -154,9 +154,16 @@ These patterns are reflected in existing class utilities in `apps/desktop/src/li
   - Shape: fully rounded or high radius.  
   - Usage: lightweight status or category tags, not full buttons.
 
+- **Section label** (introduced T-0068)  
+  - Use to visually separate named sections inside a sheet or panel.  
+  - Style: `text-[10px] font-semibold tracking-widest uppercase text-muted-foreground`.  
+  - Do: Use as the primary section separator in place of (or alongside) a `border-t` divider.  
+  - Don't: Use section labels for inline field labels or button text; reserve them for section headers only.
+
 - **Detail / Summary block**  
   - Use for logs, metadata, or collapsed advanced settings.  
-  - Maintain a clear header row with summary text and an affordance (chevron) for expansion.
+  - Maintain a clear header row with summary text and an affordance (chevron) for expansion.  
+  - Advanced and destructive sections default to closed so standard users do not see them on first open.
 
 - **Sheet / Drawer**  
   - Slide-over panels for secondary flows (settings, proposals, changelog).  

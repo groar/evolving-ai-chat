@@ -165,7 +165,7 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
                 type="button"
                 className={secondaryBtn}
                 onClick={onDismiss}
-                aria-label="Dismiss notification"
+                aria-label="Done"
               >
                 Done
               </button>

@@ -33,6 +33,8 @@ type SettingsPanelProps = {
   changelog: ChangelogEntry[];
   patches?: PatchEntry[];
   isBusy: boolean;
+  /** True while a local-data reset is in progress; controls "Resetting..." label in Danger Zone. */
+  isResetting?: boolean;
   canToggleFlags: boolean;
   configuredDiagnosticsFlag: boolean;
   notice: string | null;
@@ -45,6 +47,8 @@ type SettingsPanelProps = {
   onRollbackPatch?: (patchId: string) => void;
   /** Opens the Activity sheet (e.g. from "View activity →"). Caller should close Settings when opening Activity. */
   onOpenActivity?: () => void;
+  /** Triggers local data deletion from inside the Danger Zone section. */
+  onDeleteLocalData?: () => void;
   /** API key configuration (Connections subsection) */
   apiKeys: { openai: boolean; anthropic: boolean };
   onSaveApiKey: (provider: ProviderId, key: string) => Promise<void>;
@@ -53,12 +57,16 @@ type SettingsPanelProps = {
   isSavingApiKey: boolean;
 };
 
+/** Uppercase spaced section label per design guidelines §5 (Detail/Summary + Typography). */
+const sectionLabel = "m-0 text-[10px] font-semibold tracking-widest uppercase text-muted-foreground";
+
 export function SettingsPanel(props: SettingsPanelProps) {
   const {
     settings,
     changelog,
     patches = [],
     isBusy,
+    isResetting = false,
     canToggleFlags,
     configuredDiagnosticsFlag,
     notice,
@@ -70,6 +78,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onResetExperiments,
     onRollbackPatch = () => undefined,
     onOpenActivity,
+    onDeleteLocalData,
     apiKeys,
     onSaveApiKey,
     onRemoveApiKey,
@@ -121,133 +130,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
   return (
     <section className="grid gap-6 max-h-none min-h-0 overflow-visible min-w-0" aria-label="Settings">
-      {/* Connections */}
-      <div className="grid gap-3">
-        <p className="m-0 text-sm font-semibold text-foreground">Connections</p>
-        <p className="m-0 text-sm text-foreground">
-          OpenAI: {apiKeys.openai ? "Set ✓" : "Not configured"} · Anthropic: {apiKeys.anthropic ? "Set ✓" : "Not configured"}
-        </p>
-      {(["openai", "anthropic"] as const).map((provider) => (
-        <div key={provider} className="grid gap-2">
-          <p className="m-0 text-sm font-medium text-foreground">
-            {provider === "openai" ? "OpenAI" : "Anthropic"} API key
-          </p>
-          {apiKeys[provider] ? (
-            <div className="flex items-center gap-2.5">
-              <span className="font-mono tracking-[0.15em]" aria-hidden>••••••••••••</span>
-              <button
-                type="button"
-                className={railBtnDanger}
-                onClick={() => void handleRemoveApiKey(provider)}
-                disabled={isBusy || isSavingApiKey}
-              >
-                Remove
-              </button>
-            </div>
-          ) : (
-            <div className="grid gap-2">
-              <label htmlFor={`api-key-input-${provider}`} className="sr-only">
-                {provider === "openai" ? "OpenAI" : "Anthropic"} API key
-              </label>
-              <input
-                id={`api-key-input-${provider}`}
-                className={settingsInput}
-                type="password"
-                placeholder={provider === "openai" ? "sk-..." : "sk-ant-..."}
-                value={apiKeyInputs[provider]}
-                onChange={(event) => setApiKeyInputs((prev) => ({ ...prev, [provider]: event.target.value }))}
-                onKeyDown={(event) => event.key === "Enter" && void handleSaveApiKey(provider)}
-                disabled={isBusy || isSavingApiKey}
-                autoComplete="off"
-              />
-              {apiKeyError && (
-                <p role="alert" className="m-0 border border-[#f4a58b] rounded-lg bg-[#fff0ea] text-destructive text-xs py-2 px-2.5">
-                  {apiKeyError}
-                </p>
-              )}
-              <button
-                type="button"
-                className={`${railBtn} w-fit min-w-[100px]`}
-                onClick={() => void handleSaveApiKey(provider)}
-                disabled={isBusy || isSavingApiKey || apiKeyInputs[provider].trim().length === 0}
-              >
-                {isSavingApiKey ? "Saving…" : "Save"}
-              </button>
-            </div>
-          )}
-        </div>
-      ))}
-      </div>
 
-      {/* Works offline */}
-      <div className="border-t border-border pt-5 grid gap-3">
-        <p className="m-0 text-sm font-semibold text-foreground">Works offline</p>
-        <ul className="m-0 ml-4 p-0 text-sm text-foreground leading-relaxed [&>li]:mb-1">
-          <li>Browse and search conversations</li>
-          <li>Change settings and early-access options</li>
-          <li>Capture and review feedback</li>
-        </ul>
-      </div>
-
-      {/* Updates: channel choice */}
-      <div className="border-t border-border pt-5 grid gap-3">
-        <p className="m-0 text-sm font-semibold text-foreground">Updates</p>
-        <p className="m-0 text-sm text-foreground">
-          Choose which version of the app you get. Stable = recommended; Beta = early access to new features. Your conversations and history are never affected.
-        </p>
-        <div className="channel-toggle grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          className={`border rounded-xl py-2.5 px-3 text-sm font-medium font-inherit cursor-pointer transition-all disabled:opacity-55 disabled:cursor-not-allowed ${
-            settings.channel === "stable"
-              ? "border-primary bg-[#fff2e6] text-primary shadow-[inset_0_0_0_1px_rgba(210,87,34,0.2)]"
-              : "border-border bg-white text-foreground hover:border-[#efbe91] hover:bg-[#fff8f2]"
-          }`}
-          onClick={requestSwitchToStable}
-          disabled={isBusy}
-        >
-          Stable (recommended)
-        </button>
-        <button
-          type="button"
-          className={`border rounded-xl py-2.5 px-3 text-sm font-medium font-inherit cursor-pointer transition-all disabled:opacity-55 disabled:cursor-not-allowed ${
-            settings.channel === "experimental"
-              ? "border-primary bg-[#fff2e6] text-primary shadow-[inset_0_0_0_1px_rgba(210,87,34,0.2)]"
-              : "border-border bg-white text-foreground hover:border-[#efbe91] hover:bg-[#fff8f2]"
-          }`}
-          onClick={() => onSelectChannel("experimental")}
-          disabled={isBusy}
-        >
-          Beta (early access)
-        </button>
-        </div>
-      </div>
-
-      <details className="border-t border-dashed border-border pt-4 mt-1 grid gap-3" open>
-        <summary className="cursor-pointer text-sm font-semibold text-foreground list-none">
-          Early Access (optional beta features when on Beta channel)
-        </summary>
-        <p className="m-0 text-sm text-foreground">Optional toggles for beta features. Only available when you choose the Beta channel above. Your data is never affected.</p>
-        <label className="flex items-center gap-1.5 text-sm">
-          <input
-            type="checkbox"
-            checked={configuredDiagnosticsFlag}
-            disabled={!canToggleFlags}
-            onChange={(event) => onToggleDiagnostics(event.target.checked)}
-          />
-          Show behind-the-scenes info (early-access)
-        </label>
-        {settings.channel !== "experimental" && (
-          <p className="m-0 text-xs text-muted-foreground">Switch to Beta above to adjust these toggles.</p>
-        )}
-        <div className="grid gap-1.5">
-          <button type="button" className={railBtn} disabled={isBusy} onClick={requestResetExperiments}>
-            Reset Early-Access Features
-          </button>
-        </div>
-        <p className="m-0 text-xs text-muted-foreground">Resets all toggles to defaults. No data is deleted.</p>
-      </details>
-
+      {/* Notices — time-sensitive; rendered above Connections so they are seen immediately */}
       {notice && (
         <p role="status" className="m-0 border border-[#9ebf97] rounded-lg bg-[#effbe8] text-[#2e5a2b] text-xs py-2 px-2.5">
           {notice}
@@ -258,6 +142,161 @@ export function SettingsPanel(props: SettingsPanelProps) {
           {error}
         </p>
       )}
+
+      {/* ── CONNECTIONS ─────────────────────────────────── */}
+      <div className="grid gap-3">
+        <p className={sectionLabel}>Connections</p>
+        <p className="m-0 text-sm text-foreground">
+          OpenAI: {apiKeys.openai ? "Set ✓" : "Not configured"} · Anthropic: {apiKeys.anthropic ? "Set ✓" : "Not configured"}
+        </p>
+        {(["openai", "anthropic"] as const).map((provider) => (
+          <div key={provider} className="grid gap-2">
+            <p className="m-0 text-sm font-medium text-foreground">
+              {provider === "openai" ? "OpenAI" : "Anthropic"} API key
+            </p>
+            {apiKeys[provider] ? (
+              <div className="flex items-center gap-2.5">
+                <span className="font-mono tracking-[0.15em]" aria-hidden>••••••••••••</span>
+                <button
+                  type="button"
+                  className={railBtnDanger}
+                  onClick={() => void handleRemoveApiKey(provider)}
+                  disabled={isBusy || isSavingApiKey}
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div className="grid gap-2">
+                <label htmlFor={`api-key-input-${provider}`} className="sr-only">
+                  {provider === "openai" ? "OpenAI" : "Anthropic"} API key
+                </label>
+                <input
+                  id={`api-key-input-${provider}`}
+                  className={settingsInput}
+                  type="password"
+                  placeholder={provider === "openai" ? "sk-..." : "sk-ant-..."}
+                  value={apiKeyInputs[provider]}
+                  onChange={(event) => setApiKeyInputs((prev) => ({ ...prev, [provider]: event.target.value }))}
+                  onKeyDown={(event) => event.key === "Enter" && void handleSaveApiKey(provider)}
+                  disabled={isBusy || isSavingApiKey}
+                  autoComplete="off"
+                />
+                {apiKeyError && (
+                  <p role="alert" className="m-0 border border-[#f4a58b] rounded-lg bg-[#fff0ea] text-destructive text-xs py-2 px-2.5">
+                    {apiKeyError}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  className={`${railBtn} w-fit min-w-[100px]`}
+                  onClick={() => void handleSaveApiKey(provider)}
+                  disabled={isBusy || isSavingApiKey || apiKeyInputs[provider].trim().length === 0}
+                >
+                  {isSavingApiKey ? "Saving…" : "Save"}
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* ── RELEASE CHANNEL ─────────────────────────────── */}
+      <div className="border-t border-border pt-5 grid gap-3">
+        <p className={sectionLabel}>Release Channel</p>
+        <p className="m-0 text-sm text-foreground">
+          Choose which version of the app you get. Stable = recommended; Beta = early access to new features. Your conversations and history are never affected.
+        </p>
+        <div className="channel-toggle grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            className={`border rounded-xl py-2.5 px-3 text-sm font-medium font-inherit cursor-pointer transition-all disabled:opacity-55 disabled:cursor-not-allowed ${
+              settings.channel === "stable"
+                ? "border-primary bg-[#fff2e6] text-primary shadow-[inset_0_0_0_1px_rgba(210,87,34,0.2)]"
+                : "border-border bg-white text-foreground hover:border-[#efbe91] hover:bg-[#fff8f2]"
+            }`}
+            onClick={requestSwitchToStable}
+            disabled={isBusy}
+          >
+            Stable (recommended)
+          </button>
+          <button
+            type="button"
+            className={`border rounded-xl py-2.5 px-3 text-sm font-medium font-inherit cursor-pointer transition-all disabled:opacity-55 disabled:cursor-not-allowed ${
+              settings.channel === "experimental"
+                ? "border-primary bg-[#fff2e6] text-primary shadow-[inset_0_0_0_1px_rgba(210,87,34,0.2)]"
+                : "border-border bg-white text-foreground hover:border-[#efbe91] hover:bg-[#fff8f2]"
+            }`}
+            onClick={() => onSelectChannel("experimental")}
+            disabled={isBusy}
+          >
+            Beta (early access)
+          </button>
+        </div>
+      </div>
+
+      {/* ── ACTIVITY ────────────────────────────────────── */}
+      <div className="border-t border-border pt-5 grid gap-3" aria-label="Activity summary">
+        <p className={sectionLabel}>Activity</p>
+        <p className="m-0 text-sm text-foreground" data-testid="settings-changelog-summary">
+          {patches.length === 0 ? "No changes yet." : `${patches.length} change${patches.length === 1 ? "" : "s"} applied.`}
+        </p>
+        <button
+          type="button"
+          className={`${railBtn} w-fit`}
+          onClick={() => onOpenActivity?.()}
+          data-testid="settings-view-activity"
+        >
+          View activity →
+        </button>
+      </div>
+
+      {/* ── ADVANCED (default closed; beta-only) ─────────── */}
+      <details className="border-t border-border pt-4 mt-1 grid gap-3">
+        <summary className="cursor-pointer list-none flex items-center gap-2">
+          <span className={sectionLabel}>Advanced</span>
+          <span className="text-xs text-muted-foreground">(beta-only)</span>
+        </summary>
+        <div className="grid gap-3 pt-2">
+          <p className="m-0 text-sm text-foreground">Optional toggles for beta features. Only available when you choose the Beta channel above. Your data is never affected.</p>
+          <label className="flex items-center gap-1.5 text-sm">
+            <input
+              type="checkbox"
+              checked={configuredDiagnosticsFlag}
+              disabled={!canToggleFlags}
+              onChange={(event) => onToggleDiagnostics(event.target.checked)}
+            />
+            Show behind-the-scenes info (early-access)
+          </label>
+          {settings.channel !== "experimental" && (
+            <p className="m-0 text-xs text-muted-foreground">Switch to Beta above to adjust these toggles.</p>
+          )}
+          <div className="grid gap-1.5">
+            <button type="button" className={railBtn} disabled={isBusy} onClick={requestResetExperiments}>
+              Reset Early-Access Features
+            </button>
+          </div>
+          <p className="m-0 text-xs text-muted-foreground">Resets all toggles to defaults. No data is deleted.</p>
+        </div>
+      </details>
+
+      {/* ── DANGER ZONE (default closed) ─────────────────── */}
+      <details className="border-t border-border pt-4 mt-1 grid gap-3">
+        <summary className="cursor-pointer list-none">
+          <span className={`${sectionLabel} text-destructive`}>Danger Zone</span>
+        </summary>
+        <div className="grid gap-2.5 pt-2">
+          <button
+            type="button"
+            className="border border-[#cc7748] bg-[#fff1e8] text-destructive rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:bg-[#ffe4d8] hover:border-[#b85a2a] disabled:opacity-55 disabled:cursor-not-allowed"
+            onClick={() => onDeleteLocalData?.()}
+            disabled={isBusy}
+          >
+            {isResetting ? "Resetting..." : "Delete Local Data"}
+          </button>
+          <p className="m-0 text-xs text-muted-foreground">This cannot be undone.</p>
+        </div>
+      </details>
 
       <Dialog open={switchToStableConfirmOpen} onOpenChange={setSwitchToStableConfirmOpen}>
         <DialogContent showCloseButton={false} className="sm:max-w-md">
@@ -280,22 +319,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Changelog compact summary: full history lives in Activity sheet */}
-      <div className="border-t border-border pt-5 grid gap-3" aria-label="Changelog summary">
-        <p className="m-0 text-sm font-semibold text-foreground">Changelog</p>
-        <p className="m-0 text-sm text-foreground" data-testid="settings-changelog-summary">
-          {patches.length === 0 ? "No changes yet." : `${patches.length} change${patches.length === 1 ? "" : "s"} applied.`}
-        </p>
-        <button
-          type="button"
-          className={`${railBtn} w-fit`}
-          onClick={() => onOpenActivity?.()}
-          data-testid="settings-view-activity"
-        >
-          View activity →
-        </button>
-      </div>
     </section>
   );
 }

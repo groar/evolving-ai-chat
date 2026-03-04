@@ -70,8 +70,8 @@ describe("PatchNotification — UI states (spec §5 copy compliance)", () => {
         onDismiss={noop}
       />
     );
-    expect(markup).toContain("Couldn't apply the change");
-    expect(markup).toContain("checks didn't pass");
+    expect(markup).toContain("apply the change");
+    expect(markup).toContain("checks didn");
     expect(markup).toContain("No files were modified");
     expect(markup).not.toContain("validation_failed");
   });

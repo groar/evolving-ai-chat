@@ -43,20 +43,28 @@ function renderPanel(overrides: Partial<ComponentProps<typeof SettingsPanel>> = 
 }
 
 describe("SettingsPanel", () => {
-  it("renders a clearly labeled settings section", () => {
+  it("renders clearly labeled primary sections: Connections, Release Channel, Activity", () => {
     const markup = renderToStaticMarkup(renderPanel());
-    expect(markup).toContain("Settings");
-    expect(markup).toContain("Updates");
+    expect(markup).toContain("Connections");
+    expect(markup).toContain("Release Channel");
+    expect(markup).toContain("Activity");
   });
 
-  it("renders changelog compact summary when no patches", () => {
+  it("does not render Works offline section (removed in T-0068)", () => {
+    const markup = renderToStaticMarkup(renderPanel());
+    expect(markup).not.toContain("Works offline");
+    expect(markup).not.toContain("Browse and search conversations");
+    expect(markup).not.toContain("Change settings and early-access options");
+  });
+
+  it("renders activity compact summary when no patches", () => {
     const emptyMarkup = renderToStaticMarkup(renderPanel());
     expect(emptyMarkup).toContain("No changes yet.");
     expect(emptyMarkup).toContain("View activity →");
-    expect(emptyMarkup).toContain("Changelog");
+    expect(emptyMarkup).toContain("Activity");
   });
 
-  it("renders changelog compact summary with patch count when patches exist", () => {
+  it("renders activity compact summary with patch count when patches exist", () => {
     const patches = [
       {
         id: "p1",
@@ -104,25 +112,52 @@ describe("SettingsPanel", () => {
     expect(markup).not.toContain(">Switch to Stable<");
   });
 
-  it("uses progressive disclosure for advanced concepts", () => {
-    const markup = renderToStaticMarkup(renderPanel());
-    expect(markup).toContain("Early Access");
+  it("uses progressive disclosure: Advanced section is collapsed by default", () => {
+    const { container } = render(renderPanel());
+    const advancedDetails = Array.from(container.querySelectorAll("details")).find(
+      (el) => el.textContent?.includes("Advanced")
+    );
+    expect(advancedDetails).toBeTruthy();
+    expect(advancedDetails?.hasAttribute("open")).toBe(false);
   });
 
-  it("explains Updates and Early Access clearly (T-0065)", () => {
+  it("Danger Zone section is inside SettingsPanel and collapsed by default", () => {
+    const { container } = render(renderPanel());
+    const dangerDetails = Array.from(container.querySelectorAll("details")).find(
+      (el) => el.textContent?.includes("Danger Zone")
+    );
+    expect(dangerDetails).toBeTruthy();
+    expect(dangerDetails?.hasAttribute("open")).toBe(false);
+  });
+
+  it("Danger Zone Delete Local Data button calls onDeleteLocalData when clicked (after expanding)", async () => {
+    const onDeleteLocalData = vi.fn();
+    const { container } = render(renderPanel({ onDeleteLocalData }));
+    const dangerDetails = Array.from(container.querySelectorAll("details")).find(
+      (el) => el.textContent?.includes("Danger Zone")
+    ) as HTMLDetailsElement;
+    // Programmatically open the details so the button is accessible
+    dangerDetails.open = true;
+    const deleteBtn = within(dangerDetails).getByRole("button", { name: /Delete Local Data/i });
+    await userEvent.click(deleteBtn);
+    expect(onDeleteLocalData).toHaveBeenCalledTimes(1);
+  });
+
+  it("Danger Zone shows Resetting... label when isResetting is true", () => {
+    const { container } = render(renderPanel({ isResetting: true, isBusy: true }));
+    const dangerDetails = Array.from(container.querySelectorAll("details")).find(
+      (el) => el.textContent?.includes("Danger Zone")
+    ) as HTMLDetailsElement;
+    dangerDetails.open = true;
+    expect(dangerDetails.textContent).toContain("Resetting...");
+  });
+
+  it("explains Release Channel and Advanced clearly (T-0065 guardrails preserved)", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Choose which version of the app you get");
     expect(markup).toContain("Stable = recommended");
     expect(markup).toContain("Beta = early access to new features");
-    expect(markup).toContain("Early Access (optional beta features when on Beta channel)");
     expect(markup).toContain("Only available when you choose the Beta channel above");
-  });
-
-  it("renders Works offline section with at least 2 concrete items", () => {
-    const markup = renderToStaticMarkup(renderPanel());
-    expect(markup).toContain("Works offline");
-    expect(markup).toContain("Browse and search conversations");
-    expect(markup).toContain("Change settings and early-access options");
   });
 
   it("shows offline error copy without implying settings are unavailable", () => {
@@ -147,10 +182,26 @@ describe("SettingsPanel", () => {
     expect(markup).toContain("Remove");
   });
 
+  it("notice renders above the first section when present", () => {
+    const markup = renderToStaticMarkup(renderPanel({ notice: "Test notice" }));
+    const noticePos = markup.indexOf("Test notice");
+    const connectionsPos = markup.indexOf("Connections");
+    expect(noticePos).toBeGreaterThan(-1);
+    expect(noticePos).toBeLessThan(connectionsPos);
+  });
+
+  it("error renders above the first section when present", () => {
+    const markup = renderToStaticMarkup(renderPanel({ error: "Test error" }));
+    const errorPos = markup.indexOf("Test error");
+    const connectionsPos = markup.indexOf("Connections");
+    expect(errorPos).toBeGreaterThan(-1);
+    expect(errorPos).toBeLessThan(connectionsPos);
+  });
+
   it("View activity button calls onOpenActivity when clicked", async () => {
     const onOpenActivity = vi.fn();
-    render(renderPanel({ onOpenActivity }));
-    const viewActivity = screen.getByTestId("settings-view-activity");
+    const { container } = render(renderPanel({ onOpenActivity }));
+    const viewActivity = within(container).getByTestId("settings-view-activity");
     await userEvent.click(viewActivity);
     expect(onOpenActivity).toHaveBeenCalledTimes(1);
   });
