@@ -15,10 +15,9 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0066 | P1 | Design guidelines doc — foundation for E-0011; docs-only, no QA |
-| 2 | T-0067 | P1 | Changelog UX redesign — Activity sheet; depends conceptually on T-0066 |
-| 3 | T-0068 | P1 | Settings UX rethink — depends on T-0066 (labels) and T-0067 (Activity compact summary) |
-| 4 | T-0069 | P2 | Agent execution logs — depends on T-0067 (Activity sheet as UI home) |
+| 1 | T-0067 | P1 | Changelog UX redesign — Activity sheet; depends conceptually on T-0066 |
+| 2 | T-0068 | P1 | Settings UX rethink — depends on T-0066 (labels) and T-0067 (Activity compact summary) |
+| 3 | T-0069 | P2 | Agent execution logs — depends on T-0067 (Activity sheet as UI home) |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.

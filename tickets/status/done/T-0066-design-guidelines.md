@@ -1,8 +1,6 @@
-# T-0066: Design guidelines document
-
 ## Metadata
 - ID: T-0066
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: docs
 - Area: docs
@@ -60,12 +58,12 @@ Create `docs/design-guidelines.md` — a living, canonical design system referen
 - F-20260304-004
 
 ## Acceptance Criteria
-- [ ] `docs/design-guidelines.md` exists and covers all 8 required sections.
-- [ ] Every `--color-*` token in `styles.css` is listed with its semantic role.
-- [ ] Typography section specifies font stack, scale names, and weight rules.
-- [ ] At least 6 "Do / Don't" rules are included.
-- [ ] The self-evolution note is present and addresses AI agents.
-- [ ] Doc review passes: no tokens or patterns contradict what is actually implemented in the app.
+- [x] `docs/design-guidelines.md` exists and covers all 8 required sections.
+- [x] Every `--color-*` token in `styles.css` is listed with its semantic role.
+- [x] Typography section specifies font stack, scale names, and weight rules.
+- [x] At least 6 "Do / Don't" rules are included.
+- [x] The self-evolution note is present and addresses AI agents.
+- [x] Doc review passes: no tokens or patterns contradict what is actually implemented in the app.
 
 ## User-Facing Acceptance Criteria
 - [ ] Not applicable (docs-only — no user-visible UI change in this ticket).
@@ -77,16 +75,19 @@ Create `docs/design-guidelines.md` — a living, canonical design system referen
 
 ## Evidence (Verification)
 - Tests run: n/a
-- Manual checks performed: doc review for completeness and internal consistency
-- Doc review: required
+- Manual checks performed: doc review for completeness and internal consistency on 2026-03-04; verified all referenced color tokens exist in `styles.css` and that described usage matches current UI patterns.
+- Doc review: completed; see `tickets/meta/qa/2026-03-04-doc-review-T-0066.md`.
 
 ## Subtasks
-- [ ] Read `styles.css` and `ui-classes.ts` to inventory all tokens and shared patterns
-- [ ] Write `docs/design-guidelines.md` covering all 8 sections
-- [ ] Doc review pass (completeness + token accuracy)
+- [x] Read `styles.css` and `ui-classes.ts` to inventory all tokens and shared patterns
+- [x] Write `docs/design-guidelines.md` covering all 8 sections
+- [x] Doc review pass (completeness + token accuracy)
 
 ## Notes
 No code changes. This is intentionally a minimal but complete first version of the guidelines. Update it in the same PR as T-0067 and T-0068 if new patterns are added during those implementations.
 
 ## Change Log
 - 2026-03-04: Ticket created from F-20260304-004 / E-0011.
+- 2026-03-04: Initial version of `docs/design-guidelines.md` written and reviewed; ticket moved to review (docs-only, QA waived).
+- 2026-03-04: QA doc review recorded; ticket accepted and moved to done.
+
