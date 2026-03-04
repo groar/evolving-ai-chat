@@ -1,0 +1,22 @@
+{
+  "id": "PA-20260304-2003a16b",
+  "created_at": "2026-03-04T10:43:33.834621+00:00",
+  "feedback_id": "FB-status-test",
+  "base_ref": "abc1234",
+  "status": "apply_failed",
+  "title": "[stub] UI adjustment: Test",
+  "description": "Stub patch for feedback 'Test'. No real files modified (offline/test mode).\n\nFailure details: Patch base_ref='abc1234' but current HEAD='b9987629d14bb000fd58cd8ea06bcf94834a567e'",
+  "files_changed": [
+    "apps/desktop/src/App.tsx"
+  ],
+  "unified_diff": "--- a/apps/desktop/src/App.tsx\n+++ b/apps/desktop/src/App.tsx\n@@ -19,4 +19,4 @@\n import type { RuntimeIssue } from \"./stores/runtimeStore\";\n \n-const appName = \"Evolving AI Chat\";\n+const appName = \"Evolving AI Chat \u2014 your personal assistant\";\n const diagnosticsFlagKey = \"show_runtime_diagnostics\";\n",
+  "scope_violations": [],
+  "agent_model": "stub",
+  "agent_harness": "stub-v1",
+  "applied_at": null,
+  "git_commit_sha": null,
+  "reverted_at": null,
+  "revert_commit_sha": null,
+  "failure_reason": "base_ref_mismatch",
+  "log_text": "[stub] PATCH_AGENT_STUB is enabled; no real harness call was made.\nfeedback_id=FB-status-test\ntitle=Test\narea=ui.chat"
+}

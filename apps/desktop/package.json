@@ -12,6 +12,7 @@
     "runtime:fastapi": "uv run --with-requirements runtime/requirements.txt python3 -m uvicorn runtime.main:app --host 127.0.0.1 --port 8787",
     "runtime:stub": "uv run --with-requirements runtime/requirements.txt python3 -m uvicorn runtime.main:app --host 127.0.0.1 --port 8787",
     "runtime:stub:node": "node scripts/runtime-stub.mjs",
+    "runtime:test": "uv run --with-requirements runtime/requirements.txt python -m pytest runtime/ -v",
     "smoke": "node scripts/smoke.mjs",
     "smoke:fastapi": "node scripts/smoke-fastapi.mjs",
     "smoke:storage": "uv run --with-requirements runtime/requirements.txt python3 runtime/smoke_storage.py",
