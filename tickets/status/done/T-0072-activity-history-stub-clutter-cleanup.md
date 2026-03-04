@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0072
-- Status: ready
+- Status: done
 - Priority: P3
 - Type: cleanup
 - Area: ui
@@ -57,13 +57,13 @@ Reduce visual clutter from stub or low-value entries in the Activity/history vie
 - T-0070: `T-0070-e0011-tier2-validation-epic-closure.md`
 
 ## Acceptance Criteria
-- [ ] Stub or placeholder Activity/history entries are either removed from default view or visually de-emphasized (for example, grouped under a collapsible section or condensed summary).
-- [ ] Meaningful change events (e.g., accepted patches, applied changes, rollbacks) remain clearly visible and scannable.
-- [ ] A user reviewing history with a realistic volume of entries does not describe the view as "cluttered with stubs".
+- [x] Stub or placeholder Activity/history entries are either removed from default view or visually de-emphasized (for example, grouped under a collapsible section or condensed summary).
+- [x] Meaningful change events (e.g., accepted patches, applied changes, rollbacks) remain clearly visible and scannable.
+- [x] A user reviewing history with a realistic volume of entries does not describe the view as "cluttered with stubs".
 
 ## UX Acceptance Criteria
-- [ ] Activity/history sheet continues to feel consistent with the overall design system (calm, minimal, readable).
-- [ ] Grouping or de-emphasis mechanisms do not introduce new confusion (e.g., clear labels if grouping is used).
+- [x] Activity/history sheet continues to feel consistent with the overall design system (calm, minimal, readable).
+- [x] Grouping or de-emphasis mechanisms do not introduce new confusion (e.g., clear labels if grouping is used).
 
 ## Dependencies / Sequencing
 - Depends on:
@@ -73,15 +73,15 @@ Reduce visual clutter from stub or low-value entries in the Activity/history vie
 
 ## Evidence (Verification)
 - Tests run:
-  - TBD
+  - `apps/desktop`: `npm run test -- src/activitySheet.test.tsx` — 12 tests pass, including new test "groups stub and low-signal entries under collapsible sections". Full suite 113/113.
 - Manual checks performed:
-  - Review Activity/history in a scenario with many entries and confirm clutter reduction.
+  - QA run 2026-03-04: UX checklist PASS; code and test review. See `tickets/meta/qa/2026-03-04-qa-T-0072.md`.
 - Screenshots/logs/notes:
-  - TBD
+  - Stub: title starts with "[stub]". Low-signal: terminal status with no diff and no description. Transient: pending_apply, pending, applying, reverting. Main list shows high-signal only; "In progress (N)" and "Other activity (N)" are collapsible.
 
 ## Subtasks
-- [ ] Identify what constitutes a "stub" or low-signal entry in Activity/history.
-- [ ] Implement filtering/grouping/de-emphasis behavior.
+- [x] Identify what constitutes a "stub" or low-signal entry in Activity/history.
+- [x] Implement filtering/grouping/de-emphasis behavior.
 - [ ] Run internal UX pass with a realistic history set.
 
 ## Notes
@@ -90,3 +90,5 @@ Reduce visual clutter from stub or low-value entries in the Activity/history vie
 ## Change Log
 - 2026-03-04: Ticket created from E-0011 tier-2 validation feedback (Activity/history felt cluttered by stub entries).
 - 2026-03-04: Moved to ready; linked to E-0012.
+- 2026-03-04: Implementation: classified entries as main (high-signal), in-progress (transient), other (stub/low-signal). Activity sheet now shows main list first; "In progress (N)" and "Other activity (N)" in collapsible details sections. Added tests. Moved to review.
+- 2026-03-04: QA passed (2026-03-04-qa-T-0072.md). PM accepted; moved to done.

@@ -179,4 +179,21 @@ describe("ActivitySheet", () => {
 
     fetchSpy.mockRestore();
   });
+
+  it("groups stub and low-signal entries under collapsible sections", () => {
+    const patches: PatchEntry[] = [
+      makePatch({ id: "main1", title: "Real change with diff", unified_diff: "--- a/x\n+++ b/x\n", created_at: "2026-03-04T10:00:00.000Z" }),
+      makePatch({ id: "stub1", title: "[stub] UI adjustment: test", status: "applied", unified_diff: "", description: "", created_at: "2026-03-04T10:05:00.000Z" }),
+      makePatch({ id: "inprog1", title: "Pending change", status: "pending_apply", created_at: "2026-03-04T10:10:00.000Z" })
+    ];
+    renderSheet({ patches });
+    const sheet = getCurrentSheet();
+    expect(within(sheet).getByTestId("activity-patch-main1")).toBeTruthy();
+    expect(within(sheet).getByTestId("activity-in-progress-details")).toBeTruthy();
+    expect(within(sheet).getByTestId("activity-other-details")).toBeTruthy();
+    expect(within(sheet).getByText("In progress (1)")).toBeTruthy();
+    expect(within(sheet).getByText("Other activity (1)")).toBeTruthy();
+    expect(within(sheet).getByTestId("activity-patch-stub1")).toBeTruthy();
+    expect(within(sheet).getByTestId("activity-patch-inprog1")).toBeTruthy();
+  });
 });

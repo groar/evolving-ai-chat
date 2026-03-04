@@ -8,9 +8,36 @@ import {
   SheetTitle
 } from "@/components/ui/sheet";
 import { railBtn } from "@/lib/ui-classes";
-import type { PatchEntry } from "./PatchNotification";
+import type { PatchEntry, PatchStatus } from "./PatchNotification";
 import type { ChangelogEntry } from "./settingsPanel";
 import { runtimeBase } from "./hooks/useRuntime";
+
+/** Transient states that are in-progress; can be grouped to reduce clutter. */
+function isTransientStatus(status: PatchStatus | string): boolean {
+  return (
+    status === "pending_apply" ||
+    status === "pending" ||
+    status === "applying" ||
+    status === "reverting"
+  );
+}
+
+/** Stub or low-signal entry: [stub] title, or terminal with no diff and no meaningful description. */
+function isStubOrLowSignal(patch: PatchEntry): boolean {
+  if (patch.title.trimStart().toLowerCase().startsWith("[stub]")) return true;
+  const terminal =
+    patch.status === "applied" ||
+    patch.status === "reverted" ||
+    patch.status === "apply_failed" ||
+    patch.status === "scope_blocked" ||
+    patch.status === "validation_failed" ||
+    patch.status === "rollback_conflict" ||
+    patch.status === "rollback_unavailable";
+  if (!terminal) return false;
+  const hasDiff = Boolean(patch.unified_diff?.trim());
+  const hasDescription = Boolean(patch.description?.trim());
+  return !hasDiff && !hasDescription;
+}
 
 type ActivitySheetProps = {
   open: boolean;
@@ -55,6 +82,24 @@ function getDateGroupLabel(date: Date): string {
 }
 
 type DateGroup<T> = { label: string; items: T[] };
+
+type PatchSplit = { main: PatchEntry[]; inProgress: PatchEntry[]; other: PatchEntry[] };
+
+function splitPatchesBySignal(patches: PatchEntry[]): PatchSplit {
+  const main: PatchEntry[] = [];
+  const inProgress: PatchEntry[] = [];
+  const other: PatchEntry[] = [];
+  for (const p of patches) {
+    if (isTransientStatus(p.status)) {
+      inProgress.push(p);
+    } else if (isStubOrLowSignal(p)) {
+      other.push(p);
+    } else {
+      main.push(p);
+    }
+  }
+  return { main, inProgress, other };
+}
 
 function groupPatchesByDate(patches: PatchEntry[]): DateGroup<PatchEntry>[] {
   const byLabel = new Map<string, PatchEntry[]>();
@@ -208,6 +253,108 @@ export function ActivitySheet(props: ActivitySheetProps) {
 
   const isEmpty = patches.length === 0 && changelog.length === 0;
 
+  function renderPatchCard(patch: PatchEntry) {
+    const isApplied = patch.status === "applied";
+    const isReverted = patch.status === "reverted";
+    const isError =
+      patch.status === "apply_failed" ||
+      patch.status === "scope_blocked" ||
+      patch.status === "validation_failed" ||
+      patch.status === "rollback_conflict" ||
+      patch.status === "rollback_unavailable";
+    const expanded = expandedPatchIds.has(patch.id);
+    const logState = logStateByPatchId[patch.id];
+    const hasDiff = Boolean(patch.unified_diff);
+    const cardBorder = isApplied
+      ? "border-[#9ebf97]"
+      : isReverted
+        ? "border-[#c8d3c1]"
+        : isError
+          ? "border-[#f4a58b] border-l-4"
+          : "border-border";
+    return (
+      <li
+        key={patch.id}
+        className={`border rounded-lg bg-card p-3 grid gap-2 ${cardBorder}`}
+        data-testid={`activity-patch-${patch.id}`}
+      >
+        <button
+          type="button"
+          className="w-full text-left grid gap-2 focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2 rounded"
+          onClick={() => togglePatch(patch.id)}
+          aria-expanded={expanded}
+        >
+          <div className="flex justify-between gap-2 items-start">
+            <p className="m-0 text-sm font-bold line-clamp-2 flex-1 min-w-0">{patch.title}</p>
+            <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground shrink-0">
+              {PATCH_STATUS_LABEL[patch.status] ?? patch.status}
+            </span>
+          </div>
+          <p className="m-0 text-xs text-muted-foreground">{formatRelativeTime(patch.created_at)}</p>
+        </button>
+        {expanded && (
+          <div className="grid gap-2 pt-1 border-t border-border">
+            {patch.description && (
+              <p className="m-0 text-sm text-foreground">{patch.description}</p>
+            )}
+            <p className="m-0 text-xs text-muted-foreground">
+              {formatTimestamp(patch.created_at)}
+              {patch.applied_at ? ` · Applied ${formatTimestamp(patch.applied_at)}` : ""}
+              {patch.reverted_at ? ` · Undone ${formatTimestamp(patch.reverted_at)}` : ""}
+            </p>
+            {(patch.status === "apply_failed" || patch.status === "scope_blocked" || patch.status === "validation_failed") &&
+              patch.failure_reason && (
+                <p className="m-0 text-xs text-destructive" role="alert">
+                  {patch.failure_reason}
+                </p>
+              )}
+            <div className="flex flex-wrap gap-2">
+              {isApplied && (
+                <button
+                  type="button"
+                  className={`${railBtn} text-sm`}
+                  onClick={() => onRollbackPatch(patch.id)}
+                  disabled={isBusy}
+                  aria-label={`Undo: ${patch.title}`}
+                >
+                  Undo
+                </button>
+              )}
+            </div>
+            {hasDiff && (
+              <pre className="m-0 text-xs leading-relaxed overflow-auto max-h-80 bg-[#f4f5f0] border border-border rounded-lg p-2.5 font-mono whitespace-pre">
+                <code>{patch.unified_diff}</code>
+              </pre>
+            )}
+            <details className="mt-1 text-xs text-muted-foreground">
+              <summary>Agent log {logState && logState.status === "loaded" ? "↑" : "↓"}</summary>
+              <div className="mt-1">
+                {logState?.status === "loading" && (
+                  <p className="m-0 text-xs text-muted-foreground">Loading log…</p>
+                )}
+                {logState?.status === "loaded" && (
+                  <pre className="m-0 text-xs font-mono bg-panel overflow-auto max-h-60 border border-border rounded-lg p-2.5 whitespace-pre-wrap">
+                    {logState.text}
+                  </pre>
+                )}
+                {logState?.status === "error_offline" && (
+                  <p className="m-0 text-xs text-muted-foreground">
+                    Log not available (runtime offline).
+                  </p>
+                )}
+                {(!logState || logState.status === "error_missing") && (
+                  <p className="m-0 text-xs text-muted-foreground">
+                    Log not available for this change.
+                  </p>
+                )}
+              </div>
+            </details>
+          </div>
+        )}
+      </li>
+    );
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -225,116 +372,47 @@ export function ActivitySheet(props: ActivitySheetProps) {
             </div>
           ) : (
             <div className="grid gap-6">
-              {patchGroups.map((group) => (
-                <section key={group.label} className="grid gap-3">
-                  <h2 className="m-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {group.label}
-                  </h2>
-                  <ul className="list-none m-0 p-0 grid gap-3" aria-label={`Activity for ${group.label}`}>
-                    {group.items.map((patch) => {
-                      const isApplied = patch.status === "applied";
-                      const isReverted = patch.status === "reverted";
-                      const isError =
-                        patch.status === "apply_failed" ||
-                        patch.status === "scope_blocked" ||
-                        patch.status === "validation_failed" ||
-                        patch.status === "rollback_conflict" ||
-                        patch.status === "rollback_unavailable";
-                      const expanded = expandedPatchIds.has(patch.id);
-                      const logState = logStateByPatchId[patch.id];
-                      const hasDiff = Boolean(patch.unified_diff);
-                      const cardBorder = isApplied
-                        ? "border-[#9ebf97]"
-                        : isReverted
-                          ? "border-[#c8d3c1]"
-                          : isError
-                            ? "border-[#f4a58b] border-l-4"
-                            : "border-border";
-                      return (
-                        <li
-                          key={patch.id}
-                          className={`border rounded-lg bg-card p-3 grid gap-2 ${cardBorder}`}
-                          data-testid={`activity-patch-${patch.id}`}
-                        >
-                          <button
-                            type="button"
-                            className="w-full text-left grid gap-2 focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2 rounded"
-                            onClick={() => togglePatch(patch.id)}
-                            aria-expanded={expanded}
-                          >
-                            <div className="flex justify-between gap-2 items-start">
-                              <p className="m-0 text-sm font-bold line-clamp-2 flex-1 min-w-0">{patch.title}</p>
-                              <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground shrink-0">
-                                {PATCH_STATUS_LABEL[patch.status] ?? patch.status}
-                              </span>
-                            </div>
-                            <p className="m-0 text-xs text-muted-foreground">{formatRelativeTime(patch.created_at)}</p>
-                          </button>
-                          {expanded && (
-                            <div className="grid gap-2 pt-1 border-t border-border">
-                              {patch.description && (
-                                <p className="m-0 text-sm text-foreground">{patch.description}</p>
-                              )}
-                              <p className="m-0 text-xs text-muted-foreground">
-                                {formatTimestamp(patch.created_at)}
-                                {patch.applied_at ? ` · Applied ${formatTimestamp(patch.applied_at)}` : ""}
-                                {patch.reverted_at ? ` · Undone ${formatTimestamp(patch.reverted_at)}` : ""}
-                              </p>
-                              {(patch.status === "apply_failed" || patch.status === "scope_blocked" || patch.status === "validation_failed") &&
-                                patch.failure_reason && (
-                                  <p className="m-0 text-xs text-destructive" role="alert">
-                                    {patch.failure_reason}
-                                  </p>
-                                )}
-                              <div className="flex flex-wrap gap-2">
-                                {isApplied && (
-                                  <button
-                                    type="button"
-                                    className={`${railBtn} text-sm`}
-                                    onClick={() => onRollbackPatch(patch.id)}
-                                    disabled={isBusy}
-                                    aria-label={`Undo: ${patch.title}`}
-                                  >
-                                    Undo
-                                  </button>
-                                )}
-                              </div>
-                              {hasDiff && (
-                                <pre className="m-0 text-xs leading-relaxed overflow-auto max-h-80 bg-[#f4f5f0] border border-border rounded-lg p-2.5 font-mono whitespace-pre">
-                                  <code>{patch.unified_diff}</code>
-                                </pre>
-                              )}
-                              <details className="mt-1 text-xs text-muted-foreground">
-                                <summary>Agent log {logState && logState.status === "loaded" ? "↑" : "↓"}</summary>
-                                <div className="mt-1">
-                                  {logState?.status === "loading" && (
-                                    <p className="m-0 text-xs text-muted-foreground">Loading log…</p>
-                                  )}
-                                  {logState?.status === "loaded" && (
-                                    <pre className="m-0 text-xs font-mono bg-panel overflow-auto max-h-60 border border-border rounded-lg p-2.5 whitespace-pre-wrap">
-                                      {logState.text}
-                                    </pre>
-                                  )}
-                                  {logState?.status === "error_offline" && (
-                                    <p className="m-0 text-xs text-muted-foreground">
-                                      Log not available (runtime offline).
-                                    </p>
-                                  )}
-                                  {(!logState || logState.status === "error_missing") && (
-                                    <p className="m-0 text-xs text-muted-foreground">
-                                      Log not available for this change.
-                                    </p>
-                                  )}
-                                </div>
-                              </details>
-                            </div>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </section>
-              ))}
+              {patchGroups.map((group) => {
+                const split = splitPatchesBySignal(group.items);
+                return (
+                  <section key={group.label} className="grid gap-3">
+                    <h2 className="m-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {group.label}
+                    </h2>
+                    {split.main.length > 0 && (
+                      <ul className="list-none m-0 p-0 grid gap-3" aria-label={`Activity for ${group.label}`}>
+                        {split.main.map((patch) => renderPatchCard(patch))}
+                      </ul>
+                    )}
+                    {split.inProgress.length > 0 && (
+                      <details
+                        className="grid gap-3"
+                        data-testid="activity-in-progress-details"
+                      >
+                        <summary className="cursor-pointer list-none text-xs font-medium text-muted-foreground">
+                          In progress ({split.inProgress.length})
+                        </summary>
+                        <ul className="list-none m-0 p-0 grid gap-3 mt-1" aria-label={`In progress for ${group.label}`}>
+                          {split.inProgress.map((patch) => renderPatchCard(patch))}
+                        </ul>
+                      </details>
+                    )}
+                    {split.other.length > 0 && (
+                      <details
+                        className="grid gap-3"
+                        data-testid="activity-other-details"
+                      >
+                        <summary className="cursor-pointer list-none text-xs font-medium text-muted-foreground">
+                          Other activity ({split.other.length})
+                        </summary>
+                        <ul className="list-none m-0 p-0 grid gap-3 mt-1" aria-label={`Other activity for ${group.label}`}>
+                          {split.other.map((patch) => renderPatchCard(patch))}
+                        </ul>
+                      </details>
+                    )}
+                  </section>
+                );
+              })}
 
               {changelog.length > 0 && (
                 <section className="grid gap-3 border-t border-border pt-4">
