@@ -17,7 +17,7 @@ export function MarkdownMessage({ text }: { text: string }) {
 
   const handleRetry = useCallback(() => {
     // Logic to run the AI answer with a different model and update versions
-    const newVersion = `New model response for version ${versions.length + 1}`; // Placeholder logic
+    const newVersion = `AI response from model XYZ for version ${versions.length + 1}`; // Integrate logic to switch models here
     setVersions([...versions, newVersion]);
   }, [versions]);
 
