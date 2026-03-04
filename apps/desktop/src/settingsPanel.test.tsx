@@ -43,10 +43,10 @@ function renderPanel(overrides: Partial<ComponentProps<typeof SettingsPanel>> = 
 }
 
 describe("SettingsPanel", () => {
-  it("renders clearly labeled primary sections: Connections, Release Channel, Activity", () => {
+  it("renders clearly labeled primary sections: Connections, Updates, Activity", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Connections");
-    expect(markup).toContain("Release Channel");
+    expect(markup).toContain("Updates");
     expect(markup).toContain("Activity");
   });
 
@@ -152,12 +152,14 @@ describe("SettingsPanel", () => {
     expect(dangerDetails.textContent).toContain("Resetting...");
   });
 
-  it("explains Release Channel and Advanced clearly (T-0065 guardrails preserved)", () => {
+  it("explains Updates and Advanced clearly (T-0065/T-0071 guardrails preserved)", () => {
     const markup = renderToStaticMarkup(renderPanel());
     expect(markup).toContain("Choose which version of the app you get");
     expect(markup).toContain("Stable = recommended");
     expect(markup).toContain("Beta = early access to new features");
+    expect(markup).toContain("On Beta you can turn on optional features in Advanced");
     expect(markup).toContain("Only available when you choose the Beta channel above");
+    expect(markup).toContain("shows a small card in the chat area with conversation and message counts");
   });
 
   it("shows offline error copy without implying settings are unavailable", () => {

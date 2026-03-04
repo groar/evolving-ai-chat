@@ -201,11 +201,11 @@ export function SettingsPanel(props: SettingsPanelProps) {
         ))}
       </div>
 
-      {/* ── RELEASE CHANNEL ─────────────────────────────── */}
+      {/* ── UPDATES (release channel) ───────────────────── */}
       <div className="border-t border-border pt-5 grid gap-3">
-        <p className={sectionLabel}>Release Channel</p>
+        <p className={sectionLabel}>Updates</p>
         <p className="m-0 text-sm text-foreground">
-          Choose which version of the app you get. Stable = recommended; Beta = early access to new features. Your conversations and history are never affected.
+          Choose which version of the app you get. Stable = recommended; Beta = early access to new features. On Beta you can turn on optional features in Advanced (for example, a small info card in the chat area). Your conversations and history are never affected.
         </p>
         <div className="channel-toggle grid grid-cols-2 gap-2">
           <button
@@ -259,14 +259,17 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </summary>
         <div className="grid gap-3 pt-2">
           <p className="m-0 text-sm text-foreground">Optional toggles for beta features. Only available when you choose the Beta channel above. Your data is never affected.</p>
-          <label className="flex items-center gap-1.5 text-sm">
-            <input
-              type="checkbox"
-              checked={configuredDiagnosticsFlag}
-              disabled={!canToggleFlags}
-              onChange={(event) => onToggleDiagnostics(event.target.checked)}
-            />
-            Show behind-the-scenes info (early-access)
+          <label className="flex flex-col gap-0.5">
+            <span className="flex items-center gap-1.5 text-sm">
+              <input
+                type="checkbox"
+                checked={configuredDiagnosticsFlag}
+                disabled={!canToggleFlags}
+                onChange={(event) => onToggleDiagnostics(event.target.checked)}
+              />
+              Show behind-the-scenes info (early-access)
+            </span>
+            <span className="text-xs text-muted-foreground">When on Beta, shows a small card in the chat area with conversation and message counts.</span>
           </label>
           {settings.channel !== "experimental" && (
             <p className="m-0 text-xs text-muted-foreground">Switch to Beta above to adjust these toggles.</p>

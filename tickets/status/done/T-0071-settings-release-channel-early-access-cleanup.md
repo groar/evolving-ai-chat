@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0071
-- Status: ready
+- Status: done
 - Priority: P3
 - Type: cleanup
 - Area: ui
@@ -60,13 +60,13 @@ Clarify or remove the `release channel` and `early-access` controls in Settings.
 - T-0070: `T-0070-e0011-tier2-validation-epic-closure.md`
 
 ## Acceptance Criteria
-- [ ] If `release channel` / `early-access` are currently no-ops, the controls are removed from the Settings UI.
-- [ ] If `release channel` / `early-access` remain in the UI, their behavior is clearly wired and can be observed in a manual test (for example, changing channel yields a visible/known effect or is clearly documented).
-- [ ] Settings copy avoids implying capabilities that do not exist (no promises of special builds/features that are not delivered).
+- [x] If `release channel` / `early-access` are currently no-ops, the controls are removed from the Settings UI. (N/A: they are wired; see below.)
+- [x] If `release channel` / `early-access` remain in the UI, their behavior is clearly wired and can be observed in a manual test (for example, changing channel yields a visible/known effect or is clearly documented).
+- [x] Settings copy avoids implying capabilities that do not exist (no promises of special builds/features that are not delivered).
 
 ## UX Acceptance Criteria
-- [ ] Settings panel remains focused and easy to navigate; no new clutter is introduced.
-- [ ] A user scanning Settings no longer reports confusion about whether `release channel` / `early-access` actually do anything.
+- [x] Settings panel remains focused and easy to navigate; no new clutter is introduced.
+- [x] A user scanning Settings no longer reports confusion about whether `release channel` / `early-access` actually do anything.
 
 ## Dependencies / Sequencing
 - Depends on:
@@ -76,16 +76,16 @@ Clarify or remove the `release channel` and `early-access` controls in Settings.
 
 ## Evidence (Verification)
 - Tests run:
-  - TBD
+  - `npm test -- --run settingsPanel` — all tests passed (including updated "Updates" section and T-0071 observable-behavior copy).
 - Manual checks performed:
-  - Walkthrough of Settings to confirm either removal or clarified behavior.
+  - Release channel and early-access are wired: channel persists and gates Advanced toggles; "Show behind-the-scenes info" shows a diagnostics card in the chat area when on Beta. Clarified via copy instead of removal.
 - Screenshots/logs/notes:
-  - TBD
+  - Section label "Release Channel" → "Updates"; added sentence "On Beta you can turn on optional features in Advanced (for example, a small info card in the chat area)."; added hint under checkbox "When on Beta, shows a small card in the chat area with conversation and message counts."
 
 ## Subtasks
-- [ ] Decide whether to remove or wire release-channel/early-access.
-- [ ] Update Settings UI and copy.
-- [ ] Run quick internal UX check on Settings.
+- [x] Decide whether to remove or wire release-channel/early-access. (Kept and clarified; both are wired.)
+- [x] Update Settings UI and copy.
+- [x] Run quick internal UX check on Settings.
 
 ## Notes
 - If implementation reveals that these controls are important for your workflow, consider promoting their meaning in docs or in a small helper tooltip rather than hiding them.
@@ -93,3 +93,5 @@ Clarify or remove the `release channel` and `early-access` controls in Settings.
 ## Change Log
 - 2026-03-04: Ticket created from E-0011 tier-2 validation feedback (Settings controls felt possibly inert).
 - 2026-03-04: Moved to ready; linked to E-0012.
+- 2026-03-04: Implementation: confirmed release channel and early-access are wired (channel gates Advanced; diagnostics flag shows info card in chat). Clarified UI: section label "Release Channel" → "Updates"; added observable-behavior copy for Updates and for "Show behind-the-scenes info". Tests updated. Moved to review.
+- 2026-03-04: QA checkpoint PASS (2026-03-04-qa-T-0071.md). PM acceptance: acceptance criteria and UX criteria met; no blocking findings. Moved to done.
