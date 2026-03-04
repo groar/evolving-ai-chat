@@ -128,6 +128,13 @@ class RuntimeStorage:
                   decision_timestamp TEXT,
                   decision_notes TEXT
                 );
+
+                CREATE TABLE IF NOT EXISTS patch_logs (
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  patch_id TEXT UNIQUE NOT NULL,
+                  log_text TEXT NOT NULL,
+                  created_at TEXT NOT NULL
+                );
                 """
             )
 
@@ -303,6 +310,41 @@ class RuntimeStorage:
             connection.execute(
                 "ALTER TABLE change_proposals ADD COLUMN improvement_class TEXT DEFAULT 'settings-trust-microcopy-v1'"
             )
+
+    def write_patch_log(self, patch_id: str, log_text: str) -> None:
+        """Persist a raw agent execution log for the given patch_id."""
+        created_at = utc_now_iso()
+        with self._lock, self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO patch_logs(patch_id, log_text, created_at)
+                VALUES (?, ?, ?)
+                ON CONFLICT(patch_id) DO UPDATE SET
+                  log_text = excluded.log_text,
+                  created_at = excluded.created_at
+                """,
+                (patch_id, log_text, created_at),
+            )
+
+    def get_patch_log(self, patch_id: str) -> dict[str, Any] | None:
+        """Return a single patch log row for patch_id, or None if not found."""
+        with self._lock, self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT patch_id, log_text, created_at
+                FROM patch_logs
+                WHERE patch_id = ?
+                LIMIT 1
+                """,
+                (patch_id,),
+            ).fetchone()
+            if row is None:
+                return None
+            return {
+                "patch_id": str(row["patch_id"]),
+                "log_text": str(row["log_text"]),
+                "created_at": str(row["created_at"]),
+            }
 
     def _read_persona_additions_locked(self, connection: sqlite3.Connection) -> list[dict[str, Any]]:
         raw = self._get_setting(connection, PERSONA_ADDITIONS_KEY)
@@ -997,6 +1039,7 @@ class RuntimeStorage:
             connection.execute("DELETE FROM conversations")
             connection.execute("DELETE FROM settings")
             connection.execute("DELETE FROM changelog_entries")
+            connection.execute("DELETE FROM patch_logs")
 
             fresh_id = self._create_conversation_locked(connection, title="Today's Session")
             self._set_active_conversation_id(connection, fresh_id)

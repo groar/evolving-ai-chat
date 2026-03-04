@@ -73,6 +73,13 @@ class PatchSummary(BaseModel):
     reverted_at: str | None = None
 
 
+class PatchLogResponse(BaseModel):
+    """Response body for GET /patches/{patch_id}/log."""
+    patch_id: str
+    log_text: str
+    created_at: str
+
+
 class RuntimeStateResponse(BaseModel):
     active_conversation_id: str
     conversations: list[ConversationSummary]

@@ -124,6 +124,9 @@ class PatchArtifact:
     reverted_at: str | None = None
     revert_commit_sha: str | None = None
     failure_reason: str | None = None
+    # Raw agent execution log for this patch run (stdout/stderr, tool events, etc.).
+    # Persisted separately in the runtime database; kept here for transport only.
+    log_text: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -144,6 +147,7 @@ class PatchArtifact:
             "reverted_at": self.reverted_at,
             "revert_commit_sha": self.revert_commit_sha,
             "failure_reason": self.failure_reason,
+            "log_text": self.log_text,
         }
 
     @classmethod
@@ -166,6 +170,7 @@ class PatchArtifact:
             reverted_at=data.get("reverted_at"),
             revert_commit_sha=data.get("revert_commit_sha"),
             failure_reason=data.get("failure_reason"),
+            log_text=data.get("log_text"),
         )
 
 
@@ -256,6 +261,12 @@ class PiDevPatchAgent(PatchAgent):
     def _generate_stub(
         self, feedback: dict[str, Any], base_ref: str
     ) -> PatchArtifact:
+        log_lines = [
+            "[stub] PATCH_AGENT_STUB is enabled; no real harness call was made.",
+            f"feedback_id={feedback.get('id', '')}",
+            f"title={feedback.get('title', '')}",
+            f"area={feedback.get('area', '')}",
+        ]
         stub_diff = (
             "--- a/apps/desktop/src/App.tsx\n"
             "+++ b/apps/desktop/src/App.tsx\n"
@@ -282,6 +293,7 @@ class PiDevPatchAgent(PatchAgent):
             scope_violations=[],
             agent_model="stub",
             agent_harness="stub-v1",
+            log_text="\n".join(log_lines),
         )
 
     # ------------------------------------------------------------------
@@ -376,6 +388,20 @@ class PiDevPatchAgent(PatchAgent):
             if not description:
                 description = f"Changes addressing: {feedback.get('summary', '')}"
 
+            log_parts: list[str] = []
+            log_parts.append("pi subprocess run for patch generation")
+            log_parts.append(f"cwd={temp_desktop}")
+            log_parts.append(f"returncode={result.returncode}")
+            if result.stdout:
+                log_parts.append("")
+                log_parts.append("stdout:")
+                log_parts.append(result.stdout)
+            if result.stderr:
+                log_parts.append("")
+                log_parts.append("stderr:")
+                log_parts.append(result.stderr)
+            log_text = "\n".join(log_parts)
+
             return PatchArtifact(
                 id=_new_patch_id(),
                 created_at=datetime.now(timezone.utc).isoformat(),
@@ -389,4 +415,5 @@ class PiDevPatchAgent(PatchAgent):
                 scope_violations=[],
                 agent_model=self._model or "pi-default",
                 agent_harness="pi-v1",
+                log_text=log_text,
             )

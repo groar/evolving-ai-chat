@@ -2,7 +2,7 @@
  * @vitest-environment happy-dom
  */
 import type { ComponentProps } from "react";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ActivitySheet } from "./activitySheet";
@@ -133,5 +133,50 @@ describe("ActivitySheet", () => {
     const sheets = screen.getAllByTestId("activity-sheet");
     expect(sheets.length).toBeGreaterThanOrEqual(1);
     expect(sheets[0]).toBeTruthy();
+  });
+
+  it("loads and renders agent log when details are expanded", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch" as any).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        patch_id: "p1",
+        log_text: "agent log line",
+        created_at: "2026-03-04T12:00:00.000Z"
+      })
+    } as any);
+
+    const patches = [makePatch({ id: "p1", title: "With log" })];
+    renderSheet({ patches });
+    const sheet = getCurrentSheet();
+    const card = within(sheet).getByTestId("activity-patch-p1");
+
+    await userEvent.click(within(card).getByRole("button"));
+    const details = within(card).getByText(/Agent log/);
+    await userEvent.click(details);
+
+    await waitFor(() => {
+      expect(within(card).getByText("agent log line")).toBeTruthy();
+    });
+
+    fetchSpy.mockRestore();
+  });
+
+  it("shows offline message when log fetch fails", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch" as any).mockRejectedValue(new Error("offline"));
+
+    const patches = [makePatch({ id: "p1", title: "With log error" })];
+    renderSheet({ patches });
+    const sheet = getCurrentSheet();
+    const card = within(sheet).getByTestId("activity-patch-p1");
+
+    await userEvent.click(within(card).getByRole("button"));
+    const details = within(card).getByText(/Agent log/);
+    await userEvent.click(details);
+
+    await waitFor(() => {
+      expect(within(card).getByText("Log not available (runtime offline).")).toBeTruthy();
+    });
+
+    fetchSpy.mockRestore();
   });
 });

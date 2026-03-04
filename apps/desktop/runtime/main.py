@@ -39,6 +39,7 @@ from .models import (
     NewConversationRequest,
     NewConversationResponse,
     PatchStatusResponse,
+    PatchLogResponse,
     PatchSummary,
     PersonaAddition,
     RollbackRequest,
@@ -529,6 +530,8 @@ def agent_code_patch(
         )
 
     patch_storage.save(artifact)
+    if getattr(artifact, "log_text", None):
+        storage.write_patch_log(artifact.id, artifact.log_text or "")
     storage.append_event(
         "patch_created",
         {"patch_id": artifact.id, "feedback_id": payload.feedback_id},
@@ -542,6 +545,15 @@ def agent_code_patch(
         description=artifact.description,
         eta_seconds=15,
     )
+
+
+@app.get("/patches/{patch_id}/log", response_model=PatchLogResponse)
+def patch_log(patch_id: str) -> PatchLogResponse:
+    """Return the stored agent execution log for a patch_id, or 404 if none exists."""
+    row = storage.get_patch_log(patch_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Log not found for this patch.")
+    return PatchLogResponse(**row)
 
 
 @app.get("/agent/patch-status/{patch_id}", response_model=PatchStatusResponse)

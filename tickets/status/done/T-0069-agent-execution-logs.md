@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0069
-- Status: ready
+- Status: done
 - Priority: P2
 - Type: feature
 - Area: ui, runtime
@@ -127,13 +127,17 @@ The execution log must be persisted and associated with a `patch_id` so it can b
 - Sequencing notes: rank 4 in E-0011 ready queue; pick up after T-0067 is accepted
 
 ## QA Evidence Links
-- QA checkpoint: (to be filled)
-- Screenshots/artifacts: (to be filled)
+- QA checkpoint: `tickets/meta/qa/2026-03-04-qa-T-0069.md`
+- Screenshots/artifacts: (n/a — text log + unit tests)
 
 ## Evidence (Verification)
 - Tests run:
+  - `apps/desktop/runtime/test_patch_agent.py` (PatchLogEndpointTests)
+  - `apps/desktop/src/activitySheet.test.tsx` (Agent log loading + offline states)
 - Manual checks performed:
+  - Reasoned walkthrough of runtime `patch_logs` data path and Activity sheet Agent log UI states.
 - Screenshots/logs/notes:
+  - Agent log content rendered in Activity sheet as raw monospace text (no screenshots captured).
 
 ## Subtasks
 - [ ] Backend: create `patch_logs` table in SQLite init
@@ -151,3 +155,4 @@ The execution log must be persisted and associated with a `patch_id` so it can b
 
 ## Change Log
 - 2026-03-04: Ticket created from F-20260304-003 / E-0011.
+- 2026-03-04: Implemented backend patch_logs storage + `/patches/{patch_id}/log` endpoint, Activity sheet Agent log UI, tests, and QA checkpoint; moved to done after PM acceptance.

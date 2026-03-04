@@ -28,7 +28,7 @@ import type { ChangelogEntry, RuntimeSettings } from "../settingsPanel";
 import type { RuntimeIssue } from "../stores/runtimeStore";
 import type { PatchEntry, PatchStatus } from "../PatchNotification";
 
-const runtimeBase = "http://127.0.0.1:8787";
+export const runtimeBase = "http://127.0.0.1:8787";
 const diagnosticsFlagKey = "show_runtime_diagnostics";
 
 export const offlineStateRetryIntervalMs = 2000;

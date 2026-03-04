@@ -482,3 +482,37 @@ class PatchStatusEndpointTests(unittest.TestCase):
 
         self.assertEqual(resp.status_code, 404)
         self.assertEqual(resp.json()["error"], "patch_not_found")
+
+
+# ---------------------------------------------------------------------------
+# GET /patches/{patch_id}/log endpoint
+# ---------------------------------------------------------------------------
+
+
+class PatchLogEndpointTests(unittest.TestCase):
+    def test_existing_log_returns_payload(self) -> None:
+        db_fd, db_path = tempfile.mkstemp(suffix=".db")
+        os.close(db_fd)
+        storage = RuntimeStorage(db_path=db_path)
+        storage.write_patch_log("PA-log-001", "example log text")
+
+        with patch("runtime.main.storage", storage):
+            client = TestClient(app)
+            resp = client.get("/patches/PA-log-001/log")
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data["patch_id"], "PA-log-001")
+        self.assertEqual(data["log_text"], "example log text")
+        self.assertIsInstance(data["created_at"], str)
+
+    def test_missing_log_returns_404(self) -> None:
+        db_fd, db_path = tempfile.mkstemp(suffix=".db")
+        os.close(db_fd)
+        storage = RuntimeStorage(db_path=db_path)
+
+        with patch("runtime.main.storage", storage):
+            client = TestClient(app)
+            resp = client.get("/patches/PA-does-not-exist/log")
+
+        self.assertEqual(resp.status_code, 404)

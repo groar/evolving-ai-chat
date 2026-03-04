@@ -10,6 +10,7 @@ import {
 import { railBtn } from "@/lib/ui-classes";
 import type { PatchEntry } from "./PatchNotification";
 import type { ChangelogEntry } from "./settingsPanel";
+import { runtimeBase } from "./hooks/useRuntime";
 
 type ActivitySheetProps = {
   open: boolean;
@@ -125,15 +126,72 @@ export function ActivitySheet(props: ActivitySheetProps) {
   const { open, onOpenChange, patches, changelog, isBusy, onRollbackPatch } = props;
   const [expandedPatchIds, setExpandedPatchIds] = useState<Set<string>>(new Set());
   const [expandedChangelogKeys, setExpandedChangelogKeys] = useState<Set<string>>(new Set());
+  const [logStateByPatchId, setLogStateByPatchId] = useState<
+    Record<
+      string,
+      {
+        status: "idle" | "loading" | "loaded" | "error_missing" | "error_offline";
+        text: string;
+      }
+    >
+  >({});
 
   const patchGroups = useMemo(() => groupPatchesByDate(patches), [patches]);
   const changelogGroups = useMemo(() => groupChangelogByDate(changelog), [changelog]);
 
+  const loadPatchLog = async (patchId: string) => {
+    setLogStateByPatchId((prev) => ({
+      ...prev,
+      [patchId]: {
+        status: "loading",
+        text: prev[patchId]?.text ?? ""
+      }
+    }));
+    try {
+      const response = await fetch(`${runtimeBase}/patches/${patchId}/log`);
+      if (!response.ok) {
+        setLogStateByPatchId((prev) => ({
+          ...prev,
+          [patchId]: {
+            status: "error_missing",
+            text: ""
+          }
+        }));
+        return;
+      }
+      const data = (await response.json()) as {
+        patch_id: string;
+        log_text: string;
+        created_at: string;
+      };
+      setLogStateByPatchId((prev) => ({
+        ...prev,
+        [patchId]: {
+          status: "loaded",
+          text: data.log_text ?? ""
+        }
+      }));
+    } catch {
+      setLogStateByPatchId((prev) => ({
+        ...prev,
+        [patchId]: {
+          status: "error_offline",
+          text: ""
+        }
+      }));
+    }
+  };
+
   const togglePatch = (id: string) => {
     setExpandedPatchIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      const willExpand = !next.has(id);
+      if (willExpand) {
+        void loadPatchLog(id);
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
       return next;
     });
   };
@@ -183,6 +241,7 @@ export function ActivitySheet(props: ActivitySheetProps) {
                         patch.status === "rollback_conflict" ||
                         patch.status === "rollback_unavailable";
                       const expanded = expandedPatchIds.has(patch.id);
+                      const logState = logStateByPatchId[patch.id];
                       const hasDiff = Boolean(patch.unified_diff);
                       const cardBorder = isApplied
                         ? "border-[#9ebf97]"
@@ -245,6 +304,29 @@ export function ActivitySheet(props: ActivitySheetProps) {
                                   <code>{patch.unified_diff}</code>
                                 </pre>
                               )}
+                              <details className="mt-1 text-xs text-muted-foreground">
+                                <summary>Agent log {logState && logState.status === "loaded" ? "↑" : "↓"}</summary>
+                                <div className="mt-1">
+                                  {logState?.status === "loading" && (
+                                    <p className="m-0 text-xs text-muted-foreground">Loading log…</p>
+                                  )}
+                                  {logState?.status === "loaded" && (
+                                    <pre className="m-0 text-xs font-mono bg-panel overflow-auto max-h-60 border border-border rounded-lg p-2.5 whitespace-pre-wrap">
+                                      {logState.text}
+                                    </pre>
+                                  )}
+                                  {logState?.status === "error_offline" && (
+                                    <p className="m-0 text-xs text-muted-foreground">
+                                      Log not available (runtime offline).
+                                    </p>
+                                  )}
+                                  {(!logState || logState.status === "error_missing") && (
+                                    <p className="m-0 text-xs text-muted-foreground">
+                                      Log not available for this change.
+                                    </p>
+                                  )}
+                                </div>
+                              </details>
                             </div>
                           )}
                         </li>
