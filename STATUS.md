@@ -100,6 +100,9 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - All tickets shipped: T-0058 (spec), T-0059 (harness), T-0060 (apply/rollback), T-0061 (notification UI + Changelog Undo), T-0062 (dismiss + failure copy), T-0063 (settings legacy cleanup), T-0064 (central improvement button).
   - Tier-2 micro-validation PASS (sponsor): diff → accept → apply → undo validated; patch quality noted as variable (model/prompt tuning can be a follow-up).
   - **Next**: scope next milestone and replenish `tickets/status/ready/` from backlog (currently empty).
+- **M9 — "Design System & UX Polish" (E-0011) — in progress (2026-03-04)**
+  - T-0066 (design guidelines), T-0067 (Activity sheet), T-0068 (Settings rethink), T-0069 (agent execution logs) done.
+  - T-0070 (tier-2 validation closure) in ready; epic closes after validation run and results recorded.
 - Previous: M7 (E-0009) superseded 2026-03-01; T-0056 cancelled, T-0057 cancelled. T-0052–T-0055 done but scope superseded.
 - Previous: M7 — "Improvement Class Expansion" (E-0009) (superseded 2026-03-01; T-0052–T-0055 done, T-0056 cancelled)
 - Previous: M6.1 — "Loop Legibility and UX Clarity" (E-0008) (completed 2026-03-01)

@@ -16,19 +16,20 @@ Establish a formal design system and redesign the three most friction-heavy surf
 As the app self-evolves, features accumulate without a shared design language. The changelog panel is already unusable at scale. Settings conflates history, config, and diagnostics. Agent execution logs are invisible. Without design guidelines, each new feature risks drifting further from the intended experience.
 
 ## Definition of Done
-- [ ] `docs/design-guidelines.md` is published, references the existing token set in `styles.css`, and is cited in at least one UI ticket implementation.
-- [ ] The changelog/history is moved out of Settings into a dedicated Activity sheet, scales gracefully, and supports expandable diffs.
-- [ ] Settings is redesigned: focused on config only, clean section hierarchy, no stale/misplaced content.
-- [ ] Per-patch agent execution logs are accessible as expandable hidden detail inside the Activity sheet.
-- [ ] Tier-2 micro-validation: user is asked "Does the app feel as polished and coherent as you'd expect from a tool like Claude?" after all four tickets are accepted.
+- [x] `docs/design-guidelines.md` is published, references the existing token set in `styles.css`, and is cited in at least one UI ticket implementation.
+- [x] The changelog/history is moved out of Settings into a dedicated Activity sheet, scales gracefully, and supports expandable diffs.
+- [x] Settings is redesigned: focused on config only, clean section hierarchy, no stale/misplaced content.
+- [x] Per-patch agent execution logs are accessible as expandable hidden detail inside the Activity sheet.
+- [ ] Tier-2 micro-validation: user is asked "Does the app feel as polished and coherent as you'd expect from a tool like Claude?" (T-0070).
 
 ## Linked Tickets
 | Ticket | Title | Status |
 |---|---|---|
-| T-0066 | Design guidelines document | ready |
-| T-0067 | Changelog UX redesign — dedicated Activity sheet | ready |
-| T-0068 | Settings UX holistic rethink | ready |
-| T-0069 | Agent execution logs — per-patch hidden log in Activity sheet | ready |
+| T-0066 | Design guidelines document | done |
+| T-0067 | Changelog UX redesign — dedicated Activity sheet | done |
+| T-0068 | Settings UX holistic rethink | done |
+| T-0069 | Agent execution logs — per-patch hidden log in Activity sheet | done |
+| T-0070 | E-0011 tier-2 validation — epic closure | ready |
 
 ## Feedback References
 - F-20260304-001 (changelog unusable)
@@ -58,3 +59,4 @@ As the app self-evolves, features accumulate without a shared design language. T
 
 ## Change Log
 - 2026-03-04: Epic created from user feedback F-20260304-001 through F-20260304-004.
+- 2026-03-04: T-0066–T-0069 all done; T-0070 (tier-2 validation closure) added to ready queue. Epic DoD 4/5 complete; tier-2 validation (T-0070) remains.
