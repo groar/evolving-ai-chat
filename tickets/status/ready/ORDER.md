@@ -15,7 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0070 | P1 | E-0011 tier-2 validation closure — run 3 probes, record results, close epic |
+| 1 | T-0071 | P3 | E-0012: Settings release-channel/early-access cleanup |
+| 2 | T-0072 | P3 | E-0012: Activity/history stub clutter cleanup |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -33,3 +34,4 @@ This file is the source of truth for ready-ticket pickup order.
 - T-0066–T-0069 added 2026-03-04: E-0011 (M9 Design System & UX Polish) from user feedback F-20260304-001 to 004.
 - T-0067 (Activity sheet) accepted 2026-03-04; removed from ready queue.
 - T-0068, T-0069 accepted 2026-03-04. E-0011 implementation complete; T-0070 (tier-2 validation) added 2026-03-04 as sole ready item.
+- T-0070 completed 2026-03-04; E-0011 closed. E-0012 (E-0011 follow-up) created; T-0071, T-0072 moved from backlog to ready 2026-03-04. T-0073 (Fix with AI progress/error) created and marked done for F-20260304-005 traceability.

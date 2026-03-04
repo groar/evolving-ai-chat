@@ -2,11 +2,11 @@
 
 ## Metadata
 - ID: T-0071
-- Status: backlog
+- Status: ready
 - Priority: P3
 - Type: cleanup
 - Area: ui
-- Epic: none
+- Epic: E-0012
 - Owner: ai-agent
 - Created: 2026-03-04
 - Updated: 2026-03-04
@@ -92,4 +92,4 @@ Clarify or remove the `release channel` and `early-access` controls in Settings.
 
 ## Change Log
 - 2026-03-04: Ticket created from E-0011 tier-2 validation feedback (Settings controls felt possibly inert).
-
+- 2026-03-04: Moved to ready; linked to E-0012.

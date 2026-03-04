@@ -6,7 +6,7 @@
 - Source: user-playtest
 - Theme: ux, observability
 - Severity: S2
-- Linked Tickets: (implementation done this session)
+- Linked Tickets: T-0073
 - Received: 2026-03-04
 - Updated: 2026-03-04
 
@@ -22,5 +22,5 @@ Two issues: (1) No visible progress or completion feedback when the user trigger
 
 ## Triage Decision
 - Decision: ticketed (implemented)
-- Rationale: Implementation completed; feedback item and INDEX updated for traceability.
+- Rationale: Implementation completed; T-0073 created for traceability; feedback item and INDEX updated.
 - Revisit Trigger: none

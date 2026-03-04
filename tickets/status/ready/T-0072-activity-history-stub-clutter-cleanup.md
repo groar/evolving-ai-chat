@@ -2,11 +2,11 @@
 
 ## Metadata
 - ID: T-0072
-- Status: backlog
+- Status: ready
 - Priority: P3
 - Type: cleanup
 - Area: ui
-- Epic: none
+- Epic: E-0012
 - Owner: ai-agent
 - Created: 2026-03-04
 - Updated: 2026-03-04
@@ -67,7 +67,7 @@ Reduce visual clutter from stub or low-value entries in the Activity/history vie
 
 ## Dependencies / Sequencing
 - Depends on:
-  - None strictly, but benefits from having E-0011’s Activity sheet already in place (done).
+  - None strictly, but benefits from having E-0011's Activity sheet already in place (done).
 - Blocks:
   - None.
 
@@ -89,4 +89,4 @@ Reduce visual clutter from stub or low-value entries in the Activity/history vie
 
 ## Change Log
 - 2026-03-04: Ticket created from E-0011 tier-2 validation feedback (Activity/history felt cluttered by stub entries).
-
+- 2026-03-04: Moved to ready; linked to E-0012.

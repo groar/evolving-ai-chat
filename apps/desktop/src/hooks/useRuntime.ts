@@ -707,6 +707,10 @@ export function useRuntime() {
         if (!response.ok) {
           if (errorPayload.error === "patch_in_progress") {
             setts.setSettingsNotice("A code change is already being processed. Try again once it finishes.");
+          } else if (errorPayload.error === "malformed_patch") {
+            setts.setSettingsError(
+              "The assistant didn’t suggest any code changes. Try rephrasing the feedback or try again."
+            );
           } else {
             setts.setSettingsError(
               errorPayload.detail ?? `Could not start code fix (${response.status}). Try again later.`
