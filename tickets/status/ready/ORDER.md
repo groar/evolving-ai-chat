@@ -15,7 +15,8 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0074 | P1 | M10 design spec — resolves 3 open M8 questions before implementation. Pick up first. |
+| 1 | T-0075 | P1 | M10 live apply / hot-reload — frontend only; small scope. Pick up first. |
+| 2 | T-0076 | P1 | M10 patch quality + scope allowlist config + diff UI polish. Pick up after T-0075. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -36,3 +37,4 @@ This file is the source of truth for ready-ticket pickup order.
 - T-0070 completed 2026-03-04; E-0011 closed. E-0012 (E-0011 follow-up) created; T-0071, T-0072 moved from backlog to ready 2026-03-04. T-0073 (Fix with AI progress/error) created and marked done for F-20260304-005 traceability. T-0071 completed 2026-03-04 (Settings Updates/Early Access cleanup); removed from ready queue.
 - T-0072 (Activity/history stub clutter cleanup) completed 2026-03-04. E-0012 closed.
 - T-0074 (M10 design spec) added 2026-03-04 as first E-0013 (M10 Agentic Loop Polish) pickup. Queue replenished.
+- T-0074 completed 2026-03-04; T-0075 (live apply/hot-reload) and T-0076 (patch quality + scope allowlist + diff UI) added as E-0013 implementation tickets.

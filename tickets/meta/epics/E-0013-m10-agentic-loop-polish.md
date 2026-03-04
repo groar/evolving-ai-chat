@@ -3,7 +3,7 @@
 ## Metadata
 - ID: E-0013
 - Milestone: M10
-- Status: scoping
+- Status: in-progress
 - Priority: P1
 - Owner: ai-agent
 - Created: 2026-03-04
@@ -27,20 +27,17 @@ M8 shipped a working end-to-end self-modification loop: trigger → agent genera
 These three gaps limit the "daily improvements" velocity and trust goals in SUCCESS.md.
 
 ## Definition of Done
-- [ ] T-0074 done: M10 design spec resolves all three open questions with concrete specs.
-- [ ] Hot-reload / live-apply ticket done: accepted patches go live without a manual restart.
-- [ ] Patch quality ticket done: patch quality improves (measurable via acceptance rate or reviewer notes).
-- [ ] Scope guardrail ticket done: agent patch scope is formally enforced with a documented allowlist or prompt constraint.
+- [x] T-0074 done: M10 design spec resolves all three open questions with concrete specs.
+- [ ] T-0075 done: accepted patches go live without a manual restart.
+- [ ] T-0076 done: patch quality improves (measurable via `patch_metrics` acceptance rate); allowlist is config-driven; diff UI is color-coded.
 - [ ] Tier-1 deterministic validation: tests cover live-apply signal and scope enforcement.
 
-## Candidate Tickets (to be created after T-0074 design spec)
+## Implementation Tickets
 | Ticket | Title | Status |
 |--------|--------|--------|
-| T-0074 | M10 design spec (live apply, patch quality, scope guards) | pending |
-| T-0075 (TBD) | Live apply / hot-reload after patch acceptance | candidate |
-| T-0076 (TBD) | Patch quality: prompt engineering + scope allowlist | candidate |
-
-> Note: T-0075 and T-0076 are candidates; they should be written (and may be split or merged) after T-0074 is accepted. Do not start implementation until the design spec is done.
+| T-0074 | M10 design spec (live apply, patch quality, scope guards, diff UI) | done |
+| T-0075 | Live apply / hot-reload after patch acceptance | ready |
+| T-0076 | Patch quality: prompt engineering + scope allowlist config + diff UI polish | ready |
 
 ## Open Questions (from STATUS.md)
 - M8 build step: hot-reload on patch accept, or full Tauri rebuild? What is the minimum viable "change is live" signal?
@@ -53,3 +50,4 @@ These three gaps limit the "daily improvements" velocity and trust goals in SUCC
 
 ## Change Log
 - 2026-03-04: Epic created; T-0074 (design spec) added as first ready ticket.
+- 2026-03-04: T-0074 design spec completed and accepted (done). T-0075 and T-0076 created and added to ready/. Epic status → in-progress.
