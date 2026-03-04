@@ -60,7 +60,12 @@ _CANONICAL_PATCH_ID_RE = re.compile(r"^PA-\d{8}-[a-f0-9]{8}$")
 chat_router = ChatRouter()
 patch_agent = PiDevPatchAgent()
 patch_storage = PatchStorage()
-apply_pipeline = ApplyPipeline(repo_root=_REPO_ROOT, patch_storage=patch_storage)
+storage = RuntimeStorage()
+apply_pipeline = ApplyPipeline(
+    repo_root=_REPO_ROOT,
+    patch_storage=patch_storage,
+    metrics_storage=storage,
+)
 
 
 def _format_assistant_meta(
@@ -97,7 +102,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-storage = RuntimeStorage()
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -523,6 +527,16 @@ def agent_code_patch(
         artifact.status = "scope_blocked"
         artifact.scope_violations = violations
         patch_storage.save(artifact)
+        storage.log_patch_metrics(
+            patch_id=artifact.id,
+            feedback_id=artifact.feedback_id or "",
+            final_status="scope_blocked",
+            agent_model=artifact.agent_model or "",
+            files_changed_count=len(artifact.files_changed),
+            unified_diff=artifact.unified_diff or "",
+            created_at=artifact.created_at,
+            resolved_at=datetime.now(timezone.utc).isoformat(),
+        )
         storage.append_event(
             "patch_scope_blocked",
             {"patch_id": artifact.id, "violations": violations},

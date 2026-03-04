@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import abc
 import difflib
+import json
+import logging
 import os
 import re
 import shutil
@@ -25,35 +27,107 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+logger = logging.getLogger(__name__)
+
 # ---------------------------------------------------------------------------
 # Layer 1 scope guard — system prompt appended on every pi invocation (spec §6)
 # ---------------------------------------------------------------------------
 SCOPE_GUARD_SYSTEM_PROMPT = """\
 You are a UI code assistant for an Electron/React desktop application.
 Your working directory is the desktop package root. The React source tree is at src/.
-You may ONLY modify files in the following allowlist:
+
+SCOPE — You may ONLY modify files in:
   - src/ (React components, stores, hooks, styles)
+
 You MUST NOT modify:
   - Any file outside src/
   - Any Python file (.py)
   - package.json, package-lock.json, tsconfig.json, vite.config.ts, or any build/config file
   - Any file in runtime/
   - Any file in tickets/, docs/, or tests/
-Changes must be limited to: UI copy, component layout, CSS/styles, and small logic changes within existing components.
-Do not add new npm dependencies. Do not delete files.\
+
+CHANGE SIZE — Make the smallest change that fully addresses the feedback.
+Prefer touching 1–2 files at most. Do not add new npm dependencies. Do not create new files. Do not delete files.
+
+DESIGN PHILOSOPHY — This is a warm, calm AI workspace (closer to Notion AI than a dashboard).
+Use the existing Tailwind CSS tokens: var(--color-accent) for primary actions (warm orange),
+var(--color-panel) for card surfaces, var(--color-ink) for body text, var(--color-muted) for
+secondary labels. Do not introduce new colors or override the design system.
+
+OUTPUT — After making your changes, output exactly one plain-English sentence starting with a
+past-tense verb that describes what you changed. Example: "Updated the welcome message to feel
+warmer and more personal." This sentence will be shown to the user.
 """
 
-# Layer 2 server-side allowlist regex (spec §6) — used by validate_scope()
-_ALLOWLIST_PATTERN = re.compile(r"^apps/desktop/src/")
+# Layer 2 server-side allowlist — loaded from config at runtime (validate_scope)
+_DEFAULT_ALLOWLIST_PATTERNS = [r"^apps/desktop/src/"]
+
+
+def _load_allowlist_patterns() -> list[str]:
+    """Load allow_patterns from config file. Falls back to hardcoded list if absent."""
+    runtime_dir = Path(__file__).resolve().parent.parent
+    config_path = runtime_dir / "config" / "patch-allowlist.json"
+    if not config_path.exists():
+        logger.warning(
+            "patch-allowlist.json not found at %s; using hardcoded allowlist",
+            config_path,
+        )
+        return _DEFAULT_ALLOWLIST_PATTERNS
+    try:
+        data = json.loads(config_path.read_text(encoding="utf-8"))
+        patterns = data.get("allow_patterns") or _DEFAULT_ALLOWLIST_PATTERNS
+        if not isinstance(patterns, list):
+            return _DEFAULT_ALLOWLIST_PATTERNS
+        return [str(p) for p in patterns if isinstance(p, str)]
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.warning("Failed to load patch-allowlist.json: %s; using fallback", exc)
+        return _DEFAULT_ALLOWLIST_PATTERNS
+
+
+def _compile_allowlist_patterns(patterns: list[str]) -> list[re.Pattern[str]]:
+    """Compile regex patterns for scope validation."""
+    compiled: list[re.Pattern[str]] = []
+    for p in patterns:
+        try:
+            compiled.append(re.compile(p))
+        except re.error:
+            logger.warning("Invalid allowlist pattern %r; skipping", p)
+    return compiled
+
+
+def validate_scope(files_changed: list[str]) -> list[str]:
+    """Return the subset of paths that violate the allowlist (Layer 2 check)."""
+    patterns = _compile_allowlist_patterns(_load_allowlist_patterns())
+    if not patterns:
+        return list(files_changed)  # No patterns = everything violated
+    violations: list[str] = []
+    for f in files_changed:
+        if not any(pat.match(f) for pat in patterns):
+            violations.append(f)
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# Area-based file hints (T-0076) — appended to user prompt in _call_pi
+# ---------------------------------------------------------------------------
+
+def _area_hint(area: str) -> str:
+    """Return a file-location hint based on feedback.area prefix."""
+    if not area or not isinstance(area, str):
+        return ""
+    area = area.strip().lower()
+    if area.startswith("ui.chat"):
+        return " The relevant files are likely src/App.tsx or src/components/chat/."
+    if area.startswith("ui.settings"):
+        return " The relevant files are likely src/settingsPanel.tsx."
+    if area.startswith("ui."):
+        return " The relevant files are likely in src/App.tsx."
+    return ""
 
 
 # ---------------------------------------------------------------------------
 # Public helpers
 # ---------------------------------------------------------------------------
-
-def validate_scope(files_changed: list[str]) -> list[str]:
-    """Return the subset of paths that violate the allowlist (Layer 2 check)."""
-    return [f for f in files_changed if not _ALLOWLIST_PATTERN.match(f)]
 
 
 def _new_patch_id() -> str:
@@ -325,12 +399,14 @@ class PiDevPatchAgent(PatchAgent):
             # Snapshot before
             before = _snapshot_src(src_dir, temp_desktop)
 
-            # Build pi command
+            # Build pi command (with area-based file hints per T-0076)
+            area = feedback.get("area", "") or ""
+            hint = _area_hint(area)
             prompt = (
                 f"Address the following user feedback by modifying the React UI:\n\n"
                 f"Feedback title: {feedback.get('title', '')}\n"
                 f"Details: {feedback.get('summary', '')}\n"
-                f"Area: {feedback.get('area', '')}"
+                f"Area: {area}{hint}"
             )
             cmd = [
                 "pi", "-p", prompt,

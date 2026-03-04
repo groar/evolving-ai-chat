@@ -20,9 +20,13 @@ import subprocess
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .patch_agent import PatchArtifact
 from .patch_storage import PatchStorage
+
+if TYPE_CHECKING:
+    from ..storage import RuntimeStorage
 
 logger = logging.getLogger(__name__)
 
@@ -65,9 +69,11 @@ class ApplyPipeline:
         repo_root: Path,
         patch_storage: PatchStorage,
         npm_cmd: str | None = None,
+        metrics_storage: "RuntimeStorage | None" = None,
     ) -> None:
         self._repo_root = repo_root
         self._storage = patch_storage
+        self._metrics_storage = metrics_storage
         # Allow override for testing without npm on PATH
         self._npm_cmd = npm_cmd or os.environ.get("NPM_CMD", "npm")
 
@@ -98,6 +104,18 @@ class ApplyPipeline:
 
             logger.info("patch %s applied → commit %s", artifact.id, commit_sha)
 
+            if self._metrics_storage:
+                self._metrics_storage.log_patch_metrics(
+                    patch_id=artifact.id,
+                    feedback_id=artifact.feedback_id or "",
+                    final_status="applied",
+                    agent_model=artifact.agent_model or "",
+                    files_changed_count=len(artifact.files_changed),
+                    unified_diff=artifact.unified_diff or "",
+                    created_at=artifact.created_at,
+                    resolved_at=artifact.applied_at or "",
+                )
+
         except ApplyError as exc:
             artifact.status = "apply_failed"
             artifact.failure_reason = exc.reason
@@ -108,11 +126,38 @@ class ApplyPipeline:
             self._storage.save(artifact)
             logger.warning("patch %s apply_failed reason=%s", artifact.id, exc.reason)
 
+            if self._metrics_storage:
+                self._metrics_storage.log_patch_metrics(
+                    patch_id=artifact.id,
+                    feedback_id=artifact.feedback_id or "",
+                    final_status="apply_failed",
+                    agent_model=artifact.agent_model or "",
+                    files_changed_count=len(artifact.files_changed),
+                    unified_diff=artifact.unified_diff or "",
+                    created_at=artifact.created_at,
+                    resolved_at=datetime.now(timezone.utc).isoformat(),
+                )
+
         except Exception:  # noqa: BLE001
             artifact.status = "apply_failed"
             artifact.failure_reason = "unexpected_error"
             self._storage.save(artifact)
             logger.exception("patch %s unexpected error during apply", artifact.id)
+
+            if self._metrics_storage:
+                try:
+                    self._metrics_storage.log_patch_metrics(
+                        patch_id=artifact.id,
+                        feedback_id=artifact.feedback_id or "",
+                        final_status="apply_failed",
+                        agent_model=artifact.agent_model or "",
+                        files_changed_count=len(artifact.files_changed),
+                        unified_diff=artifact.unified_diff or "",
+                        created_at=artifact.created_at,
+                        resolved_at=datetime.now(timezone.utc).isoformat(),
+                    )
+                except Exception:  # noqa: BLE001
+                    pass
 
         return artifact
 

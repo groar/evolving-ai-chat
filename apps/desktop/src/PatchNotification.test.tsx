@@ -274,6 +274,22 @@ describe("PatchNotification — diff toggle", () => {
     );
     expect(screen.queryByRole("button", { name: /See what changed/i })).toBeNull();
   });
+
+  it("DiffBlock renders minimal diff without crash (T-0076)", async () => {
+    // Minimal unified_diff (newline only) exercises DiffBlock with near-empty content
+    render(
+      <PatchNotification
+        patch={makePatch({
+          status: "applied",
+          unified_diff: "\n",
+        })}
+        onUndo={noop}
+        onDismiss={noop}
+      />
+    );
+    await userEvent.click(screen.getByRole("button", { name: /See what changed/i }));
+    expect(screen.getByLabelText("Unified diff of the change")).toBeTruthy();
+  });
 });
 
 describe("PatchNotification — accessibility", () => {

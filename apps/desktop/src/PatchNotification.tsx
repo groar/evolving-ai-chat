@@ -53,6 +53,46 @@ function Spinner() {
 }
 
 // ---------------------------------------------------------------------------
+// DiffBlock — color-coded unified diff (T-0076)
+// ---------------------------------------------------------------------------
+
+function DiffBlock({ unifiedDiff }: { unifiedDiff: string }) {
+  const lines = unifiedDiff.split("\n");
+  return (
+    <div
+      role="code"
+      aria-label="Unified diff of the change"
+      className="text-xs font-mono leading-relaxed overflow-auto max-h-60 rounded-lg border border-border bg-[#f9f8f6] p-2"
+    >
+      {lines.map((line, i) => {
+        const isAdd = line.startsWith("+") && !line.startsWith("+++");
+        const isDel = line.startsWith("-") && !line.startsWith("---");
+        const isHunk = line.startsWith("@@");
+        const isHeader = line.startsWith("---") || line.startsWith("+++");
+        return (
+          <div
+            key={i}
+            className={
+              isAdd
+                ? "bg-[#edfdf1] text-[#1a7a3c] px-1"
+                : isDel
+                  ? "bg-[#fdf3f3] text-[#b83232] px-1"
+                  : isHunk
+                    ? "bg-[#eef3ff] text-[#5a6ea8] px-1"
+                    : isHeader
+                      ? "font-semibold text-[#555] px-1"
+                      : "px-1 text-[#444]"
+            }
+          >
+            {line || " "}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // PatchNotification — floating banner surfacing all 8 UI states (spec §5)
 // ---------------------------------------------------------------------------
 
@@ -209,13 +249,8 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
 
       {/* Inline diff toggle */}
       {diffExpanded && hasDiff && (
-        <div
-          id={`diff-${patch.id}`}
-          aria-label="Unified diff of the change"
-        >
-          <pre className="m-0 text-xs leading-relaxed overflow-auto max-h-60 bg-[#f4f5f0] border border-border rounded-lg p-2.5 font-mono whitespace-pre">
-            <code>{patch.unified_diff}</code>
-          </pre>
+        <div id={`diff-${patch.id}`}>
+          <DiffBlock unifiedDiff={patch.unified_diff} />
         </div>
       )}
     </div>

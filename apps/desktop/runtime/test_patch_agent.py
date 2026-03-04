@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import sqlite3
 import subprocess
 import tempfile
 import unittest
@@ -279,6 +280,27 @@ class PiDevHarnessErrorTests(unittest.TestCase):
         artifact_json = json.dumps(artifact.to_dict())
         self.assertNotIn("sk-ant-topsecret", artifact_json)
 
+    def test_ui_chat_area_injects_file_hint_into_prompt(self) -> None:
+        """T-0076: feedback.area=ui.chat must append chat file hint to pi prompt."""
+        fake = MagicMock(spec=subprocess.CompletedProcess)
+        fake.returncode = 0
+        fake.stdout = "Updated."
+        fake.stderr = ""
+        with (
+            patch("runtime.agent.patch_agent.shutil.copytree"),
+            patch("runtime.agent.patch_agent._snapshot_src", side_effect=[
+                {"apps/desktop/src/App.tsx": "old\n"},
+                {"apps/desktop/src/App.tsx": "new\n"},
+            ]),
+            patch("runtime.agent.patch_agent.subprocess.run", return_value=fake) as mock_run,
+        ):
+            self.agent._call_pi(_feedback(area="ui.chat"), "abc1234")
+        call_kwargs = mock_run.call_args
+        cmd = call_kwargs[0][0]
+        prompt_idx = cmd.index("-p") + 1
+        prompt = cmd[prompt_idx]
+        self.assertIn("src/App.tsx or src/components/chat/", prompt)
+
 
 # ---------------------------------------------------------------------------
 # PatchArtifact serialisation round-trip
@@ -325,6 +347,7 @@ class CodePatchEndpointTests(unittest.TestCase):
             patch("runtime.main.patch_storage", ps),
             patch("runtime.main.patch_agent", ag),
             ps,
+            storage,
         )
 
     def _post_patch(self, client: TestClient) -> dict:
@@ -351,6 +374,7 @@ class CodePatchEndpointTests(unittest.TestCase):
 
     def test_scope_blocked_patch_returns_scope_blocked(self) -> None:
         ctx = self._ctx()
+        storage = ctx[4]  # temp storage with known db_path
         out_of_scope_agent = MagicMock()
         out_of_scope_agent.generate_patch.return_value = PatchArtifact(
             id="PA-test-scope",
@@ -379,6 +403,17 @@ class CodePatchEndpointTests(unittest.TestCase):
         data = resp.json()
         self.assertEqual(data["status"], "scope_blocked")
         self.assertIn("apps/desktop/runtime/main.py", data["scope_violations"])
+
+        # T-0076: scope_blocked path must log to patch_metrics
+        with sqlite3.connect(storage.db_path) as conn:
+            row = conn.execute(
+                "SELECT patch_id, final_status, files_changed_count FROM patch_metrics WHERE patch_id = ?",
+                ("PA-test-scope",),
+            ).fetchone()
+        self.assertIsNotNone(row, "patch_metrics must contain scope_blocked row")
+        self.assertEqual(row[0], "PA-test-scope")
+        self.assertEqual(row[1], "scope_blocked")
+        self.assertEqual(row[2], 1)
 
     def test_harness_unavailable_returns_503(self) -> None:
         ctx = self._ctx()

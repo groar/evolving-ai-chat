@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0076
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: core
@@ -10,6 +10,9 @@
 - Owner: ai-agent
 - Created: 2026-03-04
 - Updated: 2026-03-04
+
+## Scope Update (Optional)
+- 2026-03-04: Implementation complete. All acceptance criteria implemented.
 
 ## Summary
 Three tightly coupled improvements that lift patch quality, make the scope guard auditable, and polish the diff view — all without adding new npm packages or API endpoints:
@@ -172,24 +175,24 @@ function DiffBlock({ unifiedDiff }: { unifiedDiff: string }) {
 - `tickets/meta/epics/E-0013-m10-agentic-loop-polish.md`
 
 ## Acceptance Criteria
-- [ ] `patch-allowlist.json` exists at `apps/desktop/runtime/config/patch-allowlist.json` with `allow_patterns: ["^apps/desktop/src/"]`.
-- [ ] `validate_scope()` loads patterns from the config file; falls back to hardcoded regex if file is absent.
-- [ ] `validate_scope(["apps/desktop/src/App.tsx"])` returns `[]` (no violations).
-- [ ] `validate_scope(["apps/desktop/runtime/main.py"])` returns `["apps/desktop/runtime/main.py"]`.
-- [ ] Running a stub patch (PATCH_AGENT_STUB=true) inserts a row into `patch_metrics` with correct `patch_id`, `final_status`, and `files_changed_count`.
-- [ ] The updated `SCOPE_GUARD_SYSTEM_PROMPT` contains: change-size constraint ("1–2 files"), design philosophy tokens (`var(--color-accent)`), and output format instruction.
-- [ ] When `feedback.area` is `ui.chat`, the pi prompt includes the chat file hint.
-- [ ] `PatchNotification` diff toggle renders `+` lines with green background (`#edfdf1`), `-` lines with red background (`#fdf3f3`), `@@` lines with muted blue-gray tint.
-- [ ] `DiffBlock` renders gracefully when `unified_diff` is empty (no crash or error boundary trigger).
-- [ ] All existing `PatchNotification` tests pass. No TypeScript errors.
+- [x] `patch-allowlist.json` exists at `apps/desktop/runtime/config/patch-allowlist.json` with `allow_patterns: ["^apps/desktop/src/"]`.
+- [x] `validate_scope()` loads patterns from the config file; falls back to hardcoded regex if file is absent.
+- [x] `validate_scope(["apps/desktop/src/App.tsx"])` returns `[]` (no violations).
+- [x] `validate_scope(["apps/desktop/runtime/main.py"])` returns `["apps/desktop/runtime/main.py"]`.
+- [x] Running a stub patch (PATCH_AGENT_STUB=true) inserts a row into `patch_metrics` with correct `patch_id`, `final_status`, and `files_changed_count`.
+- [x] The updated `SCOPE_GUARD_SYSTEM_PROMPT` contains: change-size constraint ("1–2 files"), design philosophy tokens (`var(--color-accent)`), and output format instruction.
+- [x] When `feedback.area` is `ui.chat`, the pi prompt includes the chat file hint.
+- [x] `PatchNotification` diff toggle renders `+` lines with green background (`#edfdf1`), `-` lines with red background (`#fdf3f3`), `@@` lines with muted blue-gray tint.
+- [x] `DiffBlock` renders gracefully when `unified_diff` is empty (no crash or error boundary trigger).
+- [x] All existing `PatchNotification` tests pass. No TypeScript errors.
 
 ## User-Facing Acceptance Criteria
-- [ ] A user viewing "See what changed" can immediately distinguish added (green) from removed (red) lines without reading each character.
+- [x] A user viewing "See what changed" can immediately distinguish added (green) from removed (red) lines without reading each character.
 
 ## UX Acceptance Criteria
-- [ ] Diff is scrollable with `max-h-60`; does not overflow the notification card.
-- [ ] File header lines are visually distinct (bold/muted) from diff content lines.
-- [ ] Color choices work against the notification's warm-tinted background (green/red tints do not clash).
+- [x] Diff is scrollable with `max-h-60`; does not overflow the notification card.
+- [x] File header lines are visually distinct (bold/muted) from diff content lines.
+- [x] Color choices work against the notification's warm-tinted background (green/red tints do not clash).
 
 ## Dependencies / Sequencing
 - Depends on: T-0074 (design spec) — done.
@@ -197,23 +200,25 @@ function DiffBlock({ unifiedDiff }: { unifiedDiff: string }) {
 - Sequencing: T-0075 then T-0076 is the cleanest order (T-0075 modifies `useRuntime.ts` and adds `"reloading"` state; T-0076 modifies `PatchNotification.tsx` separately).
 
 ## QA Evidence Links
-- QA checkpoint: (to be filled after implementation)
+- QA checkpoint: `tickets/meta/qa/2026-03-04-qa-T-0076.md`
 
 ## Evidence (Verification)
 - Tests run:
-- Manual checks performed:
-- Screenshots/logs/notes:
+  - `uv run --with-requirements runtime/requirements.txt python -m pytest runtime/test_patch_agent.py -v` — 30 passed (includes scope_blocked→patch_metrics, ui.chat area hint).
+  - `npm run test` (desktop) — 120 passed (includes DiffBlock minimal-diff, diff toggle).
+- Manual checks performed: DiffBlock color coding verified in implementation (green #edfdf1, red #fdf3f3, hunk #eef3ff).
+- Screenshots/logs/notes: See QA checkpoint.
 
 ## Subtasks
-- [ ] Create `apps/desktop/runtime/config/patch-allowlist.json`
-- [ ] Update `validate_scope()` to load from config (with fallback)
-- [ ] Replace `SCOPE_GUARD_SYSTEM_PROMPT` with updated version
-- [ ] Add area-based file hints to `_call_pi` prompt construction
-- [ ] Add `patch_metrics` table to SQLite migration
-- [ ] Add metrics logging in apply/terminal-status path
-- [ ] Add `DiffBlock` subcomponent to `PatchNotification.tsx`
-- [ ] Replace `<pre><code>` diff block with `<DiffBlock>`
-- [ ] Update/add tests for config loading, metrics, and DiffBlock rendering
+- [x] Create `apps/desktop/runtime/config/patch-allowlist.json`
+- [x] Update `validate_scope()` to load from config (with fallback)
+- [x] Replace `SCOPE_GUARD_SYSTEM_PROMPT` with updated version
+- [x] Add area-based file hints to `_call_pi` prompt construction
+- [x] Add `patch_metrics` table to SQLite migration
+- [x] Add metrics logging in apply/terminal-status path
+- [x] Add `DiffBlock` subcomponent to `PatchNotification.tsx`
+- [x] Replace `<pre><code>` diff block with `<DiffBlock>`
+- [x] Update/add tests for config loading, metrics, and DiffBlock rendering
 
 ## Notes
 - `DiffBlock` intentionally avoids a new file to keep the diff-view code co-located with the notification component that owns it. If it grows significantly, extract to a standalone file.
@@ -222,3 +227,5 @@ function DiffBlock({ unifiedDiff }: { unifiedDiff: string }) {
 
 ## Change Log
 - 2026-03-04: Ticket created by implementation agent from T-0074 design spec.
+- 2026-03-04: Implementation complete. All subtasks done; moved to review.
+- 2026-03-04: QA checkpoint 2026-03-04-qa-T-0076.md — PASS. PM accepted; moved to done.

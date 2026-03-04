@@ -29,7 +29,7 @@ These three gaps limit the "daily improvements" velocity and trust goals in SUCC
 ## Definition of Done
 - [x] T-0074 done: M10 design spec resolves all three open questions with concrete specs.
 - [x] T-0075 done: accepted patches go live without a manual restart.
-- [ ] T-0076 done: patch quality improves (measurable via `patch_metrics` acceptance rate); allowlist is config-driven; diff UI is color-coded.
+- [x] T-0076 done: patch quality improves (measurable via `patch_metrics` acceptance rate); allowlist is config-driven; diff UI is color-coded.
 - [ ] Tier-1 deterministic validation: tests cover live-apply signal and scope enforcement.
 
 ## Implementation Tickets
@@ -37,7 +37,7 @@ These three gaps limit the "daily improvements" velocity and trust goals in SUCC
 |--------|--------|--------|
 | T-0074 | M10 design spec (live apply, patch quality, scope guards, diff UI) | done |
 | T-0075 | Live apply / hot-reload after patch acceptance | done |
-| T-0076 | Patch quality: prompt engineering + scope allowlist config + diff UI polish | ready |
+| T-0076 | Patch quality: prompt engineering + scope allowlist config + diff UI polish | done |
 
 ## Open Questions (from STATUS.md)
 - M8 build step: hot-reload on patch accept, or full Tauri rebuild? What is the minimum viable "change is live" signal?

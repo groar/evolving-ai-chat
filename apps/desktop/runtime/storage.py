@@ -135,6 +135,18 @@ class RuntimeStorage:
                   log_text TEXT NOT NULL,
                   created_at TEXT NOT NULL
                 );
+
+                CREATE TABLE IF NOT EXISTS patch_metrics (
+                  patch_id TEXT PRIMARY KEY,
+                  feedback_id TEXT,
+                  final_status TEXT,
+                  agent_model TEXT,
+                  files_changed_count INTEGER,
+                  diff_lines_added INTEGER,
+                  diff_lines_removed INTEGER,
+                  created_at TEXT,
+                  resolved_at TEXT
+                );
                 """
             )
 
@@ -345,6 +357,60 @@ class RuntimeStorage:
                 "log_text": str(row["log_text"]),
                 "created_at": str(row["created_at"]),
             }
+
+    def log_patch_metrics(
+        self,
+        patch_id: str,
+        feedback_id: str,
+        final_status: str,
+        agent_model: str,
+        files_changed_count: int,
+        unified_diff: str,
+        created_at: str,
+        resolved_at: str,
+    ) -> None:
+        """Log patch outcome to patch_metrics table (T-0076). Best-effort; never blocks."""
+        added = sum(1 for line in unified_diff.split("\n") if line.startswith("+") and not line.startswith("+++"))
+        removed = sum(1 for line in unified_diff.split("\n") if line.startswith("-") and not line.startswith("---"))
+        try:
+            with self._lock, self._connect() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO patch_metrics(
+                        patch_id, feedback_id, final_status, agent_model,
+                        files_changed_count, diff_lines_added, diff_lines_removed,
+                        created_at, resolved_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(patch_id) DO UPDATE SET
+                        feedback_id = excluded.feedback_id,
+                        final_status = excluded.final_status,
+                        agent_model = excluded.agent_model,
+                        files_changed_count = excluded.files_changed_count,
+                        diff_lines_added = excluded.diff_lines_added,
+                        diff_lines_removed = excluded.diff_lines_removed,
+                        created_at = excluded.created_at,
+                        resolved_at = excluded.resolved_at
+                    """,
+                    (
+                        patch_id,
+                        feedback_id,
+                        final_status,
+                        agent_model,
+                        files_changed_count,
+                        added,
+                        removed,
+                        created_at,
+                        resolved_at,
+                    ),
+                )
+        except Exception:  # noqa: BLE001
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "patch_metrics DB write failed for %s; apply flow continues",
+                patch_id,
+                exc_info=True,
+            )
 
     def _read_persona_additions_locked(self, connection: sqlite3.Connection) -> list[dict[str, Any]]:
         raw = self._get_setting(connection, PERSONA_ADDITIONS_KEY)

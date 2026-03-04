@@ -1,0 +1,5 @@
+{
+  "version": "1",
+  "allow_patterns": ["^apps/desktop/src/"],
+  "notes": "UI layer only. Patches may only touch React source under apps/desktop/src/. Do not add to allow_patterns without updating the scope guard system prompt and the QA checkpoint."
+}
