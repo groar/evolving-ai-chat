@@ -30,7 +30,10 @@ The design sketch from T-0077 Notes defines the initial architecture:
 ## Implementation Tickets
 | Ticket | Title | Status |
 |--------|--------|--------|
-| T-0081 | M12 design spec — eval harness architecture and integration | ready |
+| T-0081 | M12 design spec — eval harness architecture and integration | done |
+| T-0082 | Eval harness core + first check (`patch_applies_cleanly`) | pending (PM to create) |
+| T-0083 | Apply pipeline advisory integration hook | pending (PM to create) |
+| T-0084 | Eval harness test coverage + STATUS.md cleanup | pending (PM to create) |
 
 ## Feedback References
 - T-0077 Notes: eval harness design sketch (deferred from M11).
@@ -38,3 +41,4 @@ The design sketch from T-0077 Notes defines the initial architecture:
 
 ## Change Log
 - 2026-03-05: Epic created. M11 deferred the eval harness stub; M12 picks it up. T-0081 (design spec) created as first ready ticket.
+- 2026-03-05: T-0081 accepted (design spec complete). Implementation tickets T-0082–T-0084 defined in T-0081 Notes; PM to create and queue.

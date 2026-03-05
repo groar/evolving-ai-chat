@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0081 | P1 | M12 design spec — eval harness architecture and integration. First pickup for E-0015. |
+| — | (empty) | — | T-0081 accepted; T-0082–T-0084 pending PM creation and queue replenishment. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -44,3 +44,4 @@ This file is the source of truth for ready-ticket pickup order.
 - T-0079 (rank 1), T-0078 (rank 2), T-0080 (rank 3) added 2026-03-04. M11 implementation queue replenished. Ordered small-to-large effort per T-0077 triage recommendations.
 - 2026-03-05: T-0078, T-0079, and T-0080 all accepted and moved to `done/`. M11 implementation batch complete; ready queue intentionally left empty pending next PM replenishment from backlog.
 - 2026-03-05: PM run closed M11 (E-0014). Scoped M12 (E-0015: Eval Harness). T-0081 (M12 design spec) added as rank 1.
+- 2026-03-05: T-0081 accepted and moved to `done/`. Ready queue intentionally empty pending PM creation of T-0082–T-0084 (M12 implementation tickets from T-0081 spec).
