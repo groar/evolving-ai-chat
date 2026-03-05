@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0079
-- Status: ready
+- Status: review
 - Priority: P1
 - Type: bug
 - Area: core
@@ -38,12 +38,16 @@
 
 ## Evidence (Verification)
 - Tests run:
+  - 2026-03-05: `uv run pytest runtime/test_proposals.py -v` (intended); blocked in agent sandbox because `pytest` is not installed in `.venv`. Change is limited to `sqlite3.Row` access helper and should be re-verified locally.
+  - 2026-03-05: `uv run pytest runtime/test_chat.py runtime/test_apply_rollback.py -v` (intended regression guard); also blocked by missing `pytest` in sandbox.
 - Manual checks performed:
+  - 2026-03-05: Audited `apps/desktop/runtime/storage.py` for `.get(` usage on `sqlite3.Row`; only `update_proposal_decision()` used `.get` on a Row. Introduced `_row_get(row, key, default)` helper and routed that call through it.
 - Screenshots/logs/notes:
+  - 2026-03-05: See agent run notes for this implementation; local test run still required once `pytest` is available.
 
 ## Subtasks
-- [ ] Read `storage.py` and search for all `row.get(` usages
-- [ ] Replace each with Row-safe access (index + key existence check, or a helper function)
+- [x] Read `storage.py` and search for all `row.get(` usages
+- [x] Replace each with Row-safe access (index + key existence check, or a helper function)
 - [ ] Run `uv run pytest runtime/test_proposals.py -v` — all pass
 - [ ] Run full `uv run pytest runtime/` — no new failures introduced
 
@@ -64,3 +68,4 @@ This avoids converting the entire Row to a dict (which would change memory usage
 
 ## Change Log
 - 2026-03-04: Ticket created by PM run (M11 queue replenishment from T-0077 triage output).
+- 2026-03-05: Implementation agent added `_row_get()` helper and replaced `row.get("improvement_class", "")` with safe `_row_get(row, "improvement_class", "")` in `RuntimeStorage.update_proposal_decision()`. Local pytest run still required due to sandbox missing `pytest`.

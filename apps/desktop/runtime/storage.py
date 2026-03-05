@@ -54,6 +54,12 @@ def _sum_cost_from_messages(messages: list[dict[str, Any]]) -> float | None:
     return round(total, 6) if found else None
 
 
+def _row_get(row: sqlite3.Row, key: str, default: Any | None = None) -> Any | None:
+    """Safe dict-like access for sqlite3.Row, which does not implement .get()."""
+    keys = row.keys()
+    return row[key] if key in keys else default
+
+
 class RuntimeStorage:
     def __init__(self, db_path: str | None = None) -> None:
         default_path = Path(__file__).resolve().parent / "data" / "runtime.db"
@@ -803,7 +809,7 @@ class RuntimeStorage:
                 payload={"proposal_id": proposal_id, "status": status},
             )
             if status == "accepted":
-                improvement_class = str(row.get("improvement_class", "")).strip() or "settings-trust-microcopy-v1"
+                improvement_class = str(_row_get(row, "improvement_class", "")).strip() or "settings-trust-microcopy-v1"
                 if improvement_class == "system-prompt-persona-v1":
                     self._apply_persona_addition_locked(
                         connection,
