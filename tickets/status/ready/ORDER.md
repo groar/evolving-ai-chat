@@ -15,7 +15,9 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| — | (empty) | — | T-0081 accepted; T-0082–T-0084 pending PM creation and queue replenishment. |
+| 1 | T-0082 | P1 | Eval harness core + first check. Blocks T-0083 and T-0084. |
+| 2 | T-0083 | P1 | Apply pipeline advisory integration. Depends on T-0082. |
+| 3 | T-0084 | P1 | Eval harness tests + STATUS.md cleanup. Depends on T-0082; can parallel T-0083. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -45,3 +47,4 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-05: T-0078, T-0079, and T-0080 all accepted and moved to `done/`. M11 implementation batch complete; ready queue intentionally left empty pending next PM replenishment from backlog.
 - 2026-03-05: PM run closed M11 (E-0014). Scoped M12 (E-0015: Eval Harness). T-0081 (M12 design spec) added as rank 1.
 - 2026-03-05: T-0081 accepted and moved to `done/`. Ready queue intentionally empty pending PM creation of T-0082–T-0084 (M12 implementation tickets from T-0081 spec).
+- 2026-03-05: PM run created T-0082, T-0083, T-0084 and replenished ready queue. T-0082 first (standalone harness), then T-0083 (integration), then T-0084 (tests + STATUS cleanup).

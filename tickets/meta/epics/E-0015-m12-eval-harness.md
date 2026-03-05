@@ -7,7 +7,7 @@
 - Priority: P1
 - Owner: ai-agent
 - Created: 2026-03-05
-- Updated: 2026-03-05
+- Updated: 2026-03-05 (PM created T-0082–T-0084; queue replenished)
 
 ## Goal
 Build a minimal, runnable eval harness (`evals/`) that scores agent-proposed patches against at least one deterministic behavior check. This closes the last "known gap" in STATUS.md (no eval harness) and provides an automated quality gate that the self-modification loop can use to validate patch proposals before acceptance.
@@ -31,9 +31,9 @@ The design sketch from T-0077 Notes defines the initial architecture:
 | Ticket | Title | Status |
 |--------|--------|--------|
 | T-0081 | M12 design spec — eval harness architecture and integration | done |
-| T-0082 | Eval harness core + first check (`patch_applies_cleanly`) | pending (PM to create) |
-| T-0083 | Apply pipeline advisory integration hook | pending (PM to create) |
-| T-0084 | Eval harness test coverage + STATUS.md cleanup | pending (PM to create) |
+| T-0082 | Eval harness core + first check (`patch_applies_cleanly`) | ready |
+| T-0083 | Apply pipeline advisory integration hook | ready |
+| T-0084 | Eval harness test coverage + STATUS.md cleanup | ready |
 
 ## Feedback References
 - T-0077 Notes: eval harness design sketch (deferred from M11).
@@ -42,3 +42,4 @@ The design sketch from T-0077 Notes defines the initial architecture:
 ## Change Log
 - 2026-03-05: Epic created. M11 deferred the eval harness stub; M12 picks it up. T-0081 (design spec) created as first ready ticket.
 - 2026-03-05: T-0081 accepted (design spec complete). Implementation tickets T-0082–T-0084 defined in T-0081 Notes; PM to create and queue.
+- 2026-03-05: PM run created T-0082, T-0083, T-0084 ticket files. Ready queue replenished: T-0082 → T-0083 → T-0084.
