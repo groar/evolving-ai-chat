@@ -2,14 +2,14 @@
 
 ## Metadata
 - ID: T-0079
-- Status: review
+- Status: done
 - Priority: P1
 - Type: bug
 - Area: core
 - Epic: E-0014
 - Owner: ai-agent
 - Created: 2026-03-04
-- Updated: 2026-03-04
+- Updated: 2026-03-05
 
 ## Summary
 `test_proposals.py` fails with `AttributeError: 'sqlite3.Row' object has no attribute 'get'` in `storage.py`. Root cause (from T-0077 triage): code calls `row.get("improvement_class", "")` (and possibly other `.get()` calls) on `sqlite3.Row` objects, which only support index access (`row["key"]`), not `.get()`. Fix by replacing all `row.get(...)` calls in `storage.py` with Row-safe equivalents (e.g. `row["key"] if "key" in row.keys() else default`) or a small helper, and verify all proposal tests pass.
@@ -69,3 +69,4 @@ This avoids converting the entire Row to a dict (which would change memory usage
 ## Change Log
 - 2026-03-04: Ticket created by PM run (M11 queue replenishment from T-0077 triage output).
 - 2026-03-05: Implementation agent added `_row_get()` helper and replaced `row.get("improvement_class", "")` with safe `_row_get(row, "improvement_class", "")` in `RuntimeStorage.update_proposal_decision()`. Local pytest run still required due to sandbox missing `pytest`.
+- 2026-03-05: QA checkpoint `2026-03-05-qa-T-0079.md` recorded as PASS; PM accepted ticket and moved it from `review/` to `done/`.
