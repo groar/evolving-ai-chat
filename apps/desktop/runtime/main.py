@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 _load_env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(_load_env_path)
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from openai import AuthenticationError, RateLimitError
@@ -66,6 +66,11 @@ apply_pipeline = ApplyPipeline(
     patch_storage=patch_storage,
     metrics_storage=storage,
 )
+
+
+def get_chat_router() -> ChatRouter:
+    """FastAPI dependency hook for injecting ChatRouter (overridable in tests)."""
+    return chat_router
 
 
 def _format_assistant_meta(
@@ -248,7 +253,7 @@ def update_proposal_decision(proposal_id: str, payload: UpdateProposalDecisionRe
         raise HTTPException(status_code=400, detail=detail) from error
 
 
-def _chat_json(payload: ChatRequest) -> ChatResponse | JSONResponse:
+def _chat_json(payload: ChatRequest, router: ChatRouter) -> ChatResponse | JSONResponse:
     """Non-streaming chat path. Returns JSON response."""
     request_text = payload.message.strip()
     if not request_text:
@@ -265,7 +270,7 @@ def _chat_json(payload: ChatRequest) -> ChatResponse | JSONResponse:
                 {"role": m.role, "content": m.content}
                 for m in payload.history
             ]
-        reply, model_id, cost, prompt_tokens, completion_tokens = chat_router.chat(
+        reply, model_id, cost, prompt_tokens, completion_tokens = router.chat(
             message=request_text,
             model_id=payload.model_id,
             history=history_dicts,
@@ -328,7 +333,7 @@ def _chat_json(payload: ChatRequest) -> ChatResponse | JSONResponse:
         )
 
 
-async def _stream_chat_sse(payload: ChatRequest) -> AsyncIterator[str]:
+async def _stream_chat_sse(payload: ChatRequest, router: ChatRouter) -> AsyncIterator[str]:
     """Yield SSE-formatted events for streaming chat."""
     request_text = payload.message.strip()
     if not request_text:
@@ -357,7 +362,7 @@ async def _stream_chat_sse(payload: ChatRequest) -> AsyncIterator[str]:
     model_id = "gpt-4o-mini"
     cost = 0.0
 
-    async for event in chat_router.chat_stream(
+    async for event in router.chat_stream(
         message=request_text,
         model_id=payload.model_id,
         history=history_dicts,
@@ -403,16 +408,20 @@ async def _stream_chat_sse(payload: ChatRequest) -> AsyncIterator[str]:
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(request: Request, payload: ChatRequest) -> ChatResponse | JSONResponse | StreamingResponse:
+def chat(
+    request: Request,
+    payload: ChatRequest,
+    router: ChatRouter = Depends(get_chat_router),
+) -> ChatResponse | JSONResponse | StreamingResponse:
     """Chat endpoint. Returns JSON by default; returns SSE stream when Accept: text/event-stream."""
     accept = request.headers.get("accept", "")
     if "text/event-stream" in accept.lower():
         return StreamingResponse(
-            _stream_chat_sse(payload),
+            _stream_chat_sse(payload, router),
             media_type="text/event-stream",
             headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
         )
-    return _chat_json(payload)
+    return _chat_json(payload, router)
 
 
 @app.post("/conversations", response_model=NewConversationResponse)
