@@ -2,14 +2,14 @@
 
 ## Metadata
 - ID: T-0080
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: bug
 - Area: core
 - Epic: E-0014
 - Owner: ai-agent
 - Created: 2026-03-04
-- Updated: 2026-03-04
+- Updated: 2026-03-05
 
 ## Summary
 `test_apply_rollback.py` fails with `CalledProcessError: git init exit 1` and stderr `.git/hooks/: Operation not permitted` when run under the Cursor IDE sandbox or CI environments that block filesystem operations on `.git/hooks/`. Root cause (from T-0077 triage): the test calls real `subprocess.run(["git", "init", ...])` via `_init_git_repo`, which the sandbox blocks at hooks creation. Fix by either (a) mocking git subprocess calls for unit tests, (b) setting `git init --template=` (empty template dir) so hooks are not created, or (c) marking git-dependent tests with `@pytest.mark.integration` and skipping them unless `RUN_INTEGRATION_TESTS=1` is set. Document which tests require a real git environment and how to run them.
@@ -46,7 +46,7 @@
 ### Edge Cases / Failure Modes
 | Scenario | Handling |
 |---|---|
-| `--template=` fix does not work in sandbox | Fall back to mock strategy or integration marker. |
+| `--template=` fix does not work in sandbox | Fall back to mock strategy or integration marker approach. |
 | Mocking makes tests meaningless (only mocks, no real behavior) | Preserve at least one integration test with the marker; document it. |
 
 ### Validation Plan
@@ -54,11 +54,11 @@
 - `RUN_INTEGRATION_TESTS=1 uv run pytest runtime/test_apply_rollback.py -v -m integration` passes in an environment with real git available.
 
 ## Acceptance Criteria
-- [ ] `uv run pytest runtime/test_apply_rollback.py -v` exits 0 in the sandbox/Cursor environment (no `Operation not permitted` error).
-- [ ] If integration markers are used, `uv run pytest runtime/test_apply_rollback.py -v` (without the marker flag) skips integration tests with an explicit skip message explaining how to run them.
-- [ ] A brief comment or docstring in `test_apply_rollback.py` documents the environment requirement for integration tests.
-- [ ] No production code behavior is changed.
-- [ ] `uv run pytest runtime/test_chat.py runtime/test_proposals.py` is not broken by this change.
+- [x] `uv run pytest runtime/test_apply_rollback.py -v` exits 0 in the sandbox/Cursor environment (no `Operation not permitted` error).
+- [x] If integration markers are used, `uv run pytest runtime/test_apply_rollback.py -v` (without the marker flag) skips integration tests with an explicit skip message explaining how to run them.
+- [x] A brief comment or docstring in `test_apply_rollback.py` documents the environment requirement for integration tests.
+- [x] No production code behavior is changed.
+- [x] `uv run pytest runtime/test_chat.py runtime/test_proposals.py` is not broken by this change.
 
 ## Dependencies / Sequencing
 - Depends on: T-0077 (done).
@@ -67,16 +67,20 @@
 
 ## Evidence (Verification)
 - Tests run:
+  - 2026-03-05: `uv run pytest apps/desktop/runtime/test_apply_rollback.py -v` → 4 passed, 13 skipped (integration tests skipped with message: "Integration git repo setup requires a real git environment; set RUN_INTEGRATION_TESTS=1 to run these tests.")
+  - 2026-03-05: `uv run pytest apps/desktop/runtime/test_chat.py apps/desktop/runtime/test_proposals.py -q` → 27 passed
 - Manual checks performed:
+  - Verified that default test run in Cursor sandbox exits 0 without `.git/hooks` permission errors.
 - Screenshots/logs/notes:
+  - See pytest output in local run logs.
 
 ## Subtasks
-- [ ] Read `test_apply_rollback.py` and `patch_agent.py` to understand `_init_git_repo` usage
-- [ ] Try `git init --template=` in a test fixture first (simplest fix)
-- [ ] If that fails in sandbox, apply mock strategy or integration marker approach
-- [ ] Run `uv run pytest runtime/test_apply_rollback.py -v` — exits 0
-- [ ] Run full `uv run pytest runtime/` — no new failures introduced
-- [ ] Document integration test run requirements
+- [x] Read `test_apply_rollback.py` and `patch_agent.py` to understand `_init_git_repo` usage
+- [x] Try `git init --template=` in a test fixture first (simplest fix)
+- [x] If that fails in sandbox, apply mock strategy or integration marker approach
+- [x] Run `uv run pytest runtime/test_apply_rollback.py -v` — exits 0
+- [x] Run full `uv run pytest runtime/` — no new failures introduced
+- [x] Document integration test run requirements
 
 ## Notes
 Fix strategy priority order from T-0077:
@@ -86,3 +90,7 @@ Fix strategy priority order from T-0077:
 
 ## Change Log
 - 2026-03-04: Ticket created by PM run (M11 queue replenishment from T-0077 triage output).
+- 2026-03-05: Moved to in-progress by implementation agent.
+- 2026-03-05: Updated `test_apply_rollback.py` to gate git-dependent tests behind RUN_INTEGRATION_TESTS and mark them as integration tests; verified apply/rollback, chat, and proposals test suites.
+- 2026-03-05: QA checkpoint recorded in `tickets/meta/qa/2026-03-05-qa-T-0080.md`; ticket accepted and moved to done.
+
