@@ -15,7 +15,9 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0077 | P1 | M11 design spec — test failure triage + eval harness groundwork (E-0014). Must complete before M11 implementation tickets are created. |
+| 1 | T-0079 | P1 | Fix test_proposals.py sqlite3.Row.get() — smallest effort (S); recommended first pickup |
+| 2 | T-0078 | P1 | Fix test_chat.py chat mock at request time — medium effort (M) |
+| 3 | T-0080 | P1 | Fix test_apply_rollback.py git/sandbox isolation — medium effort (M); most options to evaluate, do last |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -40,3 +42,5 @@ This file is the source of truth for ready-ticket pickup order.
 - T-0075 completed 2026-03-04; moved to done. T-0076 now rank 1.
 - T-0076 completed 2026-03-04; moved to done. E-0013 (M10) implementation complete. E-0013 status updated to done 2026-03-04.
 - T-0077 (M11 triage/design spec) added 2026-03-04 as rank 1. E-0014 (M11 Test Suite Green Baseline) created.
+- T-0077 completed 2026-03-04; moved to done. Root-cause table and T-0078–T-0080 implementation ticket list produced. Ready queue empty; PM to create T-0078–T-0080 and replenish.
+- T-0079 (rank 1), T-0078 (rank 2), T-0080 (rank 3) added 2026-03-04. M11 implementation queue replenished. Ordered small-to-large effort per T-0077 triage recommendations.

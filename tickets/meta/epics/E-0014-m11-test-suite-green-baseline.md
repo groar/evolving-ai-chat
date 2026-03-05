@@ -3,7 +3,7 @@
 ## Metadata
 - ID: E-0014
 - Milestone: M11
-- Status: scoping
+- Status: in-progress
 - Priority: P1
 - Owner: ai-agent
 - Created: 2026-03-04
@@ -23,7 +23,7 @@ After M10, the self-modification loop is end-to-end functional. However, the CI 
 These failures mean a developer (or agent) cannot tell at a glance whether a code change introduced a regression. That erodes trust in the automated loop.
 
 ## Definition of Done
-- [ ] T-0077 done: triage report produced; root causes identified for all 3 failures; M11 implementation tickets scoped.
+- [x] T-0077 done: triage report produced; root causes identified for all 3 failures; M11 implementation tickets scoped.
 - [ ] T-0078+: All three failing test files pass under `uv run pytest` with a clean fixture strategy.
 - [ ] Frontend: `npm run validate` continues to pass (no regressions).
 - [ ] Tier-1 validation: `uv run pytest` exits with 0 (excluding any test explicitly marked `@pytest.mark.skip` with a documented reason).
@@ -32,7 +32,10 @@ These failures mean a developer (or agent) cannot tell at a glance whether a cod
 ## Implementation Tickets
 | Ticket | Title | Status |
 |--------|--------|--------|
-| T-0077 | M11 design spec — test failure triage + eval harness groundwork | ready |
+| T-0077 | M11 design spec — test failure triage + eval harness groundwork | done |
+| T-0078 | Fix test_chat.py (chat mock at request time) | ready |
+| T-0079 | Fix test_proposals.py (sqlite3.Row.get) | ready |
+| T-0080 | Fix test_apply_rollback.py (git/sandbox) | ready |
 
 ## Feedback References
 - QA checkpoint `2026-03-04-qa-T-0076.md`: notes 3 pre-existing failures.
@@ -41,3 +44,5 @@ These failures mean a developer (or agent) cannot tell at a glance whether a cod
 
 ## Change Log
 - 2026-03-04: Epic created. T-0077 (design spec / triage) added as first ready ticket.
+- 2026-03-04: T-0077 completed; root-cause table and T-0078–T-0080 implementation list produced. PM to create T-0078–T-0080 and replenish ready queue.
+- 2026-03-04: PM run created T-0078, T-0079, T-0080 ticket files and added to ready queue (ORDER.md updated). Epic status updated to in-progress.

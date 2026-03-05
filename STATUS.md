@@ -107,8 +107,8 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
 - **M10 — "Agentic Loop Polish" (E-0013) — complete (2026-03-04)**
   - T-0074 (design spec) resolved 3 open M8 questions. T-0075: live-apply hot-reload (400ms delay + `window.location.reload()`; reloading display state). T-0076: prompt engineering + config-driven scope allowlist + `patch_metrics` table + color-coded DiffBlock. All QA PASS. Tier-2 micro-validation deferred pending manual E2E (PATCH_AGENT_STUB=true steps documented in QA checkpoint T-0075).
   - **Next**: scope next milestone. Ready queue replenishment in progress (T-0077).
-- **M11 — "Test Suite Green Baseline" (E-0014) — scoping (2026-03-04)**
-  - T-0077 (M11 design spec / triage) in ready. Fixes 3 pre-existing pytest failures; lays eval harness groundwork. Restores reliable CI for self-modification loop.
+- **M11 — "Test Suite Green Baseline" (E-0014) — in-progress (2026-03-04)**
+  - T-0077 (M11 design spec / triage) done. Root causes identified for all 3 failing test files. Implementation tickets T-0078 (test_chat.py mock), T-0079 (sqlite3.Row.get), T-0080 (git/sandbox isolation) now in ready queue. Fixes 3 pre-existing pytest failures; lays eval harness groundwork. Restores reliable CI for self-modification loop.
 - Previous: M7 (E-0009) superseded 2026-03-01; T-0056 cancelled, T-0057 cancelled. T-0052–T-0055 done but scope superseded.
 - Previous: M7 — "Improvement Class Expansion" (E-0009) (superseded 2026-03-01; T-0052–T-0055 done, T-0056 cancelled)
 - Previous: M6.1 — "Loop Legibility and UX Clarity" (E-0008) (completed 2026-03-01)
