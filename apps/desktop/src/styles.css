@@ -3,39 +3,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-:root {
-  --color-bg: #0f0e17;
-  --color-panel: #1a1a2e;
-  --color-panel-strong: #16213e;
-  --color-ink: #eaeaea;
-  --color-muted: #7f7f7f;
-  --color-accent: #ff8906;
-  --color-accent-soft: #f25f5c;
-  --color-border: #4a4a4a;
-  --color-danger-bg: #d92027;
-  --color-danger-ink: #ff4301;
-  --color-success-border: #91f291;
-  --color-success-bg: #20bf6b;
-  --color-success-ink: #c7f9cc;
-  --color-warning-border: #ffc15e;
-  --color-warning-bg: #ffae42;
-  --color-warning-ink: #e5c07b;
-
-  background-image:
-    radial-gradient(circle at 50% 50%, #1a1a2e 0%, #16213e 100%),
-    repeating-linear-gradient(45deg,
-      rgba(255,255,255,0.05) 0px,
-      rgba(255,255,255,0.05) 1px,
-      transparent 1px,
-      transparent 10px),
-    linear-gradient( 
-      180deg,
-      rgba(15,14,23,1) 0%, 
-      rgba(23,23,39,1) 100%
-    );
-  background-blend-mode: overlay, overlay, normal;
-}
-
 @custom-variant dark (&:is(.dark *));
 
 /* Theme: warm neutrals + orange accent (preserved from original) */
