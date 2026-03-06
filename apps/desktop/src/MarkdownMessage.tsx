@@ -13,68 +13,53 @@ import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
  * - Raw HTML is not rendered (react-markdown escapes it by default — XSS safe).
  */
 export function MarkdownMessage({ text }: { text: string }) {
-  const [versions, setVersions] = useState<string[]>([text]);
-
-  const handleRetry = useCallback(() => {
-    // Logic to run the AI answer with a different model and update versions
-    const newVersion = `New model response for version ${versions.length + 1}`; // Placeholder logic
-    setVersions([...versions, newVersion]);
-  }, [versions]);
-
   return (
     <div className="prose prose-sm prose-neutral max-w-none m-0 text-[0.9375rem] leading-relaxed [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80 [&_pre]:bg-muted [&_pre]:rounded [&_pre]:p-2 [&_pre]:overflow-x-auto">
-      {versions.map((version, index) => (
-        <div key={index} className="mb-4">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              a: ({ href, children, ...props }) => {
-                const url = href ?? "#";
-                const isExternal = url.startsWith("http://") || url.startsWith("https://");
-                return (
-                  <a
-                    {...props}
-                    href={url}
-                    target={isExternal ? "_blank" : undefined}
-                    rel={isExternal ? "noopener noreferrer" : undefined}
-                    onClick={
-                      isExternal
-                        ? (e) => {
-                            e.preventDefault();
-                            window.open(url, "_blank", "noopener,noreferrer");
-                          }
-                        : undefined
-                    }
-                  >
-                    {children}
-                  </a>
-                );
-              },
-              code: ({ node, inline, className, children, ...props }) => {
-                if (inline) {
-                  return (
-                    <code className={className} {...props}>
-                      {children}
-                    </code>
-                  );
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          a: ({ href, children, ...props }) => {
+            const url = href ?? "#";
+            const isExternal = url.startsWith("http://") || url.startsWith("https://");
+            return (
+              <a
+                {...props}
+                href={url}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
+                onClick={
+                  isExternal
+                    ? (e) => {
+                        e.preventDefault();
+                        window.open(url, "_blank", "noopener,noreferrer");
+                      }
+                    : undefined
                 }
-                const code = String(children).replace(/\n$/, "");
-                const match = /language-(\w+)/.exec(className ?? "");
-                const lang = match?.[1] ?? "";
-                return (
-                  <CodeBlock code={code} language={lang} />
-                );
-              },
-              pre: ({ children }) => <>{children}</>,
-            }}
-          >
-            {version}
-          </ReactMarkdown>
-          <button onClick={handleRetry} className="mt-2 text-primary underline">
-            Retry with different model
-          </button>
-        </div>
-      ))}
+              >
+                {children}
+              </a>
+            );
+          },
+          code: ({ node, inline, className, children, ...props }) => {
+            if (inline) {
+              return (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              );
+            }
+            const code = String(children).replace(/\n$/, "");
+            const match = /language-(\w+)/.exec(className ?? "");
+            const lang = match?.[1] ?? "";
+            return (
+              <CodeBlock code={code} language={lang} />
+            );
+          },
+          pre: ({ children }) => <>{children}</>,
+        }}
+      >
+        {text}
+      </ReactMarkdown>
     </div>
   );
 }
