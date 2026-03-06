@@ -15,6 +15,7 @@ This repository is a project-agnostic scaffold for agentic coding workflows.
 - Role guides:
   - `tickets/AGENTS.md` (PM workflow)
   - `tests/AGENTS.md` (QA workflow)
+  - `self-evolve/AGENTS.md` (Self-evolving agent workflow)
 
 When guidance conflicts, prefer the most specific guide for the current role/task.
 
@@ -22,9 +23,10 @@ When guidance conflicts, prefer the most specific guide for the current role/tas
 - PM workflow tasks (feedback triage, ticket grooming, epic management, process improvements): follow `tickets/AGENTS.md`.
 - QA workflow tasks (regression checks, validation, bug discovery, bug ticket drafting): follow `tests/AGENTS.md`.
 - Implementation tasks: follow this root guide plus ticket system docs.
+- Self-evolving agent tasks (end-to-end feedback → shipped change): follow `self-evolve/AGENTS.md`.
 
 ## Operating Modes
-This scaffold supports two explicit modes. If the user does not specify a mode, default to Development Workflow.
+This scaffold supports three explicit modes. If the user does not specify a mode, default to Development Workflow.
 
 ### Single-Agent Mode
 In this mode the user invokes exactly one role agent (PM or QA) and it determines the next appropriate actions within its scope.
@@ -42,6 +44,17 @@ In this mode work progresses through a deterministic agent sequence with clear h
 
 If the user explicitly waives a step (for example “skip QA for this ticket”), record the waiver and rationale in the ticket.
 When the user asks to "run the implementation agent" in this mode, the implementation run should **chain** into QA and then PM acceptance automatically (unless explicitly waived).
+
+### Self-Evolving Mode
+In this mode a single invocation takes raw user feedback and drives it through the entire lifecycle: feedback intake → ticket creation → implementation → QA → PM acceptance. Follow `self-evolve/AGENTS.md` for the full workflow.
+
+- Input: one piece of user feedback (bug report, feature request, friction observation).
+- Phase 1 (PM, scoped): log feedback, create exactly one ticket, move to `ready/`.
+- Phase 2 (Implementation): pick up the ticket, implement, move to `review/`.
+- Phase 3 (QA): validate the change (when software/behavior changed).
+- Phase 4 (PM acceptance): accept the ticket, move to `done/`.
+
+This mode is designed for the product's "Fix with AI" flow. It reuses the same role guides and produces the same artifacts as the Development Workflow — it just orchestrates them in a single pass without manual handoffs.
 
 ## Required Work Pattern
 1. Pick a ticket from `tickets/status/ready/` unless the user reprioritizes.
@@ -83,7 +96,8 @@ When a PM run proposes tier-2 micro-validation or tier-3 external user testing:
 - Implementation runs should end with one suggested commit message summarizing the change set.
 - PM runs should end with one suggested commit message summarizing PM artifacts/board updates.
 - QA runs should end with one suggested commit message summarizing QA artifacts/findings updates.
-- After any agent run (PM/Implementation/QA), end with one explicit next-step suggestion (exactly one recommended action, with optional alternates if the user is blocked).
+- Self-evolving runs should end with one suggested commit message summarizing the full change set (feedback → ticket → implementation → acceptance).
+- After any agent run (PM/Implementation/QA/Self-evolving), end with one explicit next-step suggestion (exactly one recommended action, with optional alternates if the user is blocked).
 
 ## Non-Goals
 - External ticketing tools as source of truth.
