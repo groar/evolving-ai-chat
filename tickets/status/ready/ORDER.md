@@ -15,10 +15,9 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0086 | P1 | Bug: apply-pipeline patch timeout + error reporting. S1 reliability fix; no dependencies. |
-| 2 | T-0082 | P1 | Eval harness core + first check. Blocks T-0083 and T-0084. |
-| 3 | T-0083 | P1 | Apply pipeline advisory integration. Depends on T-0082. |
-| 4 | T-0084 | P1 | Eval harness tests + STATUS.md cleanup. Depends on T-0082; can parallel T-0083. |
+| 1 | T-0082 | P1 | Eval harness core + first check. Blocks T-0083 and T-0084. |
+| 2 | T-0083 | P1 | Apply pipeline advisory integration. Depends on T-0082. |
+| 3 | T-0084 | P1 | Eval harness tests + STATUS.md cleanup. Depends on T-0082; can parallel T-0083. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -51,3 +50,4 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-05: PM run created T-0082, T-0083, T-0084 and replenished ready queue. T-0082 first (standalone harness), then T-0083 (integration), then T-0084 (tests + STATUS cleanup).
 - 2026-03-06: Self-evolving run created and completed T-0085 (rerun assistant answer with model variants); removed from ready queue after acceptance.
 - 2026-03-06: PM run added T-0086 (P1 apply-pipeline timeout bug) at rank 1. T-0001 (unstructured duplicate of model picker) removed; T-1001 (model picker UI polish) canonicalized and added at rank 5. Feedback F-20260306-002 and F-20260306-003 logged.
+- 2026-03-06: T-0086 accepted and moved to done (apply-pipeline 180s timeout + patch_timeout error reporting). Rank 1 is now T-0082.

@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0086
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: bug
 - Area: core
@@ -65,37 +65,37 @@ The `patch` subprocess in `apply_pipeline._apply_patch()` has a 30-second timeou
 - F-20260306-003
 
 ## Acceptance Criteria
-- [ ] `_PATCH_TIMEOUT` is set to `180` in `apply_pipeline.py`.
-- [ ] `_apply_patch()` catches `subprocess.TimeoutExpired` and raises `ApplyError("patch_timeout", f"patch command timed out after {_PATCH_TIMEOUT}s")`.
-- [ ] The same `TimeoutExpired` catch is present (or not needed) in any other `subprocess.run(["patch", ...])` call within `apply_pipeline.py` — verified and consistent.
-- [ ] `apply()` records `failure_reason = "patch_timeout"` (not `"unexpected_error"`) when a timeout occurs.
-- [ ] Unit test added: `mock subprocess.run` raises `TimeoutExpired` → `_apply_patch()` raises `ApplyError` with `reason = "patch_timeout"`.
-- [ ] `uv run pytest` exits 0 — no regressions.
+- [x] `_PATCH_TIMEOUT` is set to `180` in `apply_pipeline.py`.
+- [x] `_apply_patch()` catches `subprocess.TimeoutExpired` and raises `ApplyError("patch_timeout", f"patch command timed out after {_PATCH_TIMEOUT}s")`.
+- [x] The same `TimeoutExpired` catch is present (or not needed) in any other `subprocess.run(["patch", ...])` call within `apply_pipeline.py` — verified and consistent (only `_apply_patch` runs patch; `_sandboxed_validate` and `_apply_and_commit` both call it).
+- [x] `apply()` records `failure_reason = "patch_timeout"` (not `"unexpected_error"`) when a timeout occurs (via existing `except ApplyError` branch).
+- [x] Unit test added: `mock subprocess.run` raises `TimeoutExpired` → `_apply_patch()` raises `ApplyError` with `reason = "patch_timeout"`.
+- [x] `uv run pytest` exits 0 — no regressions.
 
 ## User-Facing Acceptance Criteria
-- [ ] When a patch times out, the user sees a human-readable message that explains the timeout (not "unexpected error" or a raw exception string).
-- [ ] The failure state is visually distinct from a permanent failure (if the UI currently has such a distinction) — or a follow-up ticket is created to add one.
+- [x] When a patch times out, the user sees a human-readable message that explains the timeout (not "unexpected error" or a raw exception string). `getFailureReasonCopy("patch_timeout")` added in `PatchNotification.tsx`.
+- [x] The failure state is visually distinct from a permanent failure (if the UI currently has such a distinction) — or a follow-up ticket is created to add one. UI already uses same apply_failed styling for all failure reasons; no follow-up created (design spec did not require a new distinction).
 
 ## Dependencies / Sequencing
 - Depends on: none
 - Blocks: nothing directly, but clears the way for larger-patch workflows and reliable M12 eval harness integration
 
 ## QA Evidence Links (Required Only When Software/Behavior Changes)
-- QA checkpoint: (to be filled after implementation)
-- Screenshots/artifacts: (to be filled after implementation)
+- QA checkpoint: `tickets/meta/qa/2026-03-06-qa-T-0086.md`
+- Screenshots/artifacts: N/A (backend unit test + frontend copy review)
 
 ## Evidence (Verification)
-- Tests run:
-- Manual checks performed:
-- Screenshots/logs/notes:
+- Tests run: `uv run pytest` (64 passed, 13 skipped). New test `ApplyPatchHelperTests::test_patch_timeout_raises_apply_error_patch_timeout` passes.
+- Manual checks performed: QA checkpoint 2026-03-06; copy regression sweep on new patch_timeout string.
+- Screenshots/logs/notes: See `tickets/meta/qa/2026-03-06-qa-T-0086.md`.
 
 ## Subtasks
-- [ ] Change `_PATCH_TIMEOUT = 30` → `_PATCH_TIMEOUT = 180`
-- [ ] Add `except subprocess.TimeoutExpired` in `_apply_patch()` → raise `ApplyError("patch_timeout", ...)`
-- [ ] Audit other `subprocess.run(["patch", ...])` calls in the file for the same pattern
-- [ ] Add unit test for timeout path
-- [ ] Verify/fix frontend `failure_reason` display for `"patch_timeout"`
-- [ ] Run full test suite
+- [x] Change `_PATCH_TIMEOUT = 30` → `_PATCH_TIMEOUT = 180`
+- [x] Add `except subprocess.TimeoutExpired` in `_apply_patch()` → raise `ApplyError("patch_timeout", ...)`
+- [x] Audit other `subprocess.run(["patch", ...])` calls in the file for the same pattern
+- [x] Add unit test for timeout path
+- [x] Verify/fix frontend `failure_reason` display for `"patch_timeout"`
+- [x] Run full test suite
 
 ## Notes
 - `_PATCH_TIMEOUT` is used in `_apply_patch()` at line ~360. Verify whether `_sandboxed_validate()` calls `_apply_patch()` with `--dry-run` or a separate run; if the same constant applies, the fix covers both.
@@ -103,3 +103,5 @@ The `patch` subprocess in `apply_pipeline._apply_patch()` has a 30-second timeou
 
 ## Change Log
 - 2026-03-06: Ticket created by PM run. Feedback: F-20260306-003. S1 reliability bug — rank 1 in ready queue.
+- 2026-03-06: Implementation complete. _PATCH_TIMEOUT=180; TimeoutExpired→ApplyError(patch_timeout) in _apply_patch; getFailureReasonCopy("patch_timeout") in PatchNotification.tsx; unit test added. Moved to review.
+- 2026-03-06: QA passed (2026-03-06-qa-T-0086.md). PM accepted; moved to done.

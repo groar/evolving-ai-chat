@@ -546,6 +546,22 @@ class ApplyPatchHelperTests(unittest.TestCase):
                 _apply_patch("this is not a valid diff", Path(tmp), strip=1)
             self.assertIn(ctx.exception.reason, ("patch_apply_failed", "empty_or_malformed_patch"))
 
+    def test_patch_timeout_raises_apply_error_patch_timeout(self) -> None:
+        """When subprocess.run raises TimeoutExpired, _apply_patch raises ApplyError('patch_timeout'). (T-0086)"""
+        with tempfile.TemporaryDirectory(dir=_TEST_TMP_BASE) as tmp:
+            tmp_path = Path(tmp)
+            (tmp_path / "apps" / "desktop" / "src").mkdir(parents=True)
+            (tmp_path / "apps" / "desktop" / "src" / "App.tsx").write_text(_APP_TSX_ORIGINAL, encoding="utf-8")
+            with mock_patch("runtime.agent.apply_pipeline.subprocess.run") as mock_run:
+                mock_run.side_effect = subprocess.TimeoutExpired(
+                    ["patch", "-p1", "--input", "/tmp/x.patch"],
+                    timeout=180,
+                )
+                with self.assertRaises(ApplyError) as ctx:
+                    _apply_patch(_STUB_DIFF, tmp_path, strip=1)
+                self.assertEqual(ctx.exception.reason, "patch_timeout")
+                self.assertIn("180", ctx.exception.details)
+
 
 if __name__ == "__main__":
     unittest.main()

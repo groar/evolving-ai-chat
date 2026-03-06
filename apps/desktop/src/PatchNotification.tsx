@@ -112,6 +112,8 @@ function getFailureReasonCopy(reason?: string | null): string {
       return "the agent returned an unusable response";
     case "harness_unavailable":
       return "the AI agent couldn't be reached";
+    case "patch_timeout":
+      return "the patch timed out (large or complex changes can take longer). Please try again.";
     default:
       return "an unexpected error occurred";
   }

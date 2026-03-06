@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 _VALIDATE_TIMEOUT = 120
 _GIT_TIMEOUT = 30
-_PATCH_TIMEOUT = 30
+_PATCH_TIMEOUT = 180
 
 
 # ---------------------------------------------------------------------------
@@ -352,17 +352,23 @@ def _apply_patch(unified_diff: str, cwd: Path, strip: int = 1) -> None:
         patch_file = f.name
 
     try:
-        result = subprocess.run(
-            ["patch", f"-p{strip}", "--input", patch_file],
-            cwd=str(cwd),
-            capture_output=True,
-            text=True,
-            timeout=_PATCH_TIMEOUT,
-        )
-        if result.returncode != 0:
+        try:
+            result = subprocess.run(
+                ["patch", f"-p{strip}", "--input", patch_file],
+                cwd=str(cwd),
+                capture_output=True,
+                text=True,
+                timeout=_PATCH_TIMEOUT,
+            )
+            if result.returncode != 0:
+                raise ApplyError(
+                    "patch_apply_failed",
+                    f"patch exited {result.returncode}: {result.stderr[:400]}",
+                )
+        except subprocess.TimeoutExpired:
             raise ApplyError(
-                "patch_apply_failed",
-                f"patch exited {result.returncode}: {result.stderr[:400]}",
+                "patch_timeout",
+                f"patch command timed out after {_PATCH_TIMEOUT}s",
             )
     finally:
         os.unlink(patch_file)
