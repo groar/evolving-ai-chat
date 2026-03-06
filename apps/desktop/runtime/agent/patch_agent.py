@@ -289,9 +289,8 @@ class PiDevPatchAgent(PatchAgent):
     """Code-patch agent backed by pi (https://pi.dev) running as a local subprocess.
 
     Integration strategy:
-      1. Run: pi -p "Run the self-evolving agent with the following user feedback. Feedback: <text>"
-              --no-session --tools read,write,edit,grep,find,ls [--provider P] [--api-key K] [--model M]
-         pi runs from the repo root so it has access to all AGENTS.md guides and the full project.
+      1. Run: pi -p "Run the self-evolving agent with the following user feedback, without asking for any external output. Feedback: <content>" --tools read,write,edit,grep,find,ls [--provider P] [--api-key K] [--model M] --thinking low --verbose
+         <content> is the feedback body (summary), not the title. pi runs from the repo root so it has access to all AGENTS.md guides and the full project.
       2. Compute unified diff using git after pi finishes; return PatchArtifact with status 'pending_apply'.
 
     Stub mode is activated when PATCH_AGENT_STUB=true or PATCH_AGENT_API_KEY is absent,
@@ -372,16 +371,14 @@ class PiDevPatchAgent(PatchAgent):
                 f"Repo root not found at {self._repo_root}; check repo_root configuration."
             )
 
+        # Use feedback content (summary), not the title, per proper pi invocation.
+        content = feedback.get("summary", "").strip() or feedback.get("title", "")
         prompt = (
-            f"Run the self-evolving agent with the following user feedback. "
-            f"Feedback: {feedback.get('summary', '')}"
+            "Run the self-evolving agent with the following user feedback, without asking for any external output. "
+            f"Feedback: {content}"
         )
         cmd = [
             "pi", "-p", prompt,
-            "--no-session",
-            "--no-extensions",
-            "--no-skills",
-            "--no-prompt-templates",
             "--tools", "read,write,edit,grep,find,ls",
         ]
         if self._provider:
@@ -390,6 +387,7 @@ class PiDevPatchAgent(PatchAgent):
             cmd += ["--api-key", self._api_key]
         if self._model:
             cmd += ["--model", self._model]
+        cmd += ["--thinking", "low", "--verbose"]
 
         redacted_for_log = _redact_cmd_for_log(cmd)
         logger.warning(
