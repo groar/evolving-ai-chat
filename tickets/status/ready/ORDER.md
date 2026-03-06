@@ -48,3 +48,4 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-05: PM run closed M11 (E-0014). Scoped M12 (E-0015: Eval Harness). T-0081 (M12 design spec) added as rank 1.
 - 2026-03-05: T-0081 accepted and moved to `done/`. Ready queue intentionally empty pending PM creation of T-0082–T-0084 (M12 implementation tickets from T-0081 spec).
 - 2026-03-05: PM run created T-0082, T-0083, T-0084 and replenished ready queue. T-0082 first (standalone harness), then T-0083 (integration), then T-0084 (tests + STATUS cleanup).
+- 2026-03-06: Self-evolving run created and completed T-0085 (rerun assistant answer with model variants); removed from ready queue after acceptance.

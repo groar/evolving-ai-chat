@@ -30,6 +30,8 @@ from .models import (
     ChatRequest,
     ChatResponse,
     CodePatchRequest,
+    RerunAssistantRequest,
+    RerunAssistantResponse,
     CodePatchResponse,
     ConfigureRequest,
     CreateProposalRequest,
@@ -333,6 +335,30 @@ def _chat_json(payload: ChatRequest, router: ChatRouter) -> ChatResponse | JSONR
         )
 
 
+def _build_rerun_context(conversation_id: str, assistant_message_id: int) -> tuple[str, list[dict[str, str]]]:
+    messages = storage.get_messages(conversation_id)
+    target_idx = next(
+        (i for i, m in enumerate(messages) if m["message_id"] == assistant_message_id and m["role"] == "assistant"),
+        None,
+    )
+    if target_idx is None:
+        raise ValueError("Assistant message does not exist in this conversation.")
+    if target_idx == 0:
+        raise ValueError("Cannot rerun the first assistant message without a user prompt.")
+
+    prompt_idx = next((i for i in range(target_idx - 1, -1, -1) if messages[i]["role"] == "user"), None)
+    if prompt_idx is None:
+        raise ValueError("Could not find the user prompt for this assistant answer.")
+
+    prompt_text = str(messages[prompt_idx]["text"])
+    history = [
+        {"role": str(m["role"]), "content": str(m["text"])}
+        for m in messages[:prompt_idx]
+        if m["role"] in {"user", "assistant"}
+    ]
+    return prompt_text, history
+
+
 async def _stream_chat_sse(payload: ChatRequest, router: ChatRouter) -> AsyncIterator[str]:
     """Yield SSE-formatted events for streaming chat."""
     request_text = payload.message.strip()
@@ -422,6 +448,52 @@ def chat(
             headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
         )
     return _chat_json(payload, router)
+
+
+@app.post("/chat/rerun", response_model=RerunAssistantResponse)
+def rerun_assistant_answer(
+    payload: RerunAssistantRequest,
+    router: ChatRouter = Depends(get_chat_router),
+) -> RerunAssistantResponse | JSONResponse:
+    try:
+        active_id = storage.get_state()["active_conversation_id"]
+        conversation_id = payload.conversation_id or active_id
+        storage.set_active_conversation(conversation_id)
+
+        prompt_text, history = _build_rerun_context(conversation_id, payload.assistant_message_id)
+        reply, model_id, cost, prompt_tokens, completion_tokens = router.chat(
+            message=prompt_text,
+            model_id=payload.model_id,
+            history=history,
+        )
+        created_at = datetime.now(timezone.utc).isoformat()
+        total_tokens = prompt_tokens + completion_tokens
+        return RerunAssistantResponse(
+            conversation_id=conversation_id,
+            assistant_message_id=payload.assistant_message_id,
+            reply=reply,
+            model_id=model_id,
+            created_at=created_at,
+            cost=cost,
+            prompt_tokens=prompt_tokens if total_tokens > 0 else None,
+            completion_tokens=completion_tokens if total_tokens > 0 else None,
+            total_tokens=total_tokens if total_tokens > 0 else None,
+        )
+    except (OpenAIMissingApiKeyError, AnthropicMissingApiKeyError):
+        storage.append_event("runtime_error", {"error": "api_key_not_set", "endpoint": "/chat/rerun"})
+        return JSONResponse(status_code=503, content={"error": "api_key_not_set"})
+    except ValueError as error:
+        storage.append_event("runtime_error", {"detail": str(error), "endpoint": "/chat/rerun"})
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except AuthenticationError:
+        storage.append_event("runtime_error", {"error": "api_key_invalid", "endpoint": "/chat/rerun"})
+        return JSONResponse(status_code=401, content={"error": "api_key_invalid"})
+    except RateLimitError:
+        storage.append_event("runtime_error", {"error": "rate_limit", "endpoint": "/chat/rerun"})
+        return JSONResponse(status_code=429, content={"error": "rate_limit"})
+    except Exception as error:
+        storage.append_event("runtime_error", {"detail": str(error), "endpoint": "/chat/rerun"})
+        return JSONResponse(status_code=502, content={"error": "model_error", "detail": str(error)})
 
 
 @app.post("/conversations", response_model=NewConversationResponse)

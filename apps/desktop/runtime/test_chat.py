@@ -372,6 +372,48 @@ class ConfigureEndpointTests(unittest.TestCase):
             self.assertLessEqual(data["conversation_cost_total"], 0.01)
 
 
+class ChatRerunTests(unittest.TestCase):
+    def test_rerun_returns_variant_without_appending_messages(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = str(Path(temp_dir) / "runtime.db")
+
+            def fake_chat(message: str, model_id: str | None = None, history=None):
+                return "rerun answer", model_id or "gpt-4o-mini", 0.00002, 12, 8
+
+            with override_chat_router(chat_fn=fake_chat):
+                client = _make_client(db_path)
+                first = client.post("/chat", json={"message": "hello"})
+                self.assertEqual(first.status_code, 200)
+                state_before = client.get("/state").json()
+                assistant_id = next(m["message_id"] for m in state_before["messages"] if m["role"] == "assistant")
+                rerun = client.post(
+                    "/chat/rerun",
+                    json={"assistant_message_id": assistant_id, "model_id": "gpt-4o"},
+                )
+                self.assertEqual(rerun.status_code, 200)
+                payload = rerun.json()
+                self.assertEqual(payload["assistant_message_id"], assistant_id)
+                self.assertEqual(payload["model_id"], "gpt-4o")
+                self.assertEqual(payload["reply"], "rerun answer")
+                state_after = client.get("/state").json()
+                self.assertEqual(len(state_before["messages"]), len(state_after["messages"]))
+
+    def test_rerun_requires_assistant_message(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = str(Path(temp_dir) / "runtime.db")
+
+            def fake_chat(message: str, model_id: str | None = None, history=None):
+                return "ok", "gpt-4o-mini", 0.0, 0, 0
+
+            with override_chat_router(chat_fn=fake_chat):
+                client = _make_client(db_path)
+                client.post("/chat", json={"message": "hello"})
+                state = client.get("/state").json()
+                user_id = next(m["message_id"] for m in state["messages"] if m["role"] == "user")
+                rerun = client.post("/chat/rerun", json={"assistant_message_id": user_id})
+                self.assertEqual(rerun.status_code, 400)
+
+
 class ConversationRenameTests(unittest.TestCase):
     def test_patch_conversation_updates_title(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

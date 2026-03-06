@@ -68,6 +68,17 @@ type PatchSummaryPayload = {
   reverted_at?: string | null;
 };
 
+export type AssistantRerunVariant = {
+  assistant_message_id: number;
+  reply: string;
+  model_id: string;
+  created_at: string;
+  cost: number;
+  prompt_tokens?: number | null;
+  completion_tokens?: number | null;
+  total_tokens?: number | null;
+};
+
 type RuntimeStatePayload = {
   active_conversation_id: string;
   conversations: Array<{
@@ -700,6 +711,40 @@ export function useRuntime() {
     [stopPatchPoll]
   );
 
+  const rerunAssistantAnswer = useCallback(
+    async (
+      assistantMessageId: number,
+      modelId: string
+    ): Promise<{ ok: true; variant: AssistantRerunVariant } | { ok: false; error: string }> => {
+      const conv = useConversationStore.getState();
+      const rt = useRuntimeStore.getState();
+      if (conv.activeConversationId.length === 0 || rt.isSending || rt.isResetting) {
+        return { ok: false, error: "Cannot rerun right now." };
+      }
+
+      try {
+        const response = await fetch(`${runtimeBase}/chat/rerun`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversation_id: conv.activeConversationId,
+            assistant_message_id: assistantMessageId,
+            model_id: modelId
+          })
+        });
+        if (!response.ok) {
+          const detail = await readErrorDetail(response);
+          return { ok: false, error: detail };
+        }
+        const payload = (await response.json()) as AssistantRerunVariant;
+        return { ok: true, variant: payload };
+      } catch {
+        return { ok: false, error: "Can't reach the assistant. Check if it's running." };
+      }
+    },
+    []
+  );
+
   const requestPatch = useCallback(
     async (
       feedbackId: string,
@@ -837,6 +882,7 @@ export function useRuntime() {
     removeApiKey,
     setSelectedModel,
     sendMessage,
+    rerunAssistantAnswer,
     requestPatch,
     rollbackPatch,
     reloadingPatchId

@@ -15,7 +15,7 @@ import { useConversationStore } from "./stores/conversationStore";
 import { useRuntimeStore } from "./stores/runtimeStore";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useFeedback } from "./hooks/useFeedback";
-import { useRuntime, offlineStateRetryIntervalMs, shouldAutoRetryOfflineState } from "./hooks/useRuntime";
+import { useRuntime, offlineStateRetryIntervalMs, shouldAutoRetryOfflineState, type AssistantRerunVariant } from "./hooks/useRuntime";
 import { useConversations } from "./hooks/useConversations";
 import type { RuntimeIssue } from "./stores/runtimeStore";
 
@@ -78,6 +78,9 @@ export function App() {
   const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
   const [renameError, setRenameError] = useState<string | null>(null);
+  const [assistantVariants, setAssistantVariants] = useState<Record<number, AssistantRerunVariant[]>>({});
+  const [activeVariantIndex, setActiveVariantIndex] = useState<Record<number, number>>({});
+  const [rerunningMessageId, setRerunningMessageId] = useState<number | null>(null);
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c.conversation_id === activeConversationId),
@@ -94,6 +97,33 @@ export function App() {
       transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [streamingText]);
+
+  useEffect(() => {
+    setAssistantVariants((prev) => {
+      const next: Record<number, AssistantRerunVariant[]> = {};
+      for (const message of messages) {
+        if (message.role !== "assistant" || typeof message.id !== "number") continue;
+        next[message.id] = prev[message.id] ?? [
+          {
+            assistant_message_id: message.id,
+            reply: message.text,
+            model_id: "original",
+            created_at: "",
+            cost: 0
+          }
+        ];
+      }
+      return next;
+    });
+    setActiveVariantIndex((prev) => {
+      const next: Record<number, number> = {};
+      for (const message of messages) {
+        if (message.role !== "assistant" || typeof message.id !== "number") continue;
+        next[message.id] = prev[message.id] ?? 0;
+      }
+      return next;
+    });
+  }, [messages]);
 
   // When opening the improvement sheet, show the form and focus the textarea.
   useEffect(() => {
@@ -507,7 +537,23 @@ export function App() {
             </div>
           )}
 
-          {messages.map((message) => (
+          {messages.map((message) => {
+            const variants =
+              message.role === "assistant" && typeof message.id === "number"
+                ? assistantVariants[message.id] ?? []
+                : [];
+            const activeIdx =
+              message.role === "assistant" && typeof message.id === "number"
+                ? activeVariantIndex[message.id] ?? 0
+                : 0;
+            const activeVariant = variants[activeIdx];
+            const displayText = activeVariant?.reply ?? message.text;
+            const displayMeta =
+              message.role === "assistant" && activeVariant && activeIdx > 0
+                ? `${activeVariant.model_id} rerun`
+                : message.meta;
+
+            return (
             <article
               key={message.id}
               className={`border rounded-xl py-3 px-3.5 max-w-[700px] bg-white ${
@@ -535,13 +581,69 @@ export function App() {
                 )}
               </div>
               {message.role === "assistant" ? (
-                <MarkdownMessage text={message.text} />
+                <>
+                  <MarkdownMessage text={displayText} />
+                  {typeof message.id === "number" && (
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        className="text-xs border border-border rounded-lg bg-white py-1 px-2 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
+                        disabled={rerunningMessageId === message.id || !selectedModelId}
+                        onClick={async () => {
+                          setRerunningMessageId(message.id);
+                          const result = await runtime.rerunAssistantAnswer(message.id, selectedModelId);
+                          setRerunningMessageId(null);
+                          if (!result.ok) {
+                            useSettingsStore.getState().setSettingsError(result.error);
+                            return;
+                          }
+                          setAssistantVariants((prev) => {
+                            const existing = prev[message.id] ?? [];
+                            return { ...prev, [message.id]: [...existing, result.variant] };
+                          });
+                          setActiveVariantIndex((prev) => ({ ...prev, [message.id]: variants.length }));
+                        }}
+                      >
+                        {rerunningMessageId === message.id ? "Re-running…" : "Re-run with selected model"}
+                      </button>
+                      {variants.length > 1 && (
+                        <>
+                          <button
+                            type="button"
+                            className="text-xs underline"
+                            disabled={activeIdx <= 0}
+                            onClick={() =>
+                              setActiveVariantIndex((prev) => ({ ...prev, [message.id]: Math.max(0, activeIdx - 1) }))
+                            }
+                          >
+                            Previous version
+                          </button>
+                          <button
+                            type="button"
+                            className="text-xs underline"
+                            disabled={activeIdx >= variants.length - 1}
+                            onClick={() =>
+                              setActiveVariantIndex((prev) => ({
+                                ...prev,
+                                [message.id]: Math.min(variants.length - 1, activeIdx + 1)
+                              }))
+                            }
+                          >
+                            Next version
+                          </button>
+                          <span className="text-xs text-muted-foreground">Version {activeIdx + 1} of {variants.length}</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </>
               ) : (
                 <p className="m-0 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{message.text}</p>
               )}
-              {message.meta && <p className="mt-1.5 text-muted-foreground text-xs m-0">{message.meta}</p>}
+              {displayMeta && <p className="mt-1.5 text-muted-foreground text-xs m-0">{displayMeta}</p>}
             </article>
-          ))}
+          );
+          })}
           {streamingText.length > 0 && (
             <article className="border border-[#c8d3c1] rounded-xl py-3 px-3.5 max-w-[700px] bg-[#f8fff5]">
               <p className="m-0 mb-1 text-xs font-semibold tracking-wide uppercase text-muted-foreground">Assistant</p>
