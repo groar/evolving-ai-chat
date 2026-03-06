@@ -23,6 +23,11 @@ describe("App shell IA", () => {
     expect(markup).toContain("Suggest an improvement");
   });
 
+  it("shows rename affordance for the active conversation in the chat header", () => {
+    const markup = renderToStaticMarkup(<App />);
+    expect(markup).toContain("Rename current conversation");
+  });
+
   it("does not render secondary-surface content by default (chat pane only)", () => {
     const markup = renderToStaticMarkup(<App />);
     expect(markup).not.toContain("+ New Conversation");

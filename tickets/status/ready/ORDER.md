@@ -51,3 +51,4 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-06: Self-evolving run created and completed T-0085 (rerun assistant answer with model variants); removed from ready queue after acceptance.
 - 2026-03-06: PM run added T-0086 (P1 apply-pipeline timeout bug) at rank 1. T-0001 (unstructured duplicate of model picker) removed; T-1001 (model picker UI polish) canonicalized and added at rank 5. Feedback F-20260306-002 and F-20260306-003 logged.
 - 2026-03-06: T-0086 accepted and moved to done (apply-pipeline 180s timeout + patch_timeout error reporting). Rank 1 is now T-0082.
+- 2026-03-06: Self-evolving run created and completed T-0087 (rename active conversation from chat header); ready queue order unchanged.

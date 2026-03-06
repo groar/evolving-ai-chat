@@ -192,6 +192,27 @@ export function App() {
     }
   }
 
+  function startRenameConversation(conversationId: string, title: string) {
+    setEditingConversationId(conversationId);
+    setRenameDraft(title);
+    setRenameError(null);
+  }
+
+  function cancelRenameConversation() {
+    setEditingConversationId(null);
+    setRenameDraft("");
+    setRenameError(null);
+  }
+
+  async function submitRenameConversation(conversationId: string) {
+    const result = await updateConversationTitle(conversationId, renameDraft);
+    if (result.ok) {
+      cancelRenameConversation();
+      return;
+    }
+    setRenameError(result.error ?? "Rename failed");
+  }
+
   return (
     <main className="app-shell grid grid-cols-1 gap-0 h-screen min-h-screen">
       {/* Conversation sidebar (collapsible) */}
@@ -239,23 +260,11 @@ export function App() {
                           if (e.key === "Enter") {
                             e.preventDefault();
                             void (async () => {
-                              const result = await updateConversationTitle(
-                                conversation.conversation_id,
-                                renameDraft
-                              );
-                              if (result.ok) {
-                                setEditingConversationId(null);
-                                setRenameDraft("");
-                                setRenameError(null);
-                              } else {
-                                setRenameError(result.error ?? "Rename failed");
-                              }
+                              await submitRenameConversation(conversation.conversation_id);
                             })();
                           }
                           if (e.key === "Escape") {
-                            setEditingConversationId(null);
-                            setRenameDraft("");
-                            setRenameError(null);
+                            cancelRenameConversation();
                           }
                         }}
                         className="w-full border border-border rounded-lg py-2 px-3 text-[0.9375rem] font-inherit bg-white focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:border-[#efbe91]"
@@ -294,9 +303,7 @@ export function App() {
                         className="shrink-0 p-1 rounded text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91]"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setEditingConversationId(conversation.conversation_id);
-                          setRenameDraft(conversation.title);
-                          setRenameError(null);
+                          startRenameConversation(conversation.conversation_id, conversation.title);
                         }}
                         aria-label={`Rename ${conversation.title}`}
                       >
@@ -417,7 +424,44 @@ export function App() {
           >
             <PanelLeftIcon className="size-5" />
           </button>
-          <h1 className="m-0 flex-1 text-base font-bold truncate">{topBarTitle}</h1>
+          {activeConversation && editingConversationId === activeConversation.conversation_id ? (
+            <div className="flex-1 min-w-0 grid gap-1">
+              <input
+                type="text"
+                value={renameDraft}
+                onChange={(e) => {
+                  setRenameDraft(e.target.value);
+                  setRenameError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void submitRenameConversation(activeConversation.conversation_id);
+                  }
+                  if (e.key === "Escape") {
+                    cancelRenameConversation();
+                  }
+                }}
+                className="w-full border border-border rounded-lg py-1.5 px-2.5 text-sm font-inherit bg-white focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:border-[#efbe91]"
+                placeholder="Conversation title"
+                autoFocus
+                aria-label="Rename current conversation"
+              />
+              {renameError && <p className="m-0 text-xs text-destructive">{renameError}</p>}
+            </div>
+          ) : (
+            <h1 className="m-0 flex-1 text-base font-bold truncate">{topBarTitle}</h1>
+          )}
+          {activeConversation && editingConversationId !== activeConversation.conversation_id && (
+            <button
+              type="button"
+              className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2"
+              onClick={() => startRenameConversation(activeConversation.conversation_id, activeConversation.title)}
+              aria-label="Rename current conversation"
+            >
+              <PencilIcon className="size-4" />
+            </button>
+          )}
           {typeof conversationCostTotal === "number" && conversationCostTotal > 0 && (
             <span className="shrink-0 text-xs text-muted-foreground" title="Approximate conversation cost">
               ~${conversationCostTotal >= 0.01 ? conversationCostTotal.toFixed(2) : conversationCostTotal.toFixed(4)}
