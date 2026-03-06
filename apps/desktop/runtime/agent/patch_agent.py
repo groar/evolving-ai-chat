@@ -1,13 +1,12 @@
 """
 PatchAgent interface and implementations for M8 agentic code-patch generation.
 
-Layer 1 scope guard is enforced here (system prompt injection).
 Layer 2 allowlist validation (validate_scope) is called by the endpoint before persisting.
 
 Integration model:
-  PiDevPatchAgent invokes pi (https://pi.dev) as a local subprocess in a temp sandbox.
-  pi edits files directly; we compute a unified diff of apps/desktop/src/ before vs after
-  and return a PatchArtifact. The real working copy is never touched here — that is T-0060.
+  PiDevPatchAgent invokes pi (https://pi.dev) as a local subprocess in the repo root.
+  pi runs the self-evolving agent workflow; we compute a unified diff using git after the
+  run and return a PatchArtifact.
 """
 
 from __future__ import annotations
@@ -19,9 +18,7 @@ import logging
 import os
 import re
 import shlex
-import shutil
 import subprocess
-import tempfile
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -29,36 +26,6 @@ from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Layer 1 scope guard — system prompt appended on every pi invocation (spec §6)
-# ---------------------------------------------------------------------------
-SCOPE_GUARD_SYSTEM_PROMPT = """\
-You are a UI code assistant for an Electron/React desktop application.
-Your working directory is the desktop package root. The React source tree is at src/.
-
-SCOPE — You may ONLY modify files in:
-  - src/ (React components, stores, hooks, styles)
-
-You MUST NOT modify:
-  - Any file outside src/
-  - Any Python file (.py)
-  - package.json, package-lock.json, tsconfig.json, vite.config.ts, or any build/config file
-  - Any file in runtime/
-  - Any file in tickets/, docs/, or tests/
-
-CHANGE SIZE — Make the smallest change that fully addresses the feedback.
-Prefer touching 1–2 files at most. Do not add new npm dependencies. Do not create new files. Do not delete files.
-
-DESIGN PHILOSOPHY — This is a warm, calm AI workspace (closer to Notion AI than a dashboard).
-Use the existing Tailwind CSS tokens: var(--color-accent) for primary actions (warm orange),
-var(--color-panel) for card surfaces, var(--color-ink) for body text, var(--color-muted) for
-secondary labels. Do not introduce new colors or override the design system.
-
-OUTPUT — After making your changes, output exactly one plain-English sentence starting with a
-past-tense verb that describes what you changed. Example: "Updated the welcome message to feel
-warmer and more personal." This sentence will be shown to the user.
-"""
 
 # Layer 2 server-side allowlist — loaded from config at runtime (validate_scope)
 _DEFAULT_ALLOWLIST_PATTERNS = [r"^apps/desktop/src/"]
@@ -109,8 +76,9 @@ def validate_scope(files_changed: list[str]) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Area-based file hints (T-0076) — appended to user prompt in _call_pi
+# Public helpers
 # ---------------------------------------------------------------------------
+
 
 def _redact_cmd_for_log(cmd: list[str]) -> list[str]:
     """Redact --api-key value for safe logging. Returns a copy."""
@@ -122,44 +90,58 @@ def _redact_cmd_for_log(cmd: list[str]) -> list[str]:
     return out
 
 
-def _area_hint(area: str) -> str:
-    """Return a file-location hint based on feedback.area prefix."""
-    if not area or not isinstance(area, str):
-        return ""
-    area = area.strip().lower()
-    if area.startswith("ui.chat"):
-        return " The relevant files are likely src/App.tsx or src/components/chat/."
-    if area.startswith("ui.settings"):
-        return " The relevant files are likely src/settingsPanel.tsx."
-    if area.startswith("ui."):
-        return " The relevant files are likely in src/App.tsx."
-    return ""
-
-
-# ---------------------------------------------------------------------------
-# Public helpers
-# ---------------------------------------------------------------------------
-
-
 def _new_patch_id() -> str:
     date_part = datetime.now(timezone.utc).strftime("%Y%m%d")
     uid_part = uuid.uuid4().hex[:8]
     return f"PA-{date_part}-{uid_part}"
 
 
-def _snapshot_src(src_dir: Path, desktop_dir: Path) -> dict[str, str]:
-    """Read all files under src_dir, keyed by repo-relative path (apps/desktop/src/...)."""
-    files: dict[str, str] = {}
-    if not src_dir.exists():
-        return files
-    for f in src_dir.rglob("*"):
-        if f.is_file():
-            repo_rel = "apps/desktop/" + f.relative_to(desktop_dir).as_posix()
+def _git_diff(repo_root: Path, base_ref: str) -> tuple[list[str], str]:
+    """Return (changed_paths, unified_diff_text) using git diff against base_ref.
+
+    Captures tracked modifications via `git diff base_ref` and new untracked files
+    via `git ls-files --others --exclude-standard`.
+    """
+    changed_files: list[str] = []
+    unified_diff = ""
+    try:
+        diff_proc = subprocess.run(
+            ["git", "diff", base_ref],
+            cwd=str(repo_root),
+            capture_output=True, text=True, timeout=30,
+        )
+        unified_diff = diff_proc.stdout or ""
+
+        name_proc = subprocess.run(
+            ["git", "diff", base_ref, "--name-only"],
+            cwd=str(repo_root),
+            capture_output=True, text=True, timeout=30,
+        )
+        changed_files = [f for f in name_proc.stdout.splitlines() if f]
+
+        ls_proc = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard"],
+            cwd=str(repo_root),
+            capture_output=True, text=True, timeout=30,
+        )
+        for path in ls_proc.stdout.splitlines():
+            if not path:
+                continue
+            changed_files.append(path)
             try:
-                files[repo_rel] = f.read_text(encoding="utf-8", errors="replace")
+                content = (repo_root / path).read_text(encoding="utf-8", errors="replace")
+                lines = content.splitlines(keepends=True)
+                chunk = difflib.unified_diff(
+                    [], lines,
+                    fromfile=f"a/{path}",
+                    tofile=f"b/{path}",
+                )
+                unified_diff += "".join(chunk)
             except OSError:
-                files[repo_rel] = ""
-    return files
+                pass
+    except (subprocess.TimeoutExpired, FileNotFoundError) as exc:
+        logger.warning("git diff failed: %s", exc)
+    return changed_files, unified_diff
 
 
 def _compute_diff(
@@ -307,11 +289,10 @@ class PiDevPatchAgent(PatchAgent):
     """Code-patch agent backed by pi (https://pi.dev) running as a local subprocess.
 
     Integration strategy:
-      1. Copy apps/desktop/ to a temp sandbox (excluding node_modules, dist, caches).
-      2. Run: pi -p "<feedback>" --no-session --append-system-prompt "<scope guard>"
-              --tools read,write,edit,grep,find,ls [--provider P] [--api-key K] [--model M]
-      3. Snapshot apps/desktop/src/ before and after pi runs.
-      4. Compute unified diff; return PatchArtifact with status 'pending_apply'.
+      1. Run: pi -p "Run the self-evolving agent with the following user feedback. Feedback: <text>"
+              --no-session --tools read,write,edit,grep,find,ls [--provider P] [--api-key K] [--model M]
+         pi runs from the repo root so it has access to all AGENTS.md guides and the full project.
+      2. Compute unified diff using git after pi finishes; return PatchArtifact with status 'pending_apply'.
 
     Stub mode is activated when PATCH_AGENT_STUB=true or PATCH_AGENT_API_KEY is absent,
     so the agent works offline for tests without invoking pi.
@@ -386,134 +367,102 @@ class PiDevPatchAgent(PatchAgent):
     # ------------------------------------------------------------------
 
     def _call_pi(self, feedback: dict[str, Any], base_ref: str) -> PatchArtifact:
-        desktop_root = self._repo_root / "apps" / "desktop"
-        if not desktop_root.exists():
+        if not self._repo_root.exists():
             raise HarnessUnavailableError(
-                f"Desktop root not found at {desktop_root}; check repo_root configuration."
+                f"Repo root not found at {self._repo_root}; check repo_root configuration."
             )
 
-        with tempfile.TemporaryDirectory(prefix="pi-patch-") as temp_dir:
-            temp_desktop = Path(temp_dir) / "desktop"
+        prompt = (
+            f"Run the self-evolving agent with the following user feedback. "
+            f"Feedback: {feedback.get('summary', '')}"
+        )
+        cmd = [
+            "pi", "-p", prompt,
+            "--no-session",
+            "--no-extensions",
+            "--no-skills",
+            "--no-prompt-templates",
+            "--tools", "read,write,edit,grep,find,ls",
+        ]
+        if self._provider:
+            cmd += ["--provider", self._provider]
+        if self._api_key:
+            cmd += ["--api-key", self._api_key]
+        if self._model:
+            cmd += ["--model", self._model]
 
-            # Copy desktop dir excluding large caches that pi doesn't need
-            shutil.copytree(
-                desktop_root,
-                temp_desktop,
-                ignore=shutil.ignore_patterns(
-                    "node_modules", ".vite", "dist", "build",
-                    "__pycache__", "*.pyc", ".pytest_cache",
-                ),
+        redacted_for_log = _redact_cmd_for_log(cmd)
+        logger.warning(
+            "pi command (run from repo root): %s",
+            shlex.join(redacted_for_log),
+        )
+
+        try:
+            result = subprocess.run(
+                cmd,
+                cwd=str(self._repo_root),
+                capture_output=True,
+                text=True,
+                timeout=600,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise HarnessUnavailableError("pi agent timed out after 600s") from exc
+        except FileNotFoundError as exc:
+            raise HarnessUnavailableError(
+                "pi command not found; install with: "
+                "npm install -g @mariozechner/pi-coding-agent"
+            ) from exc
+
+        # Exit code 1 can mean "model responded but tool errors occurred" — still check diff
+        if result.returncode not in (0, 1):
+            stderr_preview = (result.stderr or "")[:400]
+            raise HarnessUnavailableError(
+                f"pi exited with code {result.returncode}. stderr: {stderr_preview}"
             )
 
-            src_dir = temp_desktop / "src"
+        changed_files, unified_diff = _git_diff(self._repo_root, base_ref)
 
-            # Snapshot before
-            before = _snapshot_src(src_dir, temp_desktop)
-
-            # Build pi command (with area-based file hints per T-0076)
-            area = feedback.get("area", "") or ""
-            hint = _area_hint(area)
-            prompt = (
-                f"Address the following user feedback by modifying the React UI:\n\n"
-                f"Feedback title: {feedback.get('title', '')}\n"
-                f"Details: {feedback.get('summary', '')}\n"
-                f"Area: {area}{hint}"
-            )
-            cmd = [
-                "pi", "-p", prompt,
-                "--no-session",
-                "--no-extensions",
-                "--no-skills",
-                "--no-prompt-templates",
-                "--tools", "read,write,edit,grep,find,ls",
-                "--append-system-prompt", SCOPE_GUARD_SYSTEM_PROMPT,
-            ]
-            # Credentials passed as CLI flags, never stored in artifacts
-            if self._provider:
-                cmd += ["--provider", self._provider]
-            if self._api_key:
-                cmd += ["--api-key", self._api_key]
-            if self._model:
-                cmd += ["--model", self._model]
-
-            # Log command (API key redacted) for re-testing/optimization.
-            # Use warning level so it's always visible even when 422/malformed (default level hides INFO).
-            redacted_for_log = _redact_cmd_for_log(cmd)
-            logger.warning(
-                "pi command (run from apps/desktop): %s",
-                shlex.join(redacted_for_log),
+        if not changed_files:
+            output_preview = (result.stdout or "")[:300]
+            raise MalformedPatchError(
+                f"pi made no changes. pi output: {output_preview}"
             )
 
-            try:
-                result = subprocess.run(
-                    cmd,
-                    cwd=str(temp_desktop),
-                    capture_output=True,
-                    text=True,
-                    timeout=120,
-                )
-            except subprocess.TimeoutExpired as exc:
-                raise HarnessUnavailableError("pi agent timed out after 120s") from exc
-            except FileNotFoundError as exc:
-                raise HarnessUnavailableError(
-                    "pi command not found; install with: "
-                    "npm install -g @mariozechner/pi-coding-agent"
-                ) from exc
+        description = (result.stdout or "").strip()[:1000]
+        if not description:
+            description = f"Changes addressing: {feedback.get('summary', '')}"
 
-            # Exit code 1 can mean "model responded but tool errors occurred" — still check diff
-            if result.returncode not in (0, 1):
-                stderr_preview = (result.stderr or "")[:400]
-                raise HarnessUnavailableError(
-                    f"pi exited with code {result.returncode}. stderr: {stderr_preview}"
-                )
-
-            # Snapshot after
-            after = _snapshot_src(src_dir, temp_desktop)
-
-            changed_files, unified_diff = _compute_diff(before, after)
-
-            if not changed_files:
-                output_preview = (result.stdout or "")[:300]
-                raise MalformedPatchError(
-                    f"pi made no changes to apps/desktop/src/. "
-                    f"pi output: {output_preview}"
-                )
-
-            description = (result.stdout or "").strip()[:1000]
-            if not description:
-                description = f"Changes addressing: {feedback.get('summary', '')}"
-
-            log_parts: list[str] = []
-            log_parts.append("pi subprocess run for patch generation")
-            log_parts.append(f"cwd={temp_desktop}")
-            log_parts.append(f"returncode={result.returncode}")
+        log_parts: list[str] = []
+        log_parts.append("pi subprocess run for self-evolving agent")
+        log_parts.append(f"cwd={self._repo_root}")
+        log_parts.append(f"returncode={result.returncode}")
+        log_parts.append("")
+        log_parts.append(
+            "command (run from repo root; API key redacted — add --api-key $PATCH_AGENT_API_KEY when re-running):"
+        )
+        log_parts.append(shlex.join(redacted_for_log))
+        if result.stdout:
             log_parts.append("")
-            log_parts.append(
-                "command (run from apps/desktop; API key redacted — add --api-key $PATCH_AGENT_API_KEY when re-running):"
-            )
-            log_parts.append(shlex.join(redacted_for_log))
-            if result.stdout:
-                log_parts.append("")
-                log_parts.append("stdout:")
-                log_parts.append(result.stdout)
-            if result.stderr:
-                log_parts.append("")
-                log_parts.append("stderr:")
-                log_parts.append(result.stderr)
-            log_text = "\n".join(log_parts)
+            log_parts.append("stdout:")
+            log_parts.append(result.stdout)
+        if result.stderr:
+            log_parts.append("")
+            log_parts.append("stderr:")
+            log_parts.append(result.stderr)
+        log_text = "\n".join(log_parts)
 
-            return PatchArtifact(
-                id=_new_patch_id(),
-                created_at=datetime.now(timezone.utc).isoformat(),
-                feedback_id=feedback.get("id", ""),
-                base_ref=base_ref,
-                status="pending_apply",
-                title=f"UI adjustment: {feedback.get('title', 'feedback')}",
-                description=description,
-                files_changed=changed_files,
-                unified_diff=unified_diff,
-                scope_violations=[],
-                agent_model=self._model or "pi-default",
-                agent_harness="pi-v1",
-                log_text=log_text,
-            )
+        return PatchArtifact(
+            id=_new_patch_id(),
+            created_at=datetime.now(timezone.utc).isoformat(),
+            feedback_id=feedback.get("id", ""),
+            base_ref=base_ref,
+            status="pending_apply",
+            title=f"Agent change: {feedback.get('title', 'feedback')}",
+            description=description,
+            files_changed=changed_files,
+            unified_diff=unified_diff,
+            scope_violations=[],
+            agent_model=self._model or "pi-default",
+            agent_harness="pi-v1",
+            log_text=log_text,
+        )

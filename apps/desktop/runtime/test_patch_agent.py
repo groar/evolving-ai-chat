@@ -182,7 +182,6 @@ class PiDevHarnessErrorTests(unittest.TestCase):
     def setUp(self) -> None:
         self._tmpdir = tempfile.TemporaryDirectory()
         repo_root = Path(self._tmpdir.name)
-        (repo_root / "apps" / "desktop").mkdir(parents=True)
         self.agent = _real_agent(repo_root=repo_root)
 
     def tearDown(self) -> None:
@@ -195,15 +194,13 @@ class PiDevHarnessErrorTests(unittest.TestCase):
         fake.stdout = stdout
         fake.stderr = stderr
         with (
-            patch("runtime.agent.patch_agent.shutil.copytree"),
-            patch("runtime.agent.patch_agent._snapshot_src", side_effect=[{}, {}]),
+            patch("runtime.agent.patch_agent._git_diff", return_value=([], "")),
             patch("runtime.agent.patch_agent.subprocess.run", return_value=fake),
         ):
             return self.agent._call_pi(_feedback(), "abc1234")
 
     def test_pi_not_installed_raises_harness_unavailable(self) -> None:
         with (
-            patch("runtime.agent.patch_agent.shutil.copytree"),
             patch("runtime.agent.patch_agent.subprocess.run",
                   side_effect=FileNotFoundError("pi: command not found")),
         ):
@@ -213,9 +210,8 @@ class PiDevHarnessErrorTests(unittest.TestCase):
 
     def test_pi_timeout_raises_harness_unavailable(self) -> None:
         with (
-            patch("runtime.agent.patch_agent.shutil.copytree"),
             patch("runtime.agent.patch_agent.subprocess.run",
-                  side_effect=subprocess.TimeoutExpired(cmd="pi", timeout=120)),
+                  side_effect=subprocess.TimeoutExpired(cmd="pi", timeout=600)),
         ):
             with self.assertRaises(HarnessUnavailableError) as ctx:
                 self.agent._call_pi(_feedback(), "abc1234")
@@ -226,18 +222,13 @@ class PiDevHarnessErrorTests(unittest.TestCase):
             self._run_with_subprocess_result(returncode=2, stdout="", stderr="fatal error")
 
     def test_pi_no_file_changes_raises_malformed_patch(self) -> None:
-        """When pi exits successfully but modifies no files, raise MalformedPatchError."""
+        """When pi exits successfully but git diff finds no changes, raise MalformedPatchError."""
         fake = MagicMock(spec=subprocess.CompletedProcess)
         fake.returncode = 0
         fake.stdout = "I looked at the code but made no changes."
         fake.stderr = ""
         with (
-            patch("runtime.agent.patch_agent.shutil.copytree"),
-            # before and after snapshots are identical → no diff
-            patch("runtime.agent.patch_agent._snapshot_src", side_effect=[
-                {"apps/desktop/src/App.tsx": "original\n"},
-                {"apps/desktop/src/App.tsx": "original\n"},
-            ]),
+            patch("runtime.agent.patch_agent._git_diff", return_value=([], "")),
             patch("runtime.agent.patch_agent.subprocess.run", return_value=fake),
         ):
             with self.assertRaises(MalformedPatchError):
@@ -248,12 +239,10 @@ class PiDevHarnessErrorTests(unittest.TestCase):
         fake.returncode = 0
         fake.stdout = "Updated the welcome copy to be more conversational."
         fake.stderr = ""
+        stub_diff = "--- a/apps/desktop/src/App.tsx\n+++ b/apps/desktop/src/App.tsx\n"
         with (
-            patch("runtime.agent.patch_agent.shutil.copytree"),
-            patch("runtime.agent.patch_agent._snapshot_src", side_effect=[
-                {"apps/desktop/src/App.tsx": "// old copy\n"},
-                {"apps/desktop/src/App.tsx": "// new copy\n"},
-            ]),
+            patch("runtime.agent.patch_agent._git_diff",
+                  return_value=(["apps/desktop/src/App.tsx"], stub_diff)),
             patch("runtime.agent.patch_agent.subprocess.run", return_value=fake),
         ):
             artifact = self.agent._call_pi(_feedback(), "abc1234")
@@ -268,38 +257,34 @@ class PiDevHarnessErrorTests(unittest.TestCase):
         fake.returncode = 0
         fake.stdout = "Updated copy."
         fake.stderr = ""
+        stub_diff = "--- a/apps/desktop/src/App.tsx\n+++ b/apps/desktop/src/App.tsx\n"
         with (
-            patch("runtime.agent.patch_agent.shutil.copytree"),
-            patch("runtime.agent.patch_agent._snapshot_src", side_effect=[
-                {"apps/desktop/src/App.tsx": "old\n"},
-                {"apps/desktop/src/App.tsx": "new\n"},
-            ]),
+            patch("runtime.agent.patch_agent._git_diff",
+                  return_value=(["apps/desktop/src/App.tsx"], stub_diff)),
             patch("runtime.agent.patch_agent.subprocess.run", return_value=fake),
         ):
             artifact = self.agent._call_pi(_feedback(), "abc1234")
         artifact_json = json.dumps(artifact.to_dict())
         self.assertNotIn("sk-ant-topsecret", artifact_json)
 
-    def test_ui_chat_area_injects_file_hint_into_prompt(self) -> None:
-        """T-0076: feedback.area=ui.chat must append chat file hint to pi prompt."""
+    def test_self_evolving_prompt_contains_feedback_text(self) -> None:
+        """Prompt must be the simple self-evolving agent format with feedback summary."""
         fake = MagicMock(spec=subprocess.CompletedProcess)
         fake.returncode = 0
-        fake.stdout = "Updated."
+        fake.stdout = "Done."
         fake.stderr = ""
+        stub_diff = "--- a/tickets/x.md\n+++ b/tickets/x.md\n"
         with (
-            patch("runtime.agent.patch_agent.shutil.copytree"),
-            patch("runtime.agent.patch_agent._snapshot_src", side_effect=[
-                {"apps/desktop/src/App.tsx": "old\n"},
-                {"apps/desktop/src/App.tsx": "new\n"},
-            ]),
+            patch("runtime.agent.patch_agent._git_diff",
+                  return_value=(["tickets/x.md"], stub_diff)),
             patch("runtime.agent.patch_agent.subprocess.run", return_value=fake) as mock_run,
         ):
-            self.agent._call_pi(_feedback(area="ui.chat"), "abc1234")
-        call_kwargs = mock_run.call_args
-        cmd = call_kwargs[0][0]
-        prompt_idx = cmd.index("-p") + 1
-        prompt = cmd[prompt_idx]
-        self.assertIn("src/App.tsx or src/components/chat/", prompt)
+            self.agent._call_pi(_feedback(summary="First message is too stiff."), "abc1234")
+        cmd = mock_run.call_args[0][0]
+        prompt = cmd[cmd.index("-p") + 1]
+        self.assertIn("self-evolving agent", prompt)
+        self.assertIn("First message is too stiff.", prompt)
+        self.assertNotIn("--append-system-prompt", cmd)
 
 
 # ---------------------------------------------------------------------------
