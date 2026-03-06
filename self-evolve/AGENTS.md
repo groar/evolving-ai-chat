@@ -41,12 +41,14 @@ Follow `tickets/AGENTS.md` for artifact formats and conventions, scoped to a sin
 
 Skip full PM checkpoint extras (epic management, process improvement proposals, batch review, validation ladder assessment) — those belong to dedicated PM runs.
 
+**Gate**: The ticket file must exist on disk in `tickets/status/ready/` and be listed in `ORDER.md` before proceeding to Phase 2. Do not start implementation until the ticket is written.
+
 ### Phase 2 — Implementation
 
 Follow the root `AGENTS.md` Required Work Pattern.
 
-1. Pick up the ticket just created (it is at the top of `ORDER.md`).
-2. Move it to `tickets/status/in-progress/`.
+1. Pick up the ticket just created (it is in `tickets/status/ready/` and at the top of `ORDER.md`).
+2. Move the ticket file to `tickets/status/in-progress/`.
 3. Implement the change: design/spec → code → tests → docs.
 4. Update the ticket checklist and change log as work progresses.
 5. Move to `tickets/status/review/` with evidence recorded on the ticket.
