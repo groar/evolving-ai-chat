@@ -74,11 +74,8 @@ class ValidateScopeTests(unittest.TestCase):
     def test_in_scope_file_passes(self) -> None:
         self.assertEqual(validate_scope(["apps/desktop/src/App.tsx"]), [])
 
-    def test_python_runtime_file_blocked(self) -> None:
-        violations = validate_scope(["apps/desktop/runtime/main.py"])
-        self.assertEqual(violations, ["apps/desktop/runtime/main.py"])
-
     def test_package_json_blocked(self) -> None:
+        # package.json is outside allowlist (apps/desktop/src/, runtime/, tickets/, docs/, tests/)
         violations = validate_scope(["package.json"])
         self.assertEqual(violations, ["package.json"])
 
@@ -89,10 +86,8 @@ class ValidateScopeTests(unittest.TestCase):
             "apps/desktop/src/components/Chat.tsx",
             "package.json",
         ])
-        self.assertEqual(
-            sorted(violations),
-            sorted(["apps/desktop/runtime/main.py", "package.json"]),
-        )
+        # runtime/, src/ allowed; package.json blocked
+        self.assertEqual(violations, ["package.json"])
 
     def test_empty_list_passes(self) -> None:
         self.assertEqual(validate_scope([]), [])
@@ -101,6 +96,16 @@ class ValidateScopeTests(unittest.TestCase):
         self.assertEqual(
             validate_scope(["apps/desktop/src/components/sidebar/Nav.tsx"]), []
         )
+
+    def test_runtime_tickets_docs_tests_allowed(self) -> None:
+        allowed = [
+            "apps/desktop/runtime/main.py",
+            "apps/desktop/runtime/agent/patch_storage.py",
+            "tickets/status/ready/T-0001-foo.md",
+            "docs/m8-code-loop.md",
+            "tests/AGENTS.md",
+        ]
+        self.assertEqual(validate_scope(allowed), [])
 
 
 # ---------------------------------------------------------------------------
@@ -367,10 +372,10 @@ class CodePatchEndpointTests(unittest.TestCase):
             feedback_id="FB-001",
             base_ref="abc1234",
             status="pending_apply",
-            title="Sneaky runtime change",
-            description="Tries to edit runtime",
-            files_changed=["apps/desktop/runtime/main.py"],
-            unified_diff="--- a/runtime/main.py\n",
+            title="Sneaky package.json change",
+            description="Tries to edit package.json",
+            files_changed=["package.json"],
+            unified_diff="--- a/package.json\n",
             scope_violations=[],
             agent_model="stub",
             agent_harness="stub-v1",
@@ -379,7 +384,7 @@ class CodePatchEndpointTests(unittest.TestCase):
             client = TestClient(app)
             resp = client.post("/agent/code-patch", json={
                 "feedback_id": "FB-scope-test",
-                "feedback_title": "Modify runtime",
+                "feedback_title": "Modify package.json",
                 "feedback_summary": "",
                 "feedback_area": "core",
                 "base_ref": "abc1234",
@@ -387,7 +392,7 @@ class CodePatchEndpointTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertEqual(data["status"], "scope_blocked")
-        self.assertIn("apps/desktop/runtime/main.py", data["scope_violations"])
+        self.assertIn("package.json", data["scope_violations"])
 
         # T-0076: scope_blocked path must log to patch_metrics
         with sqlite3.connect(storage.db_path) as conn:
