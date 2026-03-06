@@ -18,6 +18,7 @@ import json
 import logging
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -110,6 +111,16 @@ def validate_scope(files_changed: list[str]) -> list[str]:
 # ---------------------------------------------------------------------------
 # Area-based file hints (T-0076) — appended to user prompt in _call_pi
 # ---------------------------------------------------------------------------
+
+def _redact_cmd_for_log(cmd: list[str]) -> list[str]:
+    """Redact --api-key value for safe logging. Returns a copy."""
+    out = list(cmd)
+    for i, arg in enumerate(out):
+        if arg == "--api-key" and i + 1 < len(out):
+            out[i + 1] = "***"
+            break
+    return out
+
 
 def _area_hint(area: str) -> str:
     """Return a file-location hint based on feedback.area prefix."""
@@ -425,6 +436,14 @@ class PiDevPatchAgent(PatchAgent):
             if self._model:
                 cmd += ["--model", self._model]
 
+            # Log command (API key redacted) for re-testing/optimization.
+            # Use warning level so it's always visible even when 422/malformed (default level hides INFO).
+            redacted_for_log = _redact_cmd_for_log(cmd)
+            logger.warning(
+                "pi command (run from apps/desktop): %s",
+                shlex.join(redacted_for_log),
+            )
+
             try:
                 result = subprocess.run(
                     cmd,
@@ -468,6 +487,11 @@ class PiDevPatchAgent(PatchAgent):
             log_parts.append("pi subprocess run for patch generation")
             log_parts.append(f"cwd={temp_desktop}")
             log_parts.append(f"returncode={result.returncode}")
+            log_parts.append("")
+            log_parts.append(
+                "command (run from apps/desktop; API key redacted — add --api-key $PATCH_AGENT_API_KEY when re-running):"
+            )
+            log_parts.append(shlex.join(redacted_for_log))
             if result.stdout:
                 log_parts.append("")
                 log_parts.append("stdout:")
