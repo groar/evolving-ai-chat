@@ -33,3 +33,4 @@ Tracks all feedback intake items for easy triage, deferral, and ticket linkage.
 | F-20260304-004 | ticketed | design-system | S2 | T-0066 | 2026-03-04 |
 | F-20260304-005 | ticketed | ux, observability | S2 | T-0073 | 2026-03-04 |
 | F-20260306-001 | ticketed | ux | S2 | T-0085 | 2026-03-06 |
+| F-20260306-003 | ticketed | reliability, observability | S1 | T-0086 | 2026-03-06 |

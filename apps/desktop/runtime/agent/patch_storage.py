@@ -9,6 +9,7 @@ so they survive runtime restarts and are available to the apply/rollback logic
 from __future__ import annotations
 
 import json
+import os
 import threading
 from pathlib import Path
 
@@ -23,7 +24,12 @@ class PatchStorage:
 
     def __init__(self, storage_dir: Path | None = None) -> None:
         default_dir = Path(__file__).resolve().parents[1] / "storage" / "patches"
-        self._dir = storage_dir or default_dir
+        if storage_dir is not None:
+            self._dir = Path(storage_dir)
+        elif env_dir := os.environ.get("RUNTIME_PATCH_STORAGE_DIR"):
+            self._dir = Path(env_dir)
+        else:
+            self._dir = default_dir
         self._dir.mkdir(parents=True, exist_ok=True)
         self._lock = threading.Lock()
 
