@@ -90,6 +90,8 @@ Follow `tickets/AGENTS.md` "PM Acceptance (Post-QA)".
 
 The self-evolving agent **never stops to ask the user for information or clarification**. It works entirely autonomously from the moment it receives feedback to the moment it accepts the ticket.
 
+> **Override**: The root `AGENTS.md` "Spec Ambiguity" section (which says "Ask for guidance first") does **not** apply in self-evolving mode. This guide is more specific and takes precedence for every decision point during a self-evolving run.
+
 When a decision point is reached — ambiguous wording, multiple valid approaches, missing detail — the agent must:
 1. Pick the most reasonable interpretation based on the existing codebase, prior tickets, and product context.
 2. Document the choice explicitly in the ticket's `Design Spec` or `Notes` section (e.g. "Assumed X because Y; alternative Z was considered and deferred").
