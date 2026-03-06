@@ -86,16 +86,27 @@ Follow `tickets/AGENTS.md` "PM Acceptance (Post-QA)".
 - One suggested commit message summarizing the full change set.
 - One explicit next-step suggestion (follow-up work, deferred items from the original feedback, or "no follow-up needed").
 
-## Failure Modes and Escalation
+## Autonomy Principle
 
-- **Ambiguous feedback**: If the feedback is too vague to create a well-scoped ticket, stop after Phase 1 and ask the user for clarification. Do not invent critical behavior.
-- **Implementation blocked**: If implementation hits an unresolvable blocker, move the ticket to `blocked/`, record the blocker, and end the run with the blocker as the next-step suggestion.
+The self-evolving agent **never stops to ask the user for information or clarification**. It works entirely autonomously from the moment it receives feedback to the moment it accepts the ticket.
+
+When a decision point is reached — ambiguous wording, multiple valid approaches, missing detail — the agent must:
+1. Pick the most reasonable interpretation based on the existing codebase, prior tickets, and product context.
+2. Document the choice explicitly in the ticket's `Design Spec` or `Notes` section (e.g. "Assumed X because Y; alternative Z was considered and deferred").
+3. Proceed without pausing.
+
+Every non-obvious choice made during the run must leave a trace in the ticket or change log so a human reviewer can understand the reasoning after the fact.
+
+## Failure Modes
+
+- **Ambiguous feedback**: Make the most reasonable interpretation given available context. Document the assumption in the ticket's `Design Spec` or `Notes`. Do not stop or ask for clarification.
+- **Implementation blocked**: If implementation hits an unresolvable blocker, move the ticket to `blocked/`, record the blocker and the decision that led there, and end the run with the blocker as the next-step suggestion.
 - **QA failure (non-trivial)**: If QA finds a defect that cannot be fixed within the current scope, create a bug ticket, note the scope reduction on the original ticket, and proceed to PM acceptance for the reduced scope (or move to `blocked/` if the core acceptance criteria are unmet).
 
 ## Guardrails
 - One feedback, one ticket, one change. Do not scope-creep into multi-ticket batches.
 - Do not skip QA for software/behavior changes, even if the change looks trivial.
-- Do not silently invent behavior when the feedback is ambiguous — escalate.
+- Never ask the user for information during a run. Document choices instead of escalating.
 - Produce the same traceability artifacts as the manual workflow: feedback ID → ticket → QA evidence → PM acceptance.
 - Respect the same safety constraints as the normal workflow: feature flags, rollback-readiness, security, cost boundaries.
 
