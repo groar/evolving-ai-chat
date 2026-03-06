@@ -1,0 +1,10 @@
+--- a/apps/desktop/src/App.tsx
++++ b/apps/desktop/src/App.tsx
+@@ -20,6 +20,7 @@ import type { RuntimeIssue } from "./stores/runtimeStore";
+ import type { RuntimeIssue } from "./stores/runtimeStore";
+ 
+ const appName = "Evolving AI Chat — your personal assistant";
++// Eval harness fixture: good.diff
+ const diagnosticsFlagKey = "show_runtime_diagnostics";
+ 
+ export { offlineStateRetryIntervalMs, shouldAutoRetryOfflineState };

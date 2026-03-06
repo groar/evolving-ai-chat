@@ -1,0 +1,8 @@
+id: "bad-patch-applies"
+description: "A malformed or inapplicable diff should fail the check"
+check_type: "patch_applies_cleanly"
+inputs:
+  patch_file: "fixtures/bad.diff"
+  target_dir: null
+expect:
+  result: "fail"
