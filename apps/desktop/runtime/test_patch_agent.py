@@ -272,8 +272,8 @@ class PiDevHarnessErrorTests(unittest.TestCase):
         artifact_json = json.dumps(artifact.to_dict())
         self.assertNotIn("sk-ant-topsecret", artifact_json)
 
-    def test_self_evolving_prompt_contains_feedback_text(self) -> None:
-        """Prompt must be the simple self-evolving agent format with feedback summary."""
+    def test_prompt_contains_feedback(self) -> None:
+        """Prompt includes the feedback text."""
         fake = MagicMock(spec=subprocess.CompletedProcess)
         fake.returncode = 0
         fake.stdout = "Done."
@@ -287,9 +287,52 @@ class PiDevHarnessErrorTests(unittest.TestCase):
             self.agent._call_pi(_feedback(summary="First message is too stiff."), "abc1234")
         cmd = mock_run.call_args[0][0]
         prompt = cmd[cmd.index("-p") + 1]
-        self.assertIn("self-evolving agent", prompt)
         self.assertIn("First message is too stiff.", prompt)
         self.assertNotIn("--append-system-prompt", cmd)
+
+
+# ---------------------------------------------------------------------------
+# Prompt assembly (M13 T-0089)
+# ---------------------------------------------------------------------------
+
+class PromptAssemblyTests(unittest.TestCase):
+    """Verify that _build_structured_prompt produces the M13 §7.1 multi-section template."""
+
+    def setUp(self) -> None:
+        self.agent = _real_agent()
+
+    def _make_fake_subprocess(self, stdout: str = "") -> MagicMock:
+        fake = MagicMock(spec=subprocess.CompletedProcess)
+        fake.returncode = 0
+        fake.stdout = stdout
+        fake.stderr = ""
+        return fake
+
+    def test_prompt_contains_feedback(self) -> None:
+        with patch("runtime.agent.patch_agent.subprocess.run",
+                   return_value=self._make_fake_subprocess()):
+            prompt = self.agent._build_structured_prompt("Add a dark mode toggle")
+        self.assertIn("Feedback: Add a dark mode toggle", prompt)
+
+    def test_change_request_in_feedback_line(self) -> None:
+        with patch("runtime.agent.patch_agent.subprocess.run",
+                   return_value=self._make_fake_subprocess()):
+            prompt = self.agent._build_structured_prompt("Make the welcome message warmer")
+        self.assertIn("Feedback: Make the welcome message warmer", prompt)
+
+    def test_retry_context_appended_when_provided(self) -> None:
+        retry_ctx = "Build failed: TypeScript error TS2345 in App.tsx"
+        with patch("runtime.agent.patch_agent.subprocess.run",
+                   return_value=self._make_fake_subprocess()):
+            prompt = self.agent._build_structured_prompt("Some change", retry_context=retry_ctx)
+        self.assertIn("Previous attempt failed", prompt)
+        self.assertIn("Build failed: TypeScript error TS2345 in App.tsx", prompt)
+
+    def test_retry_context_absent_without_value(self) -> None:
+        with patch("runtime.agent.patch_agent.subprocess.run",
+                   return_value=self._make_fake_subprocess()):
+            prompt = self.agent._build_structured_prompt("Some change")
+        self.assertNotIn("Previous attempt failed", prompt)
 
 
 # ---------------------------------------------------------------------------

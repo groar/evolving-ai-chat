@@ -87,6 +87,7 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Rerun assistant answers with different models + version navigation (T-0085).
   - Apply-pipeline 180s patch timeout with user-facing error reporting (T-0086).
   - In-context conversation rename from chat header (T-0087).
+  - Structured patch-agent prompt: M13 §7.1 template with dynamic allowlist, codebase context, and retry hook (T-0089).
 - Known gaps:
   - ~~UI is system-centric~~ — addressed by M4, M9, M9.1.
   - ~~Tech stack mismatch~~ — Tailwind + shadcn/ui adopted (T-0031); Zustand pending (T-0032).

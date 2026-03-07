@@ -262,13 +262,17 @@ class PatchAgent(abc.ABC):
 
     @abc.abstractmethod
     def generate_patch(
-        self, feedback: dict[str, Any], base_ref: str
+        self,
+        feedback: dict[str, Any],
+        base_ref: str,
+        retry_context: str | None = None,
     ) -> PatchArtifact:
         """Generate a patch artifact from a feedback payload.
 
         Args:
             feedback: dict with keys id, title, summary, area.
             base_ref: git SHA of the working tree at invocation time.
+            retry_context: optional failure context from a previous attempt (T-0091).
 
         Returns:
             PatchArtifact with status 'pending_apply'.
@@ -313,11 +317,14 @@ class PiDevPatchAgent(PatchAgent):
         self._use_stub = stub_flag in ("1", "true", "yes") or not self._api_key
 
     def generate_patch(
-        self, feedback: dict[str, Any], base_ref: str
+        self,
+        feedback: dict[str, Any],
+        base_ref: str,
+        retry_context: str | None = None,
     ) -> PatchArtifact:
         if self._use_stub:
             return self._generate_stub(feedback, base_ref)
-        return self._call_pi(feedback, base_ref)
+        return self._call_pi(feedback, base_ref, retry_context=retry_context)
 
     # ------------------------------------------------------------------
     # Stub path (offline / test)
@@ -362,21 +369,53 @@ class PiDevPatchAgent(PatchAgent):
         )
 
     # ------------------------------------------------------------------
+    # Prompt assembly (M13 §7)
+    # ------------------------------------------------------------------
+
+    def _build_structured_prompt(
+        self,
+        content: str,
+        retry_context: str | None = None,
+    ) -> str:
+        """Build the pi prompt: feedback + optional retry context.
+
+        pi reads AGENTS.md from the repo root and can explore the codebase itself.
+        This prompt adds only the change request and retry failure context when applicable.
+
+        Args:
+            content: the change request text (feedback summary or refined functional description).
+            retry_context: if provided, appends failure context so the agent can self-correct
+                           (used by T-0091 retry logic).
+        """
+        parts = [
+            "Run the self-evolving agent with the following user feedback, "
+            f"without asking for any external output.\n\nFeedback: {content}",
+        ]
+        if retry_context:
+            parts.append(
+                "Previous attempt failed. Here is what went wrong:\n"
+                f"{retry_context}\n"
+                "Please try again, addressing the failure."
+            )
+        return "\n\n".join(parts)
+
+    # ------------------------------------------------------------------
     # Real harness path — pi subprocess
     # ------------------------------------------------------------------
 
-    def _call_pi(self, feedback: dict[str, Any], base_ref: str) -> PatchArtifact:
+    def _call_pi(
+        self,
+        feedback: dict[str, Any],
+        base_ref: str,
+        retry_context: str | None = None,
+    ) -> PatchArtifact:
         if not self._repo_root.exists():
             raise HarnessUnavailableError(
                 f"Repo root not found at {self._repo_root}; check repo_root configuration."
             )
 
-        # Use feedback content (summary), not the title, per proper pi invocation.
         content = feedback.get("summary", "").strip() or feedback.get("title", "")
-        prompt = (
-            "Run the self-evolving agent with the following user feedback, without asking for any external output. "
-            f"Feedback: {content}"
-        )
+        prompt = self._build_structured_prompt(content, retry_context=retry_context)
         cmd = [
             "pi", "-p", prompt,
             "--tools", "read,write,edit,grep,find,ls",
