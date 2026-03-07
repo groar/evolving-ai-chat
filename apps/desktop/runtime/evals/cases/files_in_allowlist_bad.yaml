@@ -1,0 +1,12 @@
+id: "files-in-allowlist-bad"
+description: "Patch that touches a path outside allowlist fails"
+check_type: "files_in_allowlist"
+blocking: true
+inputs:
+  patch_inline: |
+    --- a/other/out-of-scope.txt
+    +++ b/other/out-of-scope.txt
+    @@ -0,0 +1 @@
+    +content
+expect:
+  result: "fail"

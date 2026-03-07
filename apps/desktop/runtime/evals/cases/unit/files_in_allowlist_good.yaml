@@ -1,0 +1,8 @@
+id: "files-in-allowlist-good"
+description: "Patch that only touches allowlisted paths passes"
+check_type: "files_in_allowlist"
+blocking: true
+inputs:
+  patch_file: "../fixtures/good.diff"
+expect:
+  result: "pass"

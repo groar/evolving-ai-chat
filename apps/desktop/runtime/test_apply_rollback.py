@@ -6,6 +6,7 @@ Unit tests cover:
   - rollback on a non-applied artifact → RollbackError
   - rollback conflict handling
   - rollback_unavailable when commit SHA is gone
+  - eval blocking: when a blocking check fails, _run_evals raises ApplyError(eval_blocked)
 
 Integration tests (real git repo, npm validate mocked):
   - apply a patch → verify git commit exists → rollback → verify revert commit
@@ -15,6 +16,7 @@ Integration tests (real git repo, npm validate mocked):
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import tempfile
@@ -143,6 +145,41 @@ class RunEvalsTests(unittest.TestCase):
             artifact.log_text = None
             pipeline._run_evals(artifact)
             self.assertIsNone(artifact.log_text)
+
+    def test_run_evals_raises_eval_blocked_when_blocking_check_fails(self) -> None:
+        """When harness output contains a blocking failure, _run_evals raises ApplyError(eval_blocked)."""
+        fake_output = {
+            "total": 1,
+            "passed": 0,
+            "failed": 1,
+            "results": [
+                {
+                    "check_type": "files_in_allowlist",
+                    "case_id": "files-in-allowlist-bad",
+                    "passed": False,
+                    "blocking": True,
+                    "message": "Files outside allowlist",
+                    "details": {"violations": ["other/evil.txt"]},
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory(dir=_TEST_TMP_BASE) as tmp:
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            storage = PatchStorage(storage_dir=repo / "patches")
+            pipeline = ApplyPipeline(repo_root=repo, patch_storage=storage)
+            artifact = _make_artifact("PA-blocking-fail", repo)
+            artifact.unified_diff = "--- a/other/evil.txt\n+++ b/other/evil.txt\n@@ -0,0 +1 @@\n+x\n"
+            with mock_patch("subprocess.run") as m_run:
+                m_run.return_value = MagicMock(
+                    returncode=1,
+                    stdout=json.dumps(fake_output),
+                    stderr="",
+                )
+                with self.assertRaises(ApplyError) as ctx:
+                    pipeline._run_evals(artifact)
+                self.assertEqual(ctx.exception.reason, "eval_blocked")
+                self.assertIn("blocking_failures", ctx.exception.details)
 
 
 @pytest.mark.integration

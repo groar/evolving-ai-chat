@@ -3,7 +3,7 @@ description: "A valid patch against the current src/ tree applies without error"
 check_type: "patch_applies_cleanly"
 blocking: true
 inputs:
-  patch_file: "fixtures/good.diff"
+  patch_file: "../fixtures/good.diff"
   target_dir: null
 expect:
   result: "pass"

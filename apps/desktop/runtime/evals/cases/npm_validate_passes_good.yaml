@@ -1,0 +1,8 @@
+id: "npm-validate-passes-good"
+description: "Patch that applies and leaves npm run validate passing"
+check_type: "npm_validate_passes"
+blocking: true
+inputs:
+  patch_file: "fixtures/good.diff"
+expect:
+  result: "pass"

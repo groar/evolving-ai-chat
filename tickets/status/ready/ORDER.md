@@ -15,10 +15,9 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0090 | P1 | Eval harness expansion: blocking policy + `files_in_allowlist` + `npm_validate_passes` |
-| 2 | T-0091 | P1 | Retry with failure context (depends on T-0089 ✓, T-0090) |
-| 3 | T-0092 | P1 | Conversational feedback-refinement: refinement conversation + context endpoint + UI (depends on T-0089 ✓) |
-| 4 | T-0093 | P2 | Progress reporting: elapsed-time in poll response + frontend counter |
+| 1 | T-0091 | P1 | Retry with failure context (depends on T-0089 ✓, T-0090 ✓) |
+| 2 | T-0092 | P1 | Conversational feedback-refinement: refinement conversation + context endpoint + UI (depends on T-0089 ✓) |
+| 3 | T-0093 | P2 | Progress reporting: elapsed-time in poll response + frontend counter |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -60,3 +59,4 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-07: T-0088 accepted and moved to done (M13 design spec). Ready queue empty; PM to create implementation tickets T-0089–T-0093 from spec §9.
 - 2026-03-07: PM run created T-0089–T-0093 (M13 implementation tickets) and replenished ready queue. Order: T-0089 (prompt), T-0090 (evals), T-0091 (retry), T-0092 (refinement conversation), T-0093 (progress reporting). T-0089 and T-0090 are independent; T-0091 depends on both; T-0092 depends on T-0089; T-0093 is independent.
 - 2026-03-07: T-0089 accepted and moved to done (structured prompt template + dynamic allowlist + context assembly). Rank 1 is now T-0090.
+- 2026-03-07: T-0090 accepted and moved to done (eval harness blocking policy + files_in_allowlist + npm_validate_passes). Rank 1 is now T-0091.

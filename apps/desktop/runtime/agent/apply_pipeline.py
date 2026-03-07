@@ -296,10 +296,11 @@ class ApplyPipeline:
     # ------------------------------------------------------------------
 
     def _run_evals(self, artifact: PatchArtifact) -> None:
-        """Run eval harness as advisory step. Logs results to artifact.log_text; never raises.
+        """Run eval harness. Blocking check failures raise ApplyError(eval_blocked, structured_details).
 
-        If evals/ or evals/cases/ is absent, skips silently. On timeout or non-zero exit,
-        appends a warning to log_text and continues (advisory mode).
+        If evals/ or evals/cases/ is absent, skips silently. Advisory failures are logged
+        to artifact.log_text. When any case with blocking=true fails (expectation not matched),
+        raises ApplyError with JSON details for retry (T-0091).
         """
         runtime_dir = Path(__file__).resolve().parent.parent
         evals_dir = runtime_dir / "evals"
@@ -332,29 +333,53 @@ class ApplyPipeline:
                 text=True,
                 timeout=_EVALS_TIMEOUT,
             )
-            if result.returncode == 0:
-                try:
-                    data = json.loads(result.stdout or "{}")
-                    total = data.get("total", 0)
-                    passed = data.get("passed", 0)
-                    failed = data.get("failed", 0)
-                    _append_log(f"Eval (advisory): {passed}/{total} passed, {failed} failed.")
-                except (json.JSONDecodeError, TypeError):
-                    _append_log("Eval (advisory): run completed; output could not be parsed.")
+            data = None
+            try:
+                data = json.loads(result.stdout or "{}")
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+            if data and "results" in data:
+                results = data.get("results") or []
+                total = data.get("total", 0)
+                passed_count = data.get("passed", 0)
+                failed_count = data.get("failed", 0)
+                blocking_failures: list[dict] = []
+                for r in results:
+                    is_blocking = r.get("blocking", False)
+                    expectation_matched = r.get("passed", False)
+                    if is_blocking and not expectation_matched:
+                        blocking_failures.append({
+                            "check_type": r.get("check_type", ""),
+                            "case_id": r.get("case_id", ""),
+                            "message": r.get("message", ""),
+                            "details": r.get("details") if isinstance(r.get("details"), dict) else {},
+                        })
+                    elif not expectation_matched:
+                        _append_log(
+                            f"Eval (advisory) {r.get('check_type', '?')}: {r.get('message', '')}"
+                        )
+                _append_log(f"Eval: {passed_count}/{total} passed, {failed_count} failed.")
+                if blocking_failures:
+                    details_str = json.dumps({"blocking_failures": blocking_failures})
+                    raise ApplyError("eval_blocked", details_str)
             else:
-                logger.warning(
-                    "patch %s eval harness exited %s (advisory); apply continues",
-                    artifact.id, result.returncode,
-                )
-                _append_log(
-                    f"Eval (advisory): run.py exited {result.returncode}; apply continued."
-                )
+                if result.returncode != 0:
+                    logger.warning(
+                        "patch %s eval harness exited %s; output unparseable, continuing",
+                        artifact.id, result.returncode,
+                    )
+                    _append_log(
+                        f"Eval: run.py exited {result.returncode}; output could not be parsed."
+                    )
+        except ApplyError:
+            raise
         except subprocess.TimeoutExpired:
             logger.warning(
-                "patch %s eval harness timed out after %ss (advisory); apply continues",
+                "patch %s eval harness timed out after %ss; apply continues",
                 artifact.id, _EVALS_TIMEOUT,
             )
-            _append_log(f"Eval (advisory): timed out after {_EVALS_TIMEOUT}s; apply continued.")
+            _append_log(f"Eval: timed out after {_EVALS_TIMEOUT}s; apply continued.")
         finally:
             try:
                 os.unlink(patch_path)

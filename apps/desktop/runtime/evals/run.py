@@ -98,6 +98,7 @@ def _run_case(
     from evals.checks import get_check_fn, CheckResult
 
     check_type = case_data.get("check_type")
+    blocking = bool(case_data.get("blocking", False))
     if not check_type:
         return {
             "case_id": case_id,
@@ -106,6 +107,8 @@ def _run_case(
             "expected": case_data.get("expect", {}).get("result", "?"),
             "message": "Missing check_type",
             "skipped": True,
+            "blocking": blocking,
+            "details": {},
         }
     fn = get_check_fn(check_type)
     if not fn:
@@ -116,6 +119,8 @@ def _run_case(
             "expected": case_data.get("expect", {}).get("result", "pass"),
             "message": f"Unknown check_type: {check_type}",
             "skipped": True,
+            "blocking": blocking,
+            "details": {},
         }
     inputs = dict(case_data.get("inputs") or {})
     patch_content = _resolve_patch_content(inputs, case_file_dir, patch_file_override)
@@ -135,8 +140,12 @@ def _run_case(
             "expected": expected,
             "message": f"Check raised: {e}",
             "skipped": False,
+            "blocking": blocking,
+            "details": {},
         }
     matched = (expected == "pass" and result.passed) or (expected == "fail" and not result.passed)
+    blocking = bool(case_data.get("blocking", False))
+    details = result.details if isinstance(result.details, dict) else {}
     return {
         "case_id": case_id,
         "check_type": check_type,
@@ -144,6 +153,8 @@ def _run_case(
         "expected": expected,
         "message": result.message,
         "skipped": False,
+        "blocking": blocking,
+        "details": details,
     }
 
 
