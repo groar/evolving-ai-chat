@@ -89,7 +89,7 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - ~~No Markdown rendering~~ — addressed by M5.
   - ~~Pre-existing test failures~~ — resolved by M11 (T-0078, T-0079, T-0080). `uv run pytest` exits 0.
   - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).
-  - **No eval harness** — lightweight prompt/behavior eval runner to gate agent-proposed changes automatically. M12 (E-0015) addresses.
+  - ~~No eval harness~~ — M12 (E-0015) complete: `evals/run.py` + `patch_applies_cleanly` check, test coverage in `test_evals.py`.
 - Known risks:
   - UX churn: frequent changes can annoy more than help without stability controls.
   - Regressions: agent-written changes can break core flows without strong tests/evals.
