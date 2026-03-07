@@ -29,7 +29,7 @@ _GOOD_CASE = _CASES_DIR / "good_patch_applies.yaml"
 _BAD_CASE = _CASES_DIR / "bad_patch_applies.yaml"
 
 
-def _run_evals(*args: str) -> subprocess.CompletedProcess:
+def _run_evals(*args: str, timeout: int = 60) -> subprocess.CompletedProcess:
     """Run evals/run.py with given args; cwd=repo root."""
     cmd = [sys.executable, str(_RUN_PY)] + list(args)
     return subprocess.run(
@@ -37,7 +37,7 @@ def _run_evals(*args: str) -> subprocess.CompletedProcess:
         cwd=str(_REPO_ROOT),
         capture_output=True,
         text=True,
-        timeout=60,
+        timeout=timeout,
     )
 
 
@@ -92,7 +92,7 @@ class EvalHarnessCasesDirTests(unittest.TestCase):
     """Running against the unit cases dir (deterministic, no npm validate) runs all and exits 0."""
 
     def test_cases_dir_exits_zero_when_all_expectations_matched(self) -> None:
-        # Unit cases only (no npm_validate_passes) so test does not depend on npm run validate
+        # Unit cases use fixture_minimal (no copytree of apps/desktop), so runs quickly
         result = _run_evals("--case", str(_CASES_DIR_UNIT))
         self.assertEqual(result.returncode, 0, f"stderr: {result.stderr}")
 

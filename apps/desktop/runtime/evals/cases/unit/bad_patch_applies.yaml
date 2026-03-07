@@ -4,6 +4,7 @@ check_type: "patch_applies_cleanly"
 blocking: true
 inputs:
   patch_file: "../fixtures/bad.diff"
-  target_dir: null
+  # Same minimal fixture (NonexistentFile.tsx not present → patch fails)
+  target_dir: "apps/desktop/runtime/evals/cases/unit/fixture_minimal"
 expect:
   result: "fail"

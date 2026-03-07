@@ -1,9 +1,10 @@
 id: "good-patch-applies"
-description: "A valid patch against the current src/ tree applies without error"
+description: "A valid patch against the minimal fixture tree applies without error"
 check_type: "patch_applies_cleanly"
 blocking: true
 inputs:
   patch_file: "../fixtures/good.diff"
-  target_dir: null
+  # Small fixture tree (no copytree of apps/desktop) for fast unit tests
+  target_dir: "apps/desktop/runtime/evals/cases/unit/fixture_minimal"
 expect:
   result: "pass"
