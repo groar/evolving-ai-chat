@@ -13,6 +13,7 @@ T-0060 responsibilities:
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import shutil
@@ -33,6 +34,7 @@ logger = logging.getLogger(__name__)
 _VALIDATE_TIMEOUT = 120
 _GIT_TIMEOUT = 30
 _PATCH_TIMEOUT = 180
+_EVALS_TIMEOUT = 60
 
 
 # ---------------------------------------------------------------------------
@@ -94,6 +96,7 @@ class ApplyPipeline:
         try:
             self._check_base_ref(artifact.base_ref)
             self._sandboxed_validate(artifact)
+            self._run_evals(artifact)
             commit_sha = self._apply_and_commit(artifact)
 
             artifact.status = "applied"
@@ -287,6 +290,76 @@ class ApplyPipeline:
                     (result.stdout or "")[-1500:] + "\n" + (result.stderr or "")[-1500:]
                 ).strip()
                 raise ApplyError("validation_failed", details)
+
+    # ------------------------------------------------------------------
+    # Step 2.5: advisory eval harness (M12, T-0083)
+    # ------------------------------------------------------------------
+
+    def _run_evals(self, artifact: PatchArtifact) -> None:
+        """Run eval harness as advisory step. Logs results to artifact.log_text; never raises.
+
+        If evals/ or evals/cases/ is absent, skips silently. On timeout or non-zero exit,
+        appends a warning to log_text and continues (advisory mode).
+        """
+        runtime_dir = Path(__file__).resolve().parent.parent
+        evals_dir = runtime_dir / "evals"
+        cases_dir = evals_dir / "cases"
+        if not evals_dir.exists() or not cases_dir.exists():
+            return
+        if not (artifact.unified_diff or "").strip():
+            return
+
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".patch", delete=False, encoding="utf-8"
+        ) as f:
+            f.write(artifact.unified_diff or "")
+            patch_path = f.name
+
+        def _append_log(line: str) -> None:
+            prefix = (artifact.log_text or "").strip()
+            artifact.log_text = f"{prefix}\n{line}".strip() if prefix else line
+
+        try:
+            cmd = [
+                "uv", "run", "python", "evals/run.py",
+                "--patch-file", patch_path,
+                "--repo-root", str(self._repo_root),
+            ]
+            result = subprocess.run(
+                cmd,
+                cwd=str(runtime_dir),
+                capture_output=True,
+                text=True,
+                timeout=_EVALS_TIMEOUT,
+            )
+            if result.returncode == 0:
+                try:
+                    data = json.loads(result.stdout or "{}")
+                    total = data.get("total", 0)
+                    passed = data.get("passed", 0)
+                    failed = data.get("failed", 0)
+                    _append_log(f"Eval (advisory): {passed}/{total} passed, {failed} failed.")
+                except (json.JSONDecodeError, TypeError):
+                    _append_log("Eval (advisory): run completed; output could not be parsed.")
+            else:
+                logger.warning(
+                    "patch %s eval harness exited %s (advisory); apply continues",
+                    artifact.id, result.returncode,
+                )
+                _append_log(
+                    f"Eval (advisory): run.py exited {result.returncode}; apply continued."
+                )
+        except subprocess.TimeoutExpired:
+            logger.warning(
+                "patch %s eval harness timed out after %ss (advisory); apply continues",
+                artifact.id, _EVALS_TIMEOUT,
+            )
+            _append_log(f"Eval (advisory): timed out after {_EVALS_TIMEOUT}s; apply continued.")
+        finally:
+            try:
+                os.unlink(patch_path)
+            except OSError:
+                pass
 
     # ------------------------------------------------------------------
     # Step 3: atomic git commit

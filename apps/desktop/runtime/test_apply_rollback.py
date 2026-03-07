@@ -128,6 +128,23 @@ def _make_artifact(patch_id: str, repo: Path) -> PatchArtifact:
 # Unit tests — ApplyPipeline internals
 # ---------------------------------------------------------------------------
 
+class RunEvalsTests(unittest.TestCase):
+    """T-0083: advisory eval harness integration."""
+
+    def test_run_evals_skips_silently_when_unified_diff_empty(self) -> None:
+        """When diff is empty, _run_evals skips without calling subprocess or mutating log_text."""
+        with tempfile.TemporaryDirectory(dir=_TEST_TMP_BASE) as tmp:
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            storage = PatchStorage(storage_dir=repo / "patches")
+            pipeline = ApplyPipeline(repo_root=repo, patch_storage=storage)
+            artifact = _make_artifact("PA-empty-diff", repo)
+            artifact.unified_diff = ""
+            artifact.log_text = None
+            pipeline._run_evals(artifact)
+            self.assertIsNone(artifact.log_text)
+
+
 @pytest.mark.integration
 class BaseRefCheckTests(unittest.TestCase):
     def _make_pipeline(self, repo: Path) -> ApplyPipeline:
