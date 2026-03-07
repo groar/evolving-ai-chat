@@ -37,11 +37,11 @@ The M8/M10/M12 milestones established the self-modification loop infrastructure:
 | Rank | Ticket | Description | Priority | Status |
 |------|--------|-------------|----------|--------|
 | — | T-0088 | M13 design spec: reliability gaps analysis + hardening plan | P1 | done |
-| 1 | TBD (T-0089) | Prompt improvements: structured template + dynamic allowlist + context assembly | P1 | pending |
-| 2 | TBD (T-0090) | Eval harness expansion: `files_in_allowlist` + `npm_validate_passes` + blocking policy | P1 | pending |
-| 3 | TBD (T-0091) | Retry with failure context: one auto-retry on retriable failures | P1 | pending |
-| 4 | TBD (T-0092) | Conversational feedback-refinement: refinement conversation mode + context endpoint + UI | P1 | pending |
-| 5 | TBD (T-0093) | Progress reporting: elapsed-time in poll response + frontend counter | P2 | pending |
+| 1 | T-0089 | Prompt improvements: structured template + dynamic allowlist + context assembly | P1 | ready |
+| 2 | T-0090 | Eval harness expansion: `files_in_allowlist` + `npm_validate_passes` + blocking policy | P1 | ready |
+| 3 | T-0091 | Retry with failure context: one auto-retry on retriable failures | P1 | ready |
+| 4 | T-0092 | Conversational feedback-refinement: refinement conversation mode + context endpoint + UI | P1 | ready |
+| 5 | T-0093 | Progress reporting: elapsed-time in poll response + frontend counter | P2 | ready |
 
 ## Feedback References
 - F-20260307-001 (conversational feedback refinement — primary design input for M13).
@@ -59,3 +59,4 @@ Results to be recorded in this epic file or a dedicated QA checkpoint.
 - 2026-03-07: Epic created during PM run. T-0088 (design spec) created as first ready ticket.
 - 2026-03-07: F-20260307-001 (conversational feedback refinement) added as primary design input. Epic goal, problem statement, DoD, and candidate tickets updated.
 - 2026-03-07: T-0088 accepted. Design spec shipped in `docs/m13-self-evolve-reliability.md`. 5 implementation tickets confirmed. Status → in-progress. PM to create T-0089–T-0093 and replenish ready queue.
+- 2026-03-07: PM run created T-0089–T-0093 (all 5 implementation tickets). Ready queue replenished. Ticket table updated with confirmed IDs.
