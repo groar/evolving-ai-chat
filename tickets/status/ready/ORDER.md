@@ -15,8 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0092 | P1 | Conversational feedback-refinement: refinement conversation + context endpoint + UI (depends on T-0089 ✓) |
-| 2 | T-0093 | P2 | Progress reporting: elapsed-time in poll response + frontend counter |
+| 1 | T-0093 | P2 | Progress reporting: elapsed-time in poll response + frontend counter |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -60,3 +59,4 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-07: T-0089 accepted and moved to done (structured prompt template + dynamic allowlist + context assembly). Rank 1 is now T-0090.
 - 2026-03-07: T-0090 accepted and moved to done (eval harness blocking policy + files_in_allowlist + npm_validate_passes). Rank 1 is now T-0091.
 - 2026-03-07: T-0091 accepted and moved to done (retry with failure context: one auto-retry, retrying status, PREVIOUS ATTEMPT context). Rank 1 is now T-0092.
+- 2026-03-07: T-0092 accepted and moved to done (conversational feedback-refinement: /agent/refine-context endpoint, useRefinement hook, RefinementConversation component, refined_spec on CodePatchRequest, 12 new tests). Rank 1 is now T-0093.

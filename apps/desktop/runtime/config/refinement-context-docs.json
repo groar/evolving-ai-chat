@@ -1,0 +1,8 @@
+{
+  "version": "1",
+  "docs": [
+    "STATUS.md",
+    "docs/m13-self-evolve-reliability.md"
+  ],
+  "notes": "Documents available to the refinement conversation model. These must be functional/product-level only — no source code. Order matters: first document gets highest priority if context budget is tight."
+}

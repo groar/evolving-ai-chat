@@ -221,6 +221,12 @@ class ConfigureRequest(BaseModel):
 # M8 agent code-patch models (T-0059)
 # ---------------------------------------------------------------------------
 
+class RefinedSpec(BaseModel):
+    """Validated functional description produced by the refinement conversation (T-0092 §4.4)."""
+    raw_description: str = Field(default="", max_length=8000)
+    refinement_conversation_id: str | None = None
+
+
 class CodePatchRequest(BaseModel):
     """Request body for POST /agent/code-patch (spec §4)."""
     feedback_id: str = Field(min_length=1, max_length=120)
@@ -228,6 +234,18 @@ class CodePatchRequest(BaseModel):
     feedback_summary: str = Field(default="", max_length=4000)
     feedback_area: str = Field(min_length=1, max_length=120)
     base_ref: str = Field(default="", max_length=120)
+    refined_spec: RefinedSpec | None = None
+
+
+# ---------------------------------------------------------------------------
+# T-0092: Refinement context endpoint models
+# ---------------------------------------------------------------------------
+
+class RefineContextResponse(BaseModel):
+    """Response body for GET /agent/refine-context (T-0092 §4.3)."""
+    context: str
+    docs_included: list[str]
+    docs_missing: list[str]
 
 
 class CodePatchResponse(BaseModel):

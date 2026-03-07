@@ -750,7 +750,8 @@ export function useRuntime() {
       feedbackId: string,
       feedbackTitle: string,
       feedbackSummary: string,
-      feedbackArea: string
+      feedbackArea: string,
+      refinedSpec?: { raw_description: string; refinement_conversation_id?: string | null }
     ) => {
       const setts = useSettingsStore.getState();
       const rt = useRuntimeStore.getState();
@@ -758,16 +759,20 @@ export function useRuntime() {
       setts.setSettingsError(null);
       setts.setRequestingPatch(true);
       try {
+        const body: Record<string, unknown> = {
+          feedback_id: feedbackId,
+          feedback_title: feedbackTitle,
+          feedback_summary: feedbackSummary,
+          feedback_area: feedbackArea,
+          base_ref: ""
+        };
+        if (refinedSpec) {
+          body.refined_spec = refinedSpec;
+        }
         const response = await fetch(`${runtimeBase}/agent/code-patch`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            feedback_id: feedbackId,
-            feedback_title: feedbackTitle,
-            feedback_summary: feedbackSummary,
-            feedback_area: feedbackArea,
-            base_ref: ""
-          })
+          body: JSON.stringify(body)
         });
 
         let errorPayload: { error?: string; detail?: string } = {};

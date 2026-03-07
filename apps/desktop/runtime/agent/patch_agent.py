@@ -439,7 +439,12 @@ class PiDevPatchAgent(PatchAgent):
                 f"Repo root not found at {self._repo_root}; check repo_root configuration."
             )
 
-        content = feedback.get("summary", "").strip() or feedback.get("title", "")
+        # T-0092: prefer validated functional description when present
+        content = (
+            feedback.get("refined_spec_text", "").strip()
+            or feedback.get("summary", "").strip()
+            or feedback.get("title", "")
+        )
         prompt = self._build_structured_prompt(content, retry_context=retry_context)
         cmd = [
             "pi", "-p", prompt,

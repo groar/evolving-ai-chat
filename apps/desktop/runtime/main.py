@@ -51,6 +51,7 @@ from .models import (
     PatchLogResponse,
     PatchSummary,
     PersonaAddition,
+    RefineContextResponse,
     RollbackRequest,
     RollbackResponse,
     UpdateConversationRequest,
@@ -611,6 +612,65 @@ def delete_local_data() -> DeleteDataResponse:
 
 
 # ---------------------------------------------------------------------------
+# T-0092: Refinement context endpoint
+# ---------------------------------------------------------------------------
+
+_REFINE_CONTEXT_DOCS_PATH = Path(__file__).resolve().parent / "config" / "refinement-context-docs.json"
+# ~8 000 tokens × ~4 chars/token = 32 000 chars max injected context
+_REFINE_CONTEXT_CHAR_BUDGET = 32_000
+
+
+@app.get("/agent/refine-context", response_model=RefineContextResponse)
+def agent_refine_context() -> RefineContextResponse:
+    """Load product-level documents for the refinement conversation (T-0092 §4.3).
+
+    Reads the allowlist from refinement-context-docs.json, assembles document
+    contents capped at ~8 000 tokens, and returns the assembled context payload.
+    Missing documents are skipped with a warning; the endpoint always succeeds
+    so the frontend can proceed in degraded mode if documents are absent.
+    """
+    docs_list: list[str] = []
+    if _REFINE_CONTEXT_DOCS_PATH.exists():
+        try:
+            config = json.loads(_REFINE_CONTEXT_DOCS_PATH.read_text(encoding="utf-8"))
+            docs_list = [str(d) for d in config.get("docs", []) if isinstance(d, str)]
+        except (OSError, json.JSONDecodeError) as exc:
+            import logging as _logging
+            _logging.getLogger(__name__).warning("Failed to load refinement-context-docs.json: %s", exc)
+
+    docs_included: list[str] = []
+    docs_missing: list[str] = []
+    parts: list[str] = []
+    remaining_budget = _REFINE_CONTEXT_CHAR_BUDGET
+
+    for doc_path in docs_list:
+        full_path = _REPO_ROOT / doc_path
+        if not full_path.exists():
+            docs_missing.append(doc_path)
+            continue
+        try:
+            content = full_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            docs_missing.append(doc_path)
+            continue
+        if remaining_budget <= 0:
+            docs_missing.append(doc_path)
+            continue
+        if len(content) > remaining_budget:
+            content = content[:remaining_budget] + "\n\n[...truncated due to context budget...]"
+        parts.append(f"=== {doc_path} ===\n{content}")
+        docs_included.append(doc_path)
+        remaining_budget -= len(content)
+
+    context = "\n\n".join(parts)
+    return RefineContextResponse(
+        context=context,
+        docs_included=docs_included,
+        docs_missing=docs_missing,
+    )
+
+
+# ---------------------------------------------------------------------------
 # M8 agent code-patch endpoints (T-0059)
 # ---------------------------------------------------------------------------
 
@@ -643,6 +703,9 @@ def agent_code_patch(
         "summary": payload.feedback_summary,
         "area": payload.feedback_area,
     }
+    # T-0092: when a validated functional description is present, prefer it over raw summary
+    if payload.refined_spec and payload.refined_spec.raw_description.strip():
+        feedback["refined_spec_text"] = payload.refined_spec.raw_description.strip()
 
     # Resolve base_ref from git HEAD when the frontend omits it
     base_ref = payload.base_ref

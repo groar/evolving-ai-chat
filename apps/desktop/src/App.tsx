@@ -3,6 +3,8 @@ import { HistoryIcon, PanelLeftIcon, PencilIcon, SettingsIcon, SparklesIcon } fr
 import { FeedbackPanel } from "./feedbackPanel";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { PatchNotification } from "./PatchNotification";
+import { RefinementConversation } from "./RefinementConversation";
+import { useRefinement } from "./hooks/useRefinement";
 import { ActivitySheet } from "./activitySheet";
 import { SettingsPanel } from "./settingsPanel";
 import {
@@ -34,6 +36,7 @@ export function App() {
 
   const runtime = useRuntime();
   const { requestPatch, rollbackPatch, reloadingPatchId } = runtime;
+  const refinement = useRefinement();
   const { conversations, activeConversationId, messages, createConversation, activateConversation } = useConversations();
   const { updateConversationTitle } = runtime;
 
@@ -352,7 +355,8 @@ export function App() {
               onToggleTag={feedback.toggleTag}
               onSubmitFeedback={feedback.submitFeedback}
               onRequestCodePatch={(feedbackId, feedbackTitle, feedbackSummary) => {
-                void requestPatch(feedbackId, feedbackTitle, feedbackSummary, "ui");
+                setImprovementSheetOpen(false);
+                void refinement.start(feedbackId, feedbackTitle, feedbackSummary, "ui");
               }}
             />
           </div>
@@ -452,11 +456,11 @@ export function App() {
           ) : (
             <h1 className="m-0 flex-1 text-base font-bold truncate">{topBarTitle}</h1>
           )}
-          {activeConversation && editingConversationId !== activeConversation.conversation_id && (
+          {editingConversationId !== activeConversationId && (
             <button
               type="button"
               className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2"
-              onClick={() => startRenameConversation(activeConversation.conversation_id, activeConversation.title)}
+              onClick={() => activeConversation && startRenameConversation(activeConversation.conversation_id, activeConversation.title)}
               aria-label="Rename current conversation"
             >
               <PencilIcon className="size-4" />
@@ -546,220 +550,251 @@ export function App() {
           </section>
         )}
 
-        <div className="overflow-auto p-4 grid gap-3 content-start" aria-live="polite">
-          {diagnosticsEnabled && (
-            <section className="border border-[#9ebf97] bg-[#effbe8] rounded-xl py-2.5 px-3 grid gap-0.5" aria-label="Behind-the-scenes info">
-              <p className="m-0 text-sm">Behind-the-scenes info</p>
-              <p className="m-0 text-sm">Conversations: {conversations.length}</p>
-              <p className="m-0 text-sm">Messages in view: {messages.length}</p>
-            </section>
-          )}
-          {isBooting && (
-            <div className="empty-state border border-dashed border-border rounded-xl p-4 text-muted-foreground bg-[#fffaf0]">
-              <p className="m-0 mb-2">Loading...</p>
-            </div>
-          )}
-          {!hasMessages && !isBooting && (
-            <div className="empty-state border border-dashed border-border rounded-xl p-4 text-muted-foreground bg-[#fffaf0]">
-              <p className="m-0 mb-2">What's on your mind?</p>
-              <p className="m-0 mb-2">
-                {!apiKeyConfigured
-                  ? "Add your API key in Settings to start chatting."
-                  : isRuntimeOffline
-                    ? "Can't reach the assistant — check if it's running, then send your first message."
-                    : "Start a conversation — type your message below."}
-              </p>
-              {!apiKeyConfigured && (
-                <button
-                  type="button"
-                  className="border border-border bg-white text-foreground rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:border-[#efbe91] hover:bg-[#fff8f2] disabled:opacity-55 disabled:cursor-not-allowed"
-                  onClick={openSettings}
-                >
-                  Open Settings
-                </button>
+        {refinement.isActive ? (
+          <RefinementConversation
+            messages={refinement.messages}
+            streamingText={refinement.streamingText}
+            isSending={refinement.isSending}
+            isLoading={refinement.isLoading}
+            error={refinement.error}
+            feedbackTitle={refinement.feedbackInfo?.feedbackTitle ?? ""}
+            onSendMessage={(text) => void refinement.sendMessage(text)}
+            onRunAgent={(description) => {
+              const info = refinement.feedbackInfo;
+              if (!info) return;
+              const convId = refinement.conversationId;
+              refinement.cancel();
+              void requestPatch(
+                info.feedbackId,
+                info.feedbackTitle,
+                info.feedbackSummary,
+                info.feedbackArea,
+                { raw_description: description, refinement_conversation_id: convId }
+              );
+            }}
+            onEdit={() => {
+              // Edit: just focus the refinement composer (already open)
+            }}
+            onCancel={() => refinement.cancel()}
+          />
+        ) : (
+          <>
+            <div className="overflow-auto p-4 grid gap-3 content-start" aria-live="polite">
+              {diagnosticsEnabled && (
+                <section className="border border-[#9ebf97] bg-[#effbe8] rounded-xl py-2.5 px-3 grid gap-0.5" aria-label="Behind-the-scenes info">
+                  <p className="m-0 text-sm">Behind-the-scenes info</p>
+                  <p className="m-0 text-sm">Conversations: {conversations.length}</p>
+                  <p className="m-0 text-sm">Messages in view: {messages.length}</p>
+                </section>
               )}
-            </div>
-          )}
+              {isBooting && (
+                <div className="empty-state border border-dashed border-border rounded-xl p-4 text-muted-foreground bg-[#fffaf0]">
+                  <p className="m-0 mb-2">Loading...</p>
+                </div>
+              )}
+              {!hasMessages && !isBooting && (
+                <div className="empty-state border border-dashed border-border rounded-xl p-4 text-muted-foreground bg-[#fffaf0]">
+                  <p className="m-0 mb-2">What's on your mind?</p>
+                  <p className="m-0 mb-2">
+                    {!apiKeyConfigured
+                      ? "Add your API key in Settings to start chatting."
+                      : isRuntimeOffline
+                        ? "Can't reach the assistant — check if it's running, then send your first message."
+                        : "Start a conversation — type your message below."}
+                  </p>
+                  {!apiKeyConfigured && (
+                    <button
+                      type="button"
+                      className="border border-border bg-white text-foreground rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:border-[#efbe91] hover:bg-[#fff8f2] disabled:opacity-55 disabled:cursor-not-allowed"
+                      onClick={openSettings}
+                    >
+                      Open Settings
+                    </button>
+                  )}
+                </div>
+              )}
 
-          {messages.map((message) => {
-            const variants =
-              message.role === "assistant" && typeof message.id === "number"
-                ? assistantVariants[message.id] ?? []
-                : [];
-            const activeIdx =
-              message.role === "assistant" && typeof message.id === "number"
-                ? activeVariantIndex[message.id] ?? 0
-                : 0;
-            const activeVariant = variants[activeIdx];
-            const displayText = activeVariant?.reply ?? message.text;
-            const displayMeta =
-              message.role === "assistant" && activeVariant && activeIdx > 0
-                ? `${activeVariant.model_id} rerun`
-                : message.meta;
+              {messages.map((message) => {
+                const variants =
+                  message.role === "assistant" && typeof message.id === "number"
+                    ? assistantVariants[message.id] ?? []
+                    : [];
+                const activeIdx =
+                  message.role === "assistant" && typeof message.id === "number"
+                    ? activeVariantIndex[message.id] ?? 0
+                    : 0;
+                const activeVariant = variants[activeIdx];
+                const displayText = activeVariant?.reply ?? message.text;
+                const displayMeta =
+                  message.role === "assistant" && activeVariant && activeIdx > 0
+                    ? `${activeVariant.model_id} rerun`
+                    : message.meta;
 
-            return (
-            <article
-              key={message.id}
-              className={`border rounded-xl py-3 px-3.5 max-w-[700px] bg-white ${
-                message.role === "user"
-                  ? "ml-auto bg-[#fff2e6]"
-                  : "border-[#c8d3c1] bg-[#f8fff5]"
-              }`}
-            >
-              <div className="flex justify-between items-start gap-2">
-                <p className="m-0 mb-1 text-xs font-semibold tracking-wide uppercase text-muted-foreground">
-                  {message.role === "user" ? "You" : "Assistant"}
-                </p>
-                {message.role === "assistant" && (
-                  <button
-                    type="button"
-                    className="shrink-0 text-xs text-muted-foreground hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-1 rounded"
-                    aria-label="Help improve this software"
-                    onClick={() => {
-                      setImprovementSheetOpen(true);
-                      feedback.openFeedbackForMessage(activeConversationId, message.id);
-                    }}
-                  >
-                    Improve
-                  </button>
-                )}
-              </div>
-              {message.role === "assistant" ? (
-                <>
-                  <MarkdownMessage text={displayText} />
-                  {typeof message.id === "number" && (
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                return (
+                <article
+                  key={message.id}
+                  className={`border rounded-xl py-3 px-3.5 max-w-[700px] bg-white ${
+                    message.role === "user"
+                      ? "ml-auto bg-[#fff2e6]"
+                      : "border-[#c8d3c1] bg-[#f8fff5]"
+                  }`}
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <p className="m-0 mb-1 text-xs font-semibold tracking-wide uppercase text-muted-foreground">
+                      {message.role === "user" ? "You" : "Assistant"}
+                    </p>
+                    {message.role === "assistant" && (
                       <button
                         type="button"
-                        className="text-xs border border-border rounded-lg bg-white py-1 px-2 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
-                        disabled={rerunningMessageId === message.id || !selectedModelId}
-                        onClick={async () => {
-                          setRerunningMessageId(message.id);
-                          const result = await runtime.rerunAssistantAnswer(message.id, selectedModelId);
-                          setRerunningMessageId(null);
-                          if (!result.ok) {
-                            useSettingsStore.getState().setSettingsError(result.error);
-                            return;
-                          }
-                          setAssistantVariants((prev) => {
-                            const existing = prev[message.id] ?? [];
-                            return { ...prev, [message.id]: [...existing, result.variant] };
-                          });
-                          setActiveVariantIndex((prev) => ({ ...prev, [message.id]: variants.length }));
+                        className="shrink-0 text-xs text-muted-foreground hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-1 rounded"
+                        aria-label="Help improve this software"
+                        onClick={() => {
+                          setImprovementSheetOpen(true);
+                          feedback.openFeedbackForMessage(activeConversationId, message.id);
                         }}
                       >
-                        {rerunningMessageId === message.id ? "Re-running…" : "Re-run with selected model"}
+                        Improve
                       </button>
-                      {variants.length > 1 && (
-                        <>
+                    )}
+                  </div>
+                  {message.role === "assistant" ? (
+                    <>
+                      <MarkdownMessage text={displayText} />
+                      {typeof message.id === "number" && (
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
                           <button
                             type="button"
-                            className="text-xs underline"
-                            disabled={activeIdx <= 0}
-                            onClick={() =>
-                              setActiveVariantIndex((prev) => ({ ...prev, [message.id]: Math.max(0, activeIdx - 1) }))
-                            }
+                            className="text-xs border border-border rounded-lg bg-white py-1 px-2 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
+                            disabled={rerunningMessageId === message.id || !selectedModelId}
+                            onClick={async () => {
+                              setRerunningMessageId(message.id);
+                              const result = await runtime.rerunAssistantAnswer(message.id, selectedModelId);
+                              setRerunningMessageId(null);
+                              if (!result.ok) {
+                                useSettingsStore.getState().setSettingsError(result.error);
+                                return;
+                              }
+                              setAssistantVariants((prev) => {
+                                const existing = prev[message.id] ?? [];
+                                return { ...prev, [message.id]: [...existing, result.variant] };
+                              });
+                              setActiveVariantIndex((prev) => ({ ...prev, [message.id]: variants.length }));
+                            }}
                           >
-                            Previous version
+                            {rerunningMessageId === message.id ? "Re-running…" : "Re-run with selected model"}
                           </button>
-                          <button
-                            type="button"
-                            className="text-xs underline"
-                            disabled={activeIdx >= variants.length - 1}
-                            onClick={() =>
-                              setActiveVariantIndex((prev) => ({
-                                ...prev,
-                                [message.id]: Math.min(variants.length - 1, activeIdx + 1)
-                              }))
-                            }
-                          >
-                            Next version
-                          </button>
-                          <span className="text-xs text-muted-foreground">Version {activeIdx + 1} of {variants.length}</span>
-                        </>
+                          {variants.length > 1 && (
+                            <>
+                              <button
+                                type="button"
+                                className="text-xs underline"
+                                disabled={activeIdx <= 0}
+                                onClick={() =>
+                                  setActiveVariantIndex((prev) => ({ ...prev, [message.id]: Math.max(0, activeIdx - 1) }))
+                                }
+                              >
+                                Previous version
+                              </button>
+                              <button
+                                type="button"
+                                className="text-xs underline"
+                                disabled={activeIdx >= variants.length - 1}
+                                onClick={() =>
+                                  setActiveVariantIndex((prev) => ({
+                                    ...prev,
+                                    [message.id]: Math.min(variants.length - 1, activeIdx + 1)
+                                  }))
+                                }
+                              >
+                                Next version
+                              </button>
+                              <span className="text-xs text-muted-foreground">Version {activeIdx + 1} of {variants.length}</span>
+                            </>
+                          )}
+                        </div>
                       )}
-                    </div>
+                    </>
+                  ) : (
+                    <p className="m-0 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{message.text}</p>
                   )}
-                </>
-              ) : (
-                <p className="m-0 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{message.text}</p>
+                  {displayMeta && <p className="mt-1.5 text-muted-foreground text-xs m-0">{displayMeta}</p>}
+                </article>
+              );
+              })}
+              {streamingText.length > 0 && (
+                <article className="border border-[#c8d3c1] rounded-xl py-3 px-3.5 max-w-[700px] bg-[#f8fff5]">
+                  <p className="m-0 mb-1 text-xs font-semibold tracking-wide uppercase text-muted-foreground">Assistant</p>
+                  <p className="m-0 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">
+                    {streamingText}
+                    <span className="inline-block w-0.5 h-4 ml-0.5 bg-primary animate-[streaming-blink_0.8s_step-end_infinite] align-text-bottom" aria-hidden="true" />
+                  </p>
+                </article>
               )}
-              {displayMeta && <p className="mt-1.5 text-muted-foreground text-xs m-0">{displayMeta}</p>}
-            </article>
-          );
-          })}
-          {streamingText.length > 0 && (
-            <article className="border border-[#c8d3c1] rounded-xl py-3 px-3.5 max-w-[700px] bg-[#f8fff5]">
-              <p className="m-0 mb-1 text-xs font-semibold tracking-wide uppercase text-muted-foreground">Assistant</p>
-              <p className="m-0 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">
-                {streamingText}
-                <span className="inline-block w-0.5 h-4 ml-0.5 bg-primary animate-[streaming-blink_0.8s_step-end_infinite] align-text-bottom" aria-hidden="true" />
-              </p>
-            </article>
-          )}
-          <div ref={transcriptEndRef} aria-hidden="true" />
-        </div>
+              <div ref={transcriptEndRef} aria-hidden="true" />
+            </div>
 
-        <footer className="border-t border-border py-3 px-4 pb-4">
-          <div className="flex items-center gap-2 mb-2">
-            {models.length > 0 && (
-              <>
-                <label htmlFor="model-select" className="text-xs text-muted-foreground shrink-0">
-                  Model
-                </label>
-                <select
-                  id="model-select"
-                  className="text-xs border border-border rounded-lg bg-white py-1.5 px-2 text-foreground focus:outline-none focus:ring-2 focus:ring-[#efbe91]/50"
-                  value={selectedModelId}
-                  onChange={(e) => void runtime.setSelectedModel(e.target.value)}
+            <footer className="border-t border-border py-3 px-4 pb-4">
+              <div className="flex items-center gap-2 mb-2">
+                {models.length > 0 && (
+                  <>
+                    <label htmlFor="model-select" className="text-xs text-muted-foreground shrink-0">
+                      Model
+                    </label>
+                    <select
+                      id="model-select"
+                      className="text-xs border border-border rounded-lg bg-white py-1.5 px-2 text-foreground focus:outline-none focus:ring-2 focus:ring-[#efbe91]/50"
+                      value={selectedModelId}
+                      onChange={(e) => void runtime.setSelectedModel(e.target.value)}
+                    >
+                      {models.map((m) => (
+                        <option key={m.model_id} value={m.model_id}>
+                          {m.display_name}
+                          {!apiKeys[m.provider as keyof typeof apiKeys] ? " (no key)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
+              </div>
+              <label htmlFor="composer" className="sr-only">
+                Message composer
+              </label>
+              <div className="flex items-end gap-2">
+                <textarea
+                  id="composer"
+                  ref={inputRef}
+                  value={composer}
+                  className="flex-1 resize-none min-h-0 max-h-[120px] rounded-lg border border-border py-2.5 px-3 font-inherit text-[0.9375rem] leading-snug bg-white overflow-y-auto transition-colors focus:outline-none focus:border-[#efbe91] focus:ring-2 focus:ring-[#efbe91]/50 focus:ring-offset-2"
+                  placeholder={
+                    !apiKeyConfigured
+                      ? "Add your API key in Settings to chat."
+                      : !hasKeyForSelectedModel
+                        ? "Add API key for this model in Settings."
+                        : isRuntimeOffline
+                          ? "Can't reach the assistant — check your connection."
+                          : "Type a message..."
+                  }
+                  rows={1}
+                  disabled={isRuntimeOffline || !apiKeyConfigured || !hasKeyForSelectedModel}
+                  onChange={(event) => setComposer(event.target.value)}
+                  onKeyDown={handleComposerKeyDown}
+                />
+                <button
+                  type="button"
+                  className="shrink-0 border border-primary rounded-lg bg-primary text-primary-foreground font-bold text-sm py-2.5 px-4 cursor-pointer transition-colors hover:bg-[#b84a1c] hover:border-[#b84a1c] disabled:opacity-45 disabled:cursor-not-allowed"
+                  disabled={!canSend}
+                  onClick={() => void runtime.sendMessage(inputRef)}
                 >
-                  {models.map((m) => (
-                    <option key={m.model_id} value={m.model_id}>
-                      {m.display_name}
-                      {!apiKeys[m.provider as keyof typeof apiKeys] ? " (no key)" : ""}
-                    </option>
-                  ))}
-                </select>
-              </>
-            )}
-          </div>
-          <label htmlFor="composer" className="sr-only">
-            Message composer
-          </label>
-          <div className="flex items-end gap-2">
-            <textarea
-              id="composer"
-              ref={inputRef}
-              value={composer}
-              className="flex-1 resize-none min-h-0 max-h-[120px] rounded-lg border border-border py-2.5 px-3 font-inherit text-[0.9375rem] leading-snug bg-white overflow-y-auto transition-colors focus:outline-none focus:border-[#efbe91] focus:ring-2 focus:ring-[#efbe91]/50 focus:ring-offset-2"
-              placeholder={
-                !apiKeyConfigured
-                  ? "Add your API key in Settings to chat."
-                  : !hasKeyForSelectedModel
-                    ? "Add API key for this model in Settings."
-                    : isRuntimeOffline
-                      ? "Can't reach the assistant — check your connection."
-                      : "Type a message..."
-              }
-              rows={1}
-              disabled={isRuntimeOffline || !apiKeyConfigured || !hasKeyForSelectedModel}
-              onChange={(event) => setComposer(event.target.value)}
-              onKeyDown={handleComposerKeyDown}
-            />
-            <button
-              type="button"
-              className="shrink-0 border border-primary rounded-lg bg-primary text-primary-foreground font-bold text-sm py-2.5 px-4 cursor-pointer transition-colors hover:bg-[#b84a1c] hover:border-[#b84a1c] disabled:opacity-45 disabled:cursor-not-allowed"
-              disabled={!canSend}
-              onClick={() => void runtime.sendMessage(inputRef)}
-            >
-              {isSending ? (
-                <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin align-middle" aria-label="Sending" />
-              ) : (
-                "Send"
-              )}
-            </button>
-          </div>
-        </footer>
+                  {isSending ? (
+                    <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin align-middle" aria-label="Sending" />
+                  ) : (
+                    "Send"
+                  )}
+                </button>
+              </div>
+            </footer>
+          </>
+        )}
       </section>
       {/* M8 patch notification — floating banner for in-flight and terminal patch states */}
       {notificationPatch && (
