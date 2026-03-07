@@ -26,6 +26,7 @@ Follow `tickets/AGENTS.md` for artifact formats and conventions, scoped to a sin
    - Assign a feedback ID (`F-YYYYMMDD-NNN`).
    - Add/update the row in `tickets/meta/feedback/INDEX.md`.
 2. **Create exactly one ticket**:
+   - Read `tickets/NEXT_ID` to get the ticket number; use it and write the incremented value back. Never reuse or guess an ID.
    - Use `tickets/meta/templates/TEMPLATE.ticket.md`.
    - Scope tightly: one clear problem, one deliverable change.
    - If the feedback implies multiple changes, pick the single highest-impact change and note deferred items in the ticket's Notes section.

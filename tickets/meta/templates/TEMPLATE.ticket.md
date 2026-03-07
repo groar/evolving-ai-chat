@@ -1,4 +1,4 @@
-# T-XXXX: <short title>
+# T-XXXX: <short title — describe outcome in 3-7 words; see tickets/README.md naming guidelines>
 
 ## Metadata
 - ID: T-XXXX

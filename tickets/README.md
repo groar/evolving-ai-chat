@@ -44,6 +44,27 @@ This project uses a filesystem-based ticket board under `tickets/`.
 - Example: `T-0007-improve-settings-validation.md`
 - Ticket IDs are unique and never reused.
 
+### ID Assignment (Preventing Collisions)
+The file `tickets/NEXT_ID` contains the next available ticket number as a plain integer. When creating a ticket:
+1. Read `tickets/NEXT_ID` to get the number (e.g., `89`).
+2. Use that number zero-padded to 4 digits as the ticket ID (e.g., `T-0089`).
+3. Write the incremented value back (e.g., `90`).
+4. If creating multiple tickets in one run, increment sequentially without re-reading between each.
+
+Never invent a ticket ID without consulting this file. The T-0001/T-1001 collision happened because an agent picked an ID from memory instead of from the counter.
+
+### Kebab Title Guidelines
+The kebab portion of the filename is the ticket's public shorthand. It shows up in git logs, file listings, and ORDER.md — so it needs to be clear at a glance.
+
+**Rules:**
+1. **Describe the outcome, not the area.** `add-conversation-search` not `update-chat-component`. The reader should know what changes without opening the file.
+2. **Be specific enough to distinguish.** `fix-patch-timeout-error-reporting` not `fix-bug`. If two tickets could share the same title, both are too vague.
+3. **Lead with a verb when possible.** `add-`, `fix-`, `remove-`, `redesign-`, `rename-`. Design specs can lead with the scope: `m13-self-evolve-reliability-design-spec`.
+4. **Keep it short (3–7 words).** Long enough to be unambiguous, short enough to scan. Trim filler words (`the`, `a`, `for-the`).
+5. **Avoid generic modifiers without a qualifier.** `improve-X`, `update-Y`, `polish-Z` are fine only if X/Y/Z is specific. `improve-settings` is vague; `improve-settings-validation-errors` is clear.
+6. **Match the Summary.** If the title and the ticket's Summary section diverge, update whichever is wrong. The title is not decoration — it is a compressed summary.
+7. **No implementation details.** `auto-refresh-on-settings-change` not `add-useEffect-to-settings-panel`. Titles should survive refactors.
+
 ## Priority
 Use `Priority` to express scheduling urgency. The canonical pickup order is still `tickets/status/ready/ORDER.md`.
 

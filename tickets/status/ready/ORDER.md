@@ -16,7 +16,6 @@ This file is the source of truth for ready-ticket pickup order.
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
 | 1 | T-0088 | P1 | M13 design spec — self-evolve reliability hardening (E-0016) |
-| 2 | T-1001 | P2 | Model picker UI polish (standalone, backlog → ready) |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -53,4 +52,5 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-06: Self-evolving run created and completed T-0087 (rename active conversation from chat header); ready queue order unchanged.
 - 2026-03-06: T-0083 accepted and moved to done (apply pipeline advisory eval hook). Rank 1 is now T-0084.
 - 2026-03-06: T-0084 accepted and moved to done (eval harness test_evals.py + STATUS.md cleanup). Ready queue empty; PM to replenish.
-- 2026-03-07: PM run scoped M13 (E-0016: Self-Evolve Reliability Hardening). T-0088 (design spec) created as rank 1. T-1001 (model picker UI polish) moved from backlog to ready at rank 2.
+- 2026-03-07: PM run scoped M13 (E-0016: Self-Evolve Reliability Hardening). T-0088 (design spec) created as rank 1.
+- 2026-03-07: T-1001 removed (leftover from aborted self-evolution run). F-20260306-002 closed.

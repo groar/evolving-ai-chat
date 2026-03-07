@@ -71,6 +71,8 @@ If blocked, move the ticket to `tickets/status/blocked/` and capture the blocker
 ## Ticket Conventions
 - One ticket = one markdown file.
 - Filename format: `T-XXXX-short-kebab-title.md`.
+- **Always read `tickets/NEXT_ID` before creating a ticket** — use that number, then write the incremented value back. Never invent an ID from memory.
+- Kebab title must describe the outcome clearly in 3–7 words (see `tickets/README.md` "Kebab Title Guidelines").
 - Use `tickets/meta/templates/TEMPLATE.ticket.md` for new tickets.
 - Keep metadata current (`Status`, `Updated`, owner, priority).
 
