@@ -18,6 +18,7 @@ function isTransientStatus(status: PatchStatus | string): boolean {
     status === "pending_apply" ||
     status === "pending" ||
     status === "applying" ||
+    status === "retrying" ||
     status === "reverting"
   );
 }

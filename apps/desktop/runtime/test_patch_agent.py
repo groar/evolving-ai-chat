@@ -178,6 +178,19 @@ class PiDevStubTests(unittest.TestCase):
         self.assertNotIn("sk-ant-secret123", artifact_json)
         self.assertNotIn("secret", artifact_json)
 
+    def test_existing_artifact_id_used_on_retry(self) -> None:
+        """T-0091: when existing_artifact_id is provided (retry path), returned artifact has that id."""
+        artifact = self.agent.generate_patch(
+            _feedback(),
+            base_ref="abc1234",
+            retry_context="Previous failure: validation_failed",
+            existing_artifact_id="PA-20260307-deadbeef",
+            existing_created_at="2026-03-07T10:00:00+00:00",
+        )
+        self.assertEqual(artifact.id, "PA-20260307-deadbeef")
+        self.assertEqual(artifact.created_at, "2026-03-07T10:00:00+00:00")
+        self.assertEqual(artifact.status, "pending_apply")
+
 
 # ---------------------------------------------------------------------------
 # PiDevPatchAgent — real mode subprocess errors

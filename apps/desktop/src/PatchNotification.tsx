@@ -8,6 +8,7 @@ export type PatchStatus =
   | "pending_apply"
   | "pending"
   | "applying"
+  | "retrying" // T-0091: one auto-retry in progress; show working indicator
   | "applied"
   | "reloading" // display-only: transient state before window.location.reload(); never stored in backend/Zustand
   | "apply_failed"
@@ -38,6 +39,7 @@ function isSpinnerStatus(status: PatchStatus): boolean {
     status === "pending_apply" ||
     status === "pending" ||
     status === "applying" ||
+    status === "retrying" ||
     status === "reverting" ||
     status === "reloading"
   );

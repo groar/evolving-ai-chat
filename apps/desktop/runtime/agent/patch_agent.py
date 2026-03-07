@@ -178,7 +178,7 @@ class PatchArtifact:
     created_at: str
     feedback_id: str
     base_ref: str
-    status: str  # pending_apply | applying | applied | apply_failed | scope_blocked | reverted | …
+    status: str  # pending_apply | applying | applied | apply_failed | scope_blocked | reverted | retrying | …
     title: str
     description: str
     files_changed: list[str]
@@ -266,6 +266,8 @@ class PatchAgent(abc.ABC):
         feedback: dict[str, Any],
         base_ref: str,
         retry_context: str | None = None,
+        existing_artifact_id: str | None = None,
+        existing_created_at: str | None = None,
     ) -> PatchArtifact:
         """Generate a patch artifact from a feedback payload.
 
@@ -273,6 +275,10 @@ class PatchAgent(abc.ABC):
             feedback: dict with keys id, title, summary, area.
             base_ref: git SHA of the working tree at invocation time.
             retry_context: optional failure context from a previous attempt (T-0091).
+            existing_artifact_id: when provided (retry path), use this id for the
+                returned artifact so the frontend keeps polling the same patch_id.
+            existing_created_at: when provided with existing_artifact_id, use this
+                as created_at for the returned artifact.
 
         Returns:
             PatchArtifact with status 'pending_apply'.
@@ -321,17 +327,32 @@ class PiDevPatchAgent(PatchAgent):
         feedback: dict[str, Any],
         base_ref: str,
         retry_context: str | None = None,
+        existing_artifact_id: str | None = None,
+        existing_created_at: str | None = None,
     ) -> PatchArtifact:
         if self._use_stub:
-            return self._generate_stub(feedback, base_ref)
-        return self._call_pi(feedback, base_ref, retry_context=retry_context)
+            return self._generate_stub(
+                feedback, base_ref,
+                existing_artifact_id=existing_artifact_id,
+                existing_created_at=existing_created_at,
+            )
+        return self._call_pi(
+            feedback, base_ref,
+            retry_context=retry_context,
+            existing_artifact_id=existing_artifact_id,
+            existing_created_at=existing_created_at,
+        )
 
     # ------------------------------------------------------------------
     # Stub path (offline / test)
     # ------------------------------------------------------------------
 
     def _generate_stub(
-        self, feedback: dict[str, Any], base_ref: str
+        self,
+        feedback: dict[str, Any],
+        base_ref: str,
+        existing_artifact_id: str | None = None,
+        existing_created_at: str | None = None,
     ) -> PatchArtifact:
         log_lines = [
             "[stub] PATCH_AGENT_STUB is enabled; no real harness call was made.",
@@ -349,9 +370,11 @@ class PiDevPatchAgent(PatchAgent):
             "+const appName = \"Evolving AI Chat — your personal assistant\";\n"
             " const diagnosticsFlagKey = \"show_runtime_diagnostics\";\n"
         )
+        patch_id = existing_artifact_id or _new_patch_id()
+        created_at = existing_created_at or datetime.now(timezone.utc).isoformat()
         return PatchArtifact(
-            id=_new_patch_id(),
-            created_at=datetime.now(timezone.utc).isoformat(),
+            id=patch_id,
+            created_at=created_at,
             feedback_id=feedback.get("id", ""),
             base_ref=base_ref,
             status="pending_apply",
@@ -408,6 +431,8 @@ class PiDevPatchAgent(PatchAgent):
         feedback: dict[str, Any],
         base_ref: str,
         retry_context: str | None = None,
+        existing_artifact_id: str | None = None,
+        existing_created_at: str | None = None,
     ) -> PatchArtifact:
         if not self._repo_root.exists():
             raise HarnessUnavailableError(
@@ -488,9 +513,11 @@ class PiDevPatchAgent(PatchAgent):
             log_parts.append(result.stderr)
         log_text = "\n".join(log_parts)
 
+        patch_id = existing_artifact_id or _new_patch_id()
+        created_at = existing_created_at or datetime.now(timezone.utc).isoformat()
         return PatchArtifact(
-            id=_new_patch_id(),
-            created_at=datetime.now(timezone.utc).isoformat(),
+            id=patch_id,
+            created_at=created_at,
             feedback_id=feedback.get("id", ""),
             base_ref=base_ref,
             status="pending_apply",

@@ -21,7 +21,13 @@ from .adapters.openai_adapter import MissingApiKeyError as OpenAIMissingApiKeyEr
 from .adapters.registry import list_models
 from .adapters.router import ChatRouter
 from .agent.apply_pipeline import ApplyPipeline, RollbackError
-from .agent.patch_agent import HarnessUnavailableError, MalformedPatchError, PiDevPatchAgent, validate_scope
+from .agent.patch_agent import (
+    HarnessUnavailableError,
+    MalformedPatchError,
+    PatchArtifact,
+    PiDevPatchAgent,
+    validate_scope,
+)
 from .agent.patch_storage import PatchStorage
 from .models import (
     AddValidationRunRequest,
@@ -59,6 +65,14 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 # Canonical patch id from patch_agent._new_patch_id(): PA-YYYYMMDD-<8 hex>
 _CANONICAL_PATCH_ID_RE = re.compile(r"^PA-\d{8}-[a-f0-9]{8}$")
 
+# T-0091: retry with failure context — only these apply failures trigger one auto-retry
+_RETRIABLE_FAILURE_REASONS = frozenset({"eval_blocked", "validation_failed", "patch_apply_failed"})
+_MAX_PATCH_RETRIES = 1
+_RETRY_EXHAUSTED_MESSAGE = (
+    "The coding agent couldn't produce a working change after two attempts. "
+    "Try refining your feedback and running again."
+)
+
 chat_router = ChatRouter()
 patch_agent = PiDevPatchAgent()
 patch_storage = PatchStorage()
@@ -68,6 +82,67 @@ apply_pipeline = ApplyPipeline(
     patch_storage=patch_storage,
     metrics_storage=storage,
 )
+
+
+def _build_retry_context(artifact: PatchArtifact) -> str:
+    """Build failure context string for PREVIOUS ATTEMPT section (T-0091)."""
+    parts = [f"Failure reason: {artifact.failure_reason or 'unknown'}"]
+    desc = (artifact.description or "").strip()
+    if desc:
+        parts.append(f"Details: {desc}")
+    if (artifact.unified_diff or "").strip():
+        parts.append("Failed diff:")
+        parts.append(artifact.unified_diff or "")
+    return "\n\n".join(parts)
+
+
+def _apply_with_retry(
+    artifact: PatchArtifact,
+    feedback: dict,
+) -> None:
+    """Run apply pipeline; on retriable failure, retry once with failure context (T-0091)."""
+    apply_pipeline.apply(artifact)
+    if (
+        artifact.status != "apply_failed"
+        or (artifact.failure_reason or "") not in _RETRIABLE_FAILURE_REASONS
+    ):
+        return
+    # One automatic retry with enriched prompt
+    artifact.status = "retrying"
+    patch_storage.save(artifact)
+    retry_context = _build_retry_context(artifact)
+    try:
+        new_artifact = patch_agent.generate_patch(
+            feedback,
+            artifact.base_ref,
+            retry_context=retry_context,
+            existing_artifact_id=artifact.id,
+            existing_created_at=artifact.created_at,
+        )
+    except (HarnessUnavailableError, MalformedPatchError):
+        artifact.status = "apply_failed"
+        artifact.failure_reason = "retry_exhausted"
+        artifact.description = (
+            (artifact.description or "").rstrip() + "\n\n" + _RETRY_EXHAUSTED_MESSAGE
+        )
+        patch_storage.save(artifact)
+        return
+    artifact.unified_diff = new_artifact.unified_diff
+    artifact.title = new_artifact.title
+    artifact.description = new_artifact.description
+    artifact.files_changed = new_artifact.files_changed
+    artifact.status = "applying"
+    artifact.failure_reason = None
+    if getattr(new_artifact, "log_text", None):
+        storage.write_patch_log(artifact.id, new_artifact.log_text or "")
+    patch_storage.save(artifact)
+    apply_pipeline.apply(artifact)
+    if artifact.status == "apply_failed":
+        artifact.failure_reason = "retry_exhausted"
+        artifact.description = (
+            (artifact.description or "").rstrip() + "\n\n" + _RETRY_EXHAUSTED_MESSAGE
+        )
+        patch_storage.save(artifact)
 
 
 def get_chat_router() -> ChatRouter:
@@ -635,8 +710,9 @@ def agent_code_patch(
         "patch_created",
         {"patch_id": artifact.id, "feedback_id": payload.feedback_id},
     )
-    # Auto-start the apply pipeline in the background (spec §3.3, AC: no manual trigger)
-    background_tasks.add_task(apply_pipeline.apply, artifact)
+    # Auto-start the apply pipeline in the background (spec §3.3, AC: no manual trigger).
+    # T-0091: use apply-with-retry runner for one auto-retry on retriable failures.
+    background_tasks.add_task(_apply_with_retry, artifact, feedback)
     return CodePatchResponse(
         patch_id=artifact.id,
         status=artifact.status,
