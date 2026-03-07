@@ -7,7 +7,7 @@
 ## 1. Goals and Non-Goals
 
 ### Goals
-- Design and specify the **conversational feedback-refinement phase**: a chat interaction that takes raw user feedback, asks clarifying questions grounded in the current software state, and produces a structured, user-validated spec to pass to the patch agent.
+- Design and specify the **conversational feedback-refinement phase**: a chat interaction that takes raw user feedback, asks clarifying questions grounded in product-level context (not code), and produces a validated **functional description** of the desired change. The refinement conversation focuses exclusively on the "what" (user-facing behavior); the self-evolving agent handles the "how" (technical translation → ticket → implementation).
 - Harden the feedback → patch → eval → apply → reload pipeline so it reliably produces useful, safe patches.
 - Expand evals from advisory to blocking where appropriate.
 - Add retry with failure-context feedback so the agent can self-correct.
@@ -57,7 +57,7 @@
 **Problem**: Raw one-sentence feedback goes directly to the patch agent. The agent has no way to ask "what exactly do you mean?" and the user has no way to verify what the agent will attempt before it runs. This is the root cause of variable patch quality: garbage in → garbage out.
 
 **Current flow**: Feedback → Agent → Patch
-**Proposed flow**: Feedback → **Refinement Conversation** → Validated Spec → Agent → Patch
+**Proposed flow**: Feedback → **Refinement Conversation** (functional only, no code access) → Validated Functional Description → Self-Evolving Agent → Ticket/Spec → Patch
 
 **Design**: See §4 (Conversational Feedback-Refinement Phase).
 
@@ -142,11 +142,15 @@ This is the primary new capability for M13 and the highest-leverage reliability 
 
 ### 4.1 Concept
 
-When the user clicks "Fix with AI", instead of immediately dispatching the raw feedback to the patch agent, the system opens a **refinement conversation**. A model (using the existing chat infrastructure) converses with the user to:
-1. Understand what they want changed.
-2. Ask clarifying questions grounded in the current software state.
-3. Produce a structured spec.
-4. Get explicit user confirmation before the patch agent runs.
+When the user clicks "Fix with AI", the system opens a **refinement conversation** instead of immediately dispatching the raw feedback to the patch agent. A model (using the existing chat infrastructure) converses with the user to:
+1. Understand what the user wants changed **from a functional/user-experience perspective**.
+2. Ask clarifying questions grounded in product-level context (not code).
+3. Produce a validated **functional description** of the desired behavior change.
+4. Get explicit user confirmation before the self-evolving agent runs.
+
+**Key design principle**: The refinement conversation is strictly functional. It focuses on *what changes for the user*, not *how to implement it*. The model does not see source code, does not reference file names or components, and does not propose implementation approaches. The self-evolving agent (which runs after refinement) handles all technical translation: creating a ticket/spec, choosing which files to modify, and implementing the change.
+
+This separation avoids the refinement model making bad technical assumptions that would constrain or mislead the coding agent.
 
 ### 4.2 Conversation Flow
 
@@ -158,15 +162,16 @@ System opens refinement conversation (new conversation mode: "refine")
     │
     ▼
 System sends initial message:
-  "I'll help refine this into a clear spec for the coding agent.
+  "I'll help clarify this feedback before the coding agent works on it.
    Here's what I understand so far: [feedback text]
-   Let me look at the relevant code to understand the current state..."
+   Let me ask a few questions to make sure the change is clear..."
     │
     ▼
-Model receives: system prompt + feedback text + software context (see §4.3)
+Model receives: system prompt + feedback text + product context documents (see §4.3)
     │
     ▼
-Model asks 1-3 clarifying questions (or confirms understanding if feedback is clear)
+Model asks 1-3 clarifying questions about user-facing behavior
+  (or confirms understanding if feedback is already clear)
     │
     ▼
 User answers / provides more detail
@@ -174,12 +179,13 @@ User answers / provides more detail
     ▼  (1-3 rounds typical; max 10 rounds before auto-summarize)
     │
     ▼
-Model produces a structured spec summary:
-  "Here's what I'll ask the coding agent to do:
-   **Goal**: [one sentence]
-   **Changes**: [bulleted list of specific file/component changes]
-   **Constraints**: [what should NOT change]
-   **Acceptance**: [how the user will know it worked]
+Model produces a functional description:
+  "Here's what I'll send to the coding agent:
+
+   **Goal**: [what the user wants to experience differently]
+   **Current behavior**: [what happens now, from the user's perspective]
+   **Desired behavior**: [what should happen instead]
+   **Constraints**: [what should NOT change from the user's perspective]
 
    Ready to proceed? [Run Agent] [Edit] [Cancel]"
     │
@@ -187,106 +193,106 @@ Model produces a structured spec summary:
 User clicks [Run Agent]
     │
     ▼
-System sends the structured spec to POST /agent/code-patch (replaces raw feedback)
+System sends the validated functional description to the self-evolving agent
 ```
 
 ### 4.3 Context Injection
 
-The refinement model receives context about the current software state so it can ask informed questions and propose realistic changes. Context is assembled by the runtime and sent alongside the feedback.
+The refinement model receives **product-level context only** — no source code, no file trees, no technical implementation details. Context is limited to a fixed set of functional documents defined in an explicit allowlist.
 
-| Context piece | Source | When included |
-|---|---|---|
-| **File tree** (allowlisted dirs) | `find` on allowlisted patterns | Always |
-| **Recent changes** (last 5 commits) | `git log --oneline -5` | Always |
-| **Relevant source excerpts** | Read files matching feedback keywords/area | When feedback mentions a specific component or area |
-| **Current feature flags** | Feature flag store | Always (small payload) |
-| **Recent patch history** (last 3) | `PatchStorage` | Always (helps avoid repeating failures) |
+**Context document allowlist**: `apps/desktop/runtime/config/refinement-context-docs.json`
 
-**Context budget**: Cap total injected context at ~8,000 tokens. Prioritize file tree + recent changes + relevant excerpts. Truncate excerpts if needed.
+```json
+{
+  "version": "1",
+  "docs": [
+    "STATUS.md",
+    "docs/m13-self-evolve-reliability.md"
+  ],
+  "notes": "Documents available to the refinement conversation model. These must be functional/product-level only — no source code. Order matters: first document gets highest priority if context budget is tight."
+}
+```
 
-**New endpoint**: `POST /agent/refine-context` — assembles and returns the context payload. The frontend calls this when opening the refinement conversation, then passes the context to the chat model as a system message.
+The runtime reads the listed documents and includes their contents (or truncated excerpts) in the refinement model's system message. Documents are included in the order listed; if the total exceeds the context budget, later documents are truncated first.
+
+**Context budget**: Cap total injected document content at ~8,000 tokens. `STATUS.md` (product snapshot, scope, success criteria, current state) is always included in full. Subsequent documents are truncated if needed.
+
+**New endpoint**: `GET /agent/refine-context` — reads the allowlist, assembles document contents, and returns the context payload. The frontend calls this when opening the refinement conversation, then passes the context to the chat model as a system message.
+
+**What is NOT included**: file trees, source code, git history, feature flags, patch history, component names, or any technical implementation details. The refinement model operates at the product/UX level only.
 
 ### 4.4 Spec Format
 
-The refined spec is a structured JSON object that replaces the current raw `feedback_summary` in the `CodePatchRequest`:
+The refined output is a **functional description** (not a technical spec). It is a structured JSON object that replaces the current raw `feedback_summary` in the `CodePatchRequest`:
 
 ```json
 {
   "goal": "Make the welcome message in new conversations feel more conversational and friendly",
-  "changes": [
-    "Update greeting text in apps/desktop/src/App.tsx",
-    "Adjust placeholder text in the composer component"
-  ],
+  "current_behavior": "New conversations open with a generic, robotic-sounding greeting",
+  "desired_behavior": "New conversations open with a warm, conversational greeting that feels like talking to a helpful colleague",
   "constraints": [
-    "Do not change the layout or component structure",
-    "Keep the app name unchanged"
+    "The overall chat layout should not change",
+    "Existing conversations should not be affected"
   ],
-  "acceptance": [
-    "New chat shows a warmer greeting",
-    "Composer placeholder is conversational"
-  ],
-  "context_excerpts": ["// relevant code snippets included by the refinement model"],
   "refinement_conversation_id": "conv-refine-abc123"
 }
 ```
 
-The `CodePatchRequest` model gains an optional `refined_spec` field. When present, the patch agent uses the structured spec instead of raw `feedback_summary`.
+The `CodePatchRequest` model gains an optional `refined_spec` field. When present, the self-evolving agent uses the functional description to create a proper ticket/spec and then implement. The functional description does not contain file names, component references, or implementation guidance — that is the agent's job.
 
 ### 4.5 Integration with Existing UI
 
-The refinement conversation reuses the existing chat infrastructure:
+The refinement conversation **replaces** the current "Fix with AI → patch agent" flow entirely. There is no "skip refinement" option. The flow is always: feedback → refinement conversation → validated functional description → self-evolving agent.
 
 - **Conversation mode**: A new conversation with `mode: "refine"` (distinct from regular chat).
 - **Model routing**: Uses the user's configured chat model (no separate model config needed).
 - **System prompt**: A dedicated refinement system prompt (see §4.6) replaces the normal chat system prompt.
-- **UI treatment**: The refinement conversation opens in the main chat area. The improvement sheet closes. A header badge indicates "Refining feedback" mode. The conversation ends with the structured spec and action buttons.
-
-**User can always skip refinement**: A "Skip → Run Agent Directly" option is available for users who know exactly what they want. This sends raw feedback as today.
+- **UI treatment**: The refinement conversation opens in the main chat area. The improvement sheet closes. A header badge indicates "Refining feedback" mode. The conversation ends with the functional description and action buttons ([Run Agent] [Edit] [Cancel]).
 
 ### 4.6 Refinement System Prompt
 
 ```
-You are a requirements analyst helping a user refine their feedback into a clear, 
-actionable spec for a coding agent.
+You are a product analyst helping a user clarify their feedback about a personal
+AI chat application. Your goal is to produce a clear, validated functional
+description of what the user wants changed — from the user's perspective only.
 
-The user has submitted feedback about a desktop application built with 
-React + Tailwind + shadcn/ui (Tauri shell, FastAPI runtime).
+You have access to product documentation that describes the application's current
+state, scope, and goals. Use this context to ground your questions.
 
 Your job:
-1. Understand what the user wants changed.
-2. Ask 1-3 focused clarifying questions if the feedback is ambiguous. 
-   Ground your questions in the actual code/state provided in the context.
-3. When you have enough clarity, produce a structured spec in this exact format:
+1. Understand what the user wants to experience differently.
+2. Ask 1-3 focused clarifying questions if the feedback is ambiguous.
+   Focus on user-facing behavior: what they see, what they expect, what feels wrong.
+3. When you have enough clarity, produce a functional description in this exact format:
 
-**Goal**: [one sentence describing the desired outcome]
-**Changes**: 
-- [specific file or component change 1]
-- [specific file or component change 2]
-**Constraints**: 
-- [what should NOT change]
-**Acceptance**: 
-- [how the user will verify the change worked]
+**Goal**: [what the user wants to experience differently — one sentence]
+**Current behavior**: [what happens now, from the user's perspective]
+**Desired behavior**: [what should happen instead, from the user's perspective]
+**Constraints**: [what should NOT change from the user's perspective]
 
-4. Ask the user to confirm: "Ready to run the coding agent with this spec?"
+4. Ask the user to confirm: "Does this capture what you want? [Run Agent] [Edit] [Cancel]"
 
 Rules:
 - Be concise. Each clarifying question should be one sentence.
 - Do not ask more than 3 questions per round.
-- If the feedback is already clear and specific, skip to the spec immediately.
-- Reference actual file names, component names, and current behavior from the context.
-- Do not propose changes outside the scope of the user's feedback.
+- If the feedback is already clear and specific, skip to the description immediately.
+- Stay strictly functional: describe what the user sees and experiences.
+- Do NOT reference file names, component names, code, or implementation details.
+- Do NOT suggest how to implement the change.
+- Do NOT propose technical approaches or architecture decisions.
+- Your output will be handed to a coding agent that decides the implementation.
 ```
 
 ### 4.7 Edge Cases
 
 | Edge case | Handling |
 |---|---|
-| User clicks "Skip → Run Agent Directly" | Raw feedback sent as today. No refinement conversation created. |
-| User abandons refinement conversation | Conversation stored but no patch triggered. Feedback item remains in feedback panel. |
-| Model asks too many questions | Auto-summarize after 10 user messages. Present spec for confirmation. |
-| Refinement model hallucinates file names | Context injection provides the real file tree. The spec is validated against the allowlist before dispatch. |
-| User edits the generated spec | Supported: "Edit" button re-opens the conversation for another round. |
-| Feedback already references a specific message | Context pointer (`conv-123:msg-456`) is passed to the refinement model as additional context. |
+| User abandons refinement conversation | Conversation stored but no agent triggered. Feedback item remains in feedback panel for later retry. |
+| Model asks too many questions | Auto-summarize after 10 user messages. Present functional description for confirmation. |
+| Model references code/files despite prompt | System prompt explicitly forbids this. If it happens, the output is still usable — the self-evolving agent ignores any accidental technical references and works from the functional intent. |
+| User edits the generated description | Supported: "Edit" button re-opens the conversation for another round. |
+| Feedback already references a specific message | Context pointer (`conv-123:msg-456`) is passed to the refinement model as additional context about which interaction prompted the feedback. |
+| Context document not found | Skip missing documents, log a warning. If all documents are missing, proceed with feedback text only (degraded but functional). |
 
 ---
 
@@ -354,7 +360,7 @@ Patch fails (retriable reason)
     │
     ▼
 Construct retry context:
-  - Original refined spec (or raw feedback)
+  - Original functional description
   - Failure reason + details (eval output, build errors, patch rejection)
   - The diff that failed (so the agent can see what went wrong)
     │
@@ -416,7 +422,7 @@ You MUST NOT:
 - Create files outside the allowlisted directories
 
 === CHANGE REQUEST ===
-{refined_spec_or_raw_feedback}
+{refined_functional_description}
 
 === CODEBASE CONTEXT ===
 File tree (allowlisted directories):
@@ -448,8 +454,9 @@ The prompt context assembly function (`_assemble_prompt_context`) lives in `patc
 1. Reads `patch-allowlist.json` patterns.
 2. Runs `find` or `git ls-files` to produce a file tree of allowlisted directories.
 3. Runs `git log --oneline -5` for recent changes.
-4. If a refined spec includes `context_excerpts`, includes them. Otherwise, performs a keyword search in the file tree.
-5. Caps total context at ~8,000 tokens.
+4. Caps total context at ~8,000 tokens.
+
+Note: The **refinement conversation** (§4) provides only functional/product-level context (from `refinement-context-docs.json`). The **patch agent prompt** (this section) provides technical/codebase context (file tree, commits). This is the correct separation: the user-facing refinement stays functional, while the coding agent gets the technical context it needs to implement.
 
 ---
 
@@ -474,14 +481,14 @@ Tickets should be implemented in order. Dependencies are noted.
 | 1 | TBD-1 | Prompt improvements: structured template + dynamic allowlist + context assembly | core | None | M |
 | 2 | TBD-2 | Eval harness expansion: `files_in_allowlist` + `npm_validate_passes` + blocking policy | core | None | M |
 | 3 | TBD-3 | Retry with failure context: one auto-retry on retriable failures | core | TBD-1, TBD-2 | M |
-| 4 | TBD-4 | Conversational feedback-refinement: refinement conversation mode + context endpoint + UI | core+ui | TBD-1 | L |
+| 4 | TBD-4 | Conversational feedback-refinement: functional-only refinement conversation + context doc allowlist + UI (replaces direct "Fix with AI" flow) | core+ui | TBD-1 | L |
 | 5 | TBD-5 | Progress reporting: elapsed-time in poll response + frontend counter | core+ui | None | S |
 
 ### Rationale for Order
 1. **Prompt improvements first**: Immediately improves patch quality for every run. No UI changes needed. Unblocks the retry ticket (retry context uses the same prompt template).
 2. **Eval expansion second**: Adds blocking checks that prevent bad patches from landing. Independent of prompt work but required for retry to be meaningful.
 3. **Retry third**: Depends on both prompt template (for context injection format) and eval expansion (for structured failure results to feed back).
-4. **Refinement conversation fourth**: Largest scope ticket. Depends on prompt template (the refined spec feeds into the same template). Can be developed in parallel with TBD-2/TBD-3 since it's mostly frontend + a new endpoint.
+4. **Refinement conversation fourth**: Largest scope ticket. Replaces the current direct "Fix with AI → patch agent" flow entirely with: feedback → functional refinement conversation → validated description → self-evolving agent. Depends on prompt template (the functional description feeds into the same template). Can be developed in parallel with TBD-2/TBD-3 since it's mostly frontend + a new endpoint.
 5. **Progress reporting last**: Smallest, independent. Nice UX improvement but not on the critical reliability path.
 
 ### Ticket Sizing Legend
@@ -493,7 +500,7 @@ Tickets should be implemented in order. Dependencies are noted.
 
 ## 10. Migration and Backward Compatibility
 
-- **`CodePatchRequest`** gains an optional `refined_spec: dict | None` field. Existing callers that send raw feedback continue to work (the agent falls back to `feedback_summary` when `refined_spec` is absent).
+- **`CodePatchRequest`** gains a `refined_spec: dict | None` field. After TBD-4 ships, the refinement conversation is the only entry point (no more raw feedback path). During development of TBD-1 through TBD-3, the raw `feedback_summary` path continues to work as a transitional measure.
 - **Eval YAML cases** gain an optional `blocking: true` field. Existing cases default to `blocking: false` (advisory) for backward compat.
 - **`PatchArtifact.status`** gains `retrying` as a new value. Frontend polling should treat unknown statuses as "in progress" (already the case).
 - **No database migration**: All changes are to the Python runtime and React frontend. No schema changes to SQLite tables.
@@ -514,7 +521,7 @@ Each implementation ticket includes its own deterministic acceptance criteria. C
 After TBD-1 through TBD-4 are shipped:
 
 1. **Prompt quality probe**: Run the self-evolve flow with 3 sample feedback items. Compare patch quality (applies cleanly, addresses the feedback, no scope violations) before and after prompt improvements.
-2. **Refinement conversation probe**: Walk through the refinement flow with a vague feedback item. Verify the model asks relevant clarifying questions and produces a structured spec. Verify "Skip" still works.
+2. **Refinement conversation probe**: Walk through the refinement flow with a vague feedback item. Verify the model asks relevant functional clarifying questions (no code references), produces a functional description, and the self-evolving agent receives it after user confirmation.
 3. **Retry probe**: Deliberately trigger a retriable failure (e.g., introduce a syntax error in the stub). Verify the retry fires, feeds back failure context, and produces a different patch.
 
 Micro-validation results recorded in the E-0016 epic file and/or a dedicated QA checkpoint.
