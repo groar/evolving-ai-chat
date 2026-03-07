@@ -24,7 +24,7 @@ Tracks all feedback intake items for easy triage, deferral, and ticket linkage.
 | F-20260301-005 | ticketed | ux | S2 | T-0044 | 2026-03-01 |
 | F-20260301-006 | ticketed | ux | S1 | T-0047, T-0048, T-0049, T-0050 | 2026-03-01 |
 | F-20260301-007 | ticketed | direction | S2 | T-0051, T-0054 | 2026-03-01 |
-| F-20260301-008 | triaged | direction | S1 | T-0058 | 2026-03-01 |
+| F-20260301-008 | ticketed | direction | S1 | T-0058 | 2026-03-07 |
 | F-20260303-001 | ticketed | ux, cleanup | S2 | T-0063, T-0064 | 2026-03-03 |
 | F-20260303-002 | ticketed | ux, clarity | S2 | T-0065 | 2026-03-03 |
 | F-20260304-001 | ticketed | ux | S2 | T-0067 | 2026-03-04 |
@@ -33,5 +33,7 @@ Tracks all feedback intake items for easy triage, deferral, and ticket linkage.
 | F-20260304-004 | ticketed | design-system | S2 | T-0066 | 2026-03-04 |
 | F-20260304-005 | ticketed | ux, observability | S2 | T-0073 | 2026-03-04 |
 | F-20260306-001 | ticketed | ux | S2 | T-0085 | 2026-03-06 |
+| F-20260306-002 | ticketed | ux | S3 | T-1001 | 2026-03-07 |
 | F-20260306-003 | ticketed | reliability, observability | S1 | T-0086 | 2026-03-06 |
 | F-20260306-004 | ticketed | ux | S2 | T-0087 | 2026-03-06 |
+| F-20260307-001 | ticketed | direction, reliability | S1 | T-0088 | 2026-03-07 |

@@ -2,13 +2,13 @@
 
 ## Metadata
 - ID: F-20260301-008
-- Status: triaged
+- Status: ticketed
 - Source: user-interview
 - Theme: direction
 - Severity: S1
 - Linked Tickets: T-0058
 - Received: 2026-03-01
-- Updated: 2026-03-01
+- Updated: 2026-03-07
 
 ## Raw Feedback (Sanitized)
 "The whole AI persona thing does not work, I've not managed to make it work, and it's super complicated. We should allow for full code self-customization. Basically: we get a feedback, turn it into a proposal, then into a customization of the software (through changing the code), without the user having to do anything else (before accepting or not maybe the changes). Is it what we are doing?"

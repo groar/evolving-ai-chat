@@ -69,7 +69,7 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
 - Safe execution: run agent-proposed changes and tests in an isolated sandbox (e.g., Docker) before applying patches to the working copy.
 - Model adapters: thin provider wrappers per vendor (OpenAI/Anthropic/Google), with a later option to unify via LiteLLM if needed.
 
-### Current State (2026-03-05)
+### Current State (2026-03-07)
 - Shipped / working:
   - This repository scaffold: ticketing board + PM/QA workflow docs.
   - Desktop app skeleton (Tauri + React) with polished chat UI shell (T-0003, T-0026).
@@ -83,13 +83,17 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - FastAPI runtime skeleton with stub responses + smoke verification (T-0004, T-0010).
   - In-app API key configuration in Settings → Connections (T-0030); key stored via Tauri plugin-store; composer disabled when no key.
   - Real AI chat: OpenAI adapter (T-0027), streaming (T-0028), multi-turn context (T-0029). Full end-to-end chat when API key is set.
+  - Lightweight eval harness: `evals/run.py` with `patch_applies_cleanly` check, advisory integration in apply pipeline, test coverage (T-0081–T-0084).
+  - Rerun assistant answers with different models + version navigation (T-0085).
+  - Apply-pipeline 180s patch timeout with user-facing error reporting (T-0086).
+  - In-context conversation rename from chat header (T-0087).
 - Known gaps:
   - ~~UI is system-centric~~ — addressed by M4, M9, M9.1.
   - ~~Tech stack mismatch~~ — Tailwind + shadcn/ui adopted (T-0031); Zustand pending (T-0032).
   - ~~No Markdown rendering~~ — addressed by M5.
   - ~~Pre-existing test failures~~ — resolved by M11 (T-0078, T-0079, T-0080). `uv run pytest` exits 0.
   - Product/technical architecture docs (UI platform, agent runtime, storage, release channels).
-  - ~~No eval harness~~ — M12 (E-0015) complete: `evals/run.py` + `patch_applies_cleanly` check, test coverage in `test_evals.py`.
+  - ~~No eval harness~~ — addressed by M12 (E-0015): `evals/run.py` + `patch_applies_cleanly` check, test coverage in `test_evals.py`.
 - Known risks:
   - UX churn: frequent changes can annoy more than help without stability controls.
   - Regressions: agent-written changes can break core flows without strong tests/evals.
@@ -109,8 +113,9 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - **Next**: scope next milestone. Ready queue replenishment in progress (T-0077).
 - **M11 — "Test Suite Green Baseline" (E-0014) — complete (2026-03-05)**
   - T-0077 (triage), T-0078 (test_chat.py mock), T-0079 (sqlite3.Row.get), T-0080 (git/sandbox isolation) all done. `uv run pytest` exits 0. Eval harness deferred to M12.
-- **M12 — "Lightweight Eval Harness" (E-0015) — in-progress (2026-03-05)**
-  - T-0081 (M12 design spec) ready — first pickup. Closes the "no eval harness" known gap; provides automated quality gate for the self-modification loop.
+- **M12 — "Lightweight Eval Harness" (E-0015) — complete (2026-03-06)**
+  - All tickets shipped: T-0081 (design spec), T-0082 (eval harness core), T-0083 (apply pipeline advisory hook), T-0084 (test coverage + STATUS cleanup). Closes the "no eval harness" known gap.
+  - Additional self-evolve tickets shipped same day: T-0085 (rerun assistant answer with model variants), T-0086 (apply-pipeline patch timeout fix), T-0087 (rename conversation from chat header).
 - Previous: M7 (E-0009) superseded 2026-03-01; T-0056 cancelled, T-0057 cancelled. T-0052–T-0055 done but scope superseded.
 - Previous: M7 — "Improvement Class Expansion" (E-0009) (superseded 2026-03-01; T-0052–T-0055 done, T-0056 cancelled)
 - Previous: M6.1 — "Loop Legibility and UX Clarity" (E-0008) (completed 2026-03-01)
@@ -141,4 +146,5 @@ Record important decisions so future agents do not re-litigate context.
 - ~~M8 build step: hot-reload on patch accept, or full Tauri rebuild?~~ — Resolved by T-0074/T-0075: `window.location.reload()` after 400ms (frontend-only; no Tauri restart); "change is live" signal = `reloading` display state → reload.
 - ~~M8 diff UI: unified diff view inline, or dedicated panel?~~ — Resolved by T-0074/T-0076: color-coded `DiffBlock` inline in `PatchNotification`; no dedicated panel needed.
   - ~~M11: Are `test_chat.py` / `test_proposals.py` / `test_apply_rollback.py` failures caused by missing mocks, schema drift, or genuine code bugs?~~ → Resolved by T-0077: missing mock injection, sqlite3.Row.get() usage, and git sandbox restriction respectively. Fixed in T-0078–T-0080.
-  - **M12**: What is the minimum viable eval harness for gating agent-proposed patches? → T-0081 (design spec) will answer.
+  - ~~M12: What is the minimum viable eval harness for gating agent-proposed patches?~~ → Resolved by T-0081–T-0084: `evals/run.py` with `patch_applies_cleanly` check, advisory hook in apply pipeline, test coverage.
+  - **M13**: What is the next milestone after the core loop (chat + self-evolution + evals) is functional? Candidates: multi-model adapters, persistence/state management, architecture docs, or end-to-end self-evolve reliability hardening.
