@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0088
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: feature
 - Area: core
@@ -68,25 +68,33 @@ Analyze the current self-modification loop reliability gaps and produce a concre
 - F-20260301-008 (direction pivot to code self-modification)
 
 ## Acceptance Criteria
-- [ ] Design spec document exists in `docs/` covering all 9 known gaps.
-- [ ] Conversational feedback-refinement phase is fully designed: context injection, conversation flow, spec format, user confirmation UX, and integration with the existing "Fix with AI" flow.
-- [ ] Each gap has a proposed hardening approach with clear scope bounds.
-- [ ] Blocking vs. advisory eval policy is defined with rationale.
-- [ ] Retry strategy is defined (trigger conditions, max retries, context injection, give-up behavior).
-- [ ] Prompt improvement plan is concrete (specific prompt sections, not just "improve the prompt").
-- [ ] Prioritized implementation ticket list produced (ticket IDs, titles, dependencies).
-- [ ] Spec does not introduce design ambiguity that would force implementation-time invention.
+- [x] Design spec document exists in `docs/` covering all 9 known gaps. → `docs/m13-self-evolve-reliability.md` §3 (Gap Analysis) covers all 9 gaps.
+- [x] Conversational feedback-refinement phase is fully designed: context injection, conversation flow, spec format, user confirmation UX, and integration with the existing "Fix with AI" flow. → §4 (Conversational Feedback-Refinement Phase): §4.2 flow, §4.3 context injection, §4.4 spec format, §4.5 UI integration, §4.6 system prompt, §4.7 edge cases.
+- [x] Each gap has a proposed hardening approach with clear scope bounds. → §3 proposes a fix for each gap with scope bounds. Gaps 3 and 9 are documented as resolved (intentional behavior).
+- [x] Blocking vs. advisory eval policy is defined with rationale. → §5 (Eval Policy) with per-check blocking/advisory table and rationale.
+- [x] Retry strategy is defined (trigger conditions, max retries, context injection, give-up behavior). → §6 (Retry Strategy): triggers, max 1 retry, context injection format, give-up behavior, state machine update.
+- [x] Prompt improvement plan is concrete (specific prompt sections, not just "improve the prompt"). → §7 (Prompt Improvements): full template with 6 sections, dynamic allowlist, context assembly function.
+- [x] Prioritized implementation ticket list produced (ticket IDs, titles, dependencies). → §9: 5 tickets ranked with dependencies, effort sizing, and rationale for order.
+- [x] Spec does not introduce design ambiguity that would force implementation-time invention. → Each ticket's scope is bounded by the spec. Key decisions (max retries, context budget, blocking policy, conversation mode name, spec format) are made explicitly.
 
 ## Subtasks
-- [ ] Audit current pipeline code (patch_agent, apply_pipeline, evals)
-- [ ] Draft spec in `docs/`
-- [ ] Produce implementation ticket list
-- [ ] Documentation updates
+- [x] Audit current pipeline code (patch_agent, apply_pipeline, evals)
+- [x] Draft spec in `docs/` → `docs/m13-self-evolve-reliability.md`
+- [x] Produce implementation ticket list → §9 (5 ranked tickets)
+- [x] Documentation updates → spec document is the primary deliverable
 
 ## Notes
 - Follow the same pattern as T-0058 (M8), T-0074 (M10), T-0077 (M11), T-0081 (M12): design spec first, then implementation tickets derived from spec.
 - The allowlist broadening (gap #2) was intentional per test expectations — the spec should document this as a conscious decision, not a bug.
 
+## Evidence
+- Design spec: `docs/m13-self-evolve-reliability.md` (11 sections, ~350 lines).
+- Pipeline audit: Reviewed `patch_agent.py`, `apply_pipeline.py`, `evals/run.py`, `evals/checks/`, `patch-allowlist.json`, `main.py` endpoint, and frontend flow (`App.tsx`, `useRuntime.ts`, `feedbackPanel.tsx`, `PatchNotification.tsx`).
+- All 9 gaps analyzed with proposed fixes, scope bounds, and explicit design decisions.
+- 5 implementation tickets ranked with dependencies and effort sizing.
+
 ## Change Log
 - 2026-03-07: Ticket created during PM run. First pickup for E-0016 (M13).
 - 2026-03-07: F-20260307-001 (conversational feedback refinement) added as gap #1 and primary design input. Acceptance criteria updated to require refinement phase design.
+- 2026-03-07: Implementation complete. Design spec drafted in `docs/m13-self-evolve-reliability.md`. All 9 gaps covered. Implementation ticket list produced (§9). Moved to review.
+- 2026-03-07: PM acceptance. All 8 acceptance criteria verified with evidence. Doc review passed (docs-only ticket, QA waived). Moved to done.
