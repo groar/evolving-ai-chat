@@ -299,7 +299,9 @@ class PiDevHarnessErrorTests(unittest.TestCase):
             patch("runtime.agent.patch_agent.subprocess.run", return_value=fake) as mock_run,
         ):
             self.agent._call_pi(_feedback(summary="First message is too stiff."), "abc1234")
-        cmd = mock_run.call_args[0][0]
+        # The pi invocation is the first subprocess.run call; subsequent calls are
+        # the working-tree reset (git checkout, git clean) added after _git_diff.
+        cmd = mock_run.call_args_list[0][0][0]
         prompt = cmd[cmd.index("-p") + 1]
         self.assertIn("First message is too stiff.", prompt)
         self.assertNotIn("--append-system-prompt", cmd)

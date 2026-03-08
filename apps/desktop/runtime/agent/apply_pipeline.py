@@ -239,6 +239,15 @@ class ApplyPipeline:
         if result.returncode != 0:
             raise ApplyError("git_unavailable", result.stderr.strip()[:300])
         current_head = result.stdout.strip()
+        # #region agent log
+        try:
+            import json as _json, time as _time
+            from urllib.request import urlopen, Request as _Req
+            _match = current_head.startswith(base_ref) or base_ref.startswith(current_head[:min(len(base_ref),len(current_head))])
+            _payload = _json.dumps({'sessionId':'6c587d','location':'apply_pipeline.py:_check_base_ref','message':'base_ref_check','data':{'base_ref':base_ref,'current_head':current_head,'match':_match},'timestamp':_time.time()*1000,'hypothesisId':'H-D'}).encode()
+            urlopen(_Req('http://127.0.0.1:7883/ingest/cdc69240-2558-4092-a6a2-058d79d39464',data=_payload,headers={'Content-Type':'application/json','X-Debug-Session-Id':'6c587d'}),timeout=2)
+        except Exception: pass
+        # #endregion
         # Accept if either is a prefix of the other (short vs full SHA comparison)
         short = min(len(base_ref), len(current_head))
         if not (current_head.startswith(base_ref) or base_ref.startswith(current_head[:short])):
@@ -288,8 +297,20 @@ class ApplyPipeline:
                     real_nm, target_is_directory=True
                 )
 
-            # Apply patch to temp copy (strip=1 matches `a/apps/desktop/src/...` paths)
-            _apply_patch(artifact.unified_diff, tmp_path, strip=1)
+            # Apply only the apps/desktop/ portion of the diff — ticket files and other
+            # paths outside apps/desktop/ do not exist in the temp copy and would cause
+            # patch to exit 1. npm validation only needs to verify the desktop code changes.
+            desktop_diff = _filter_diff_to_prefix(artifact.unified_diff, "apps/desktop/")
+            # #region agent log
+            try:
+                import json as _json, time as _time
+                from urllib.request import urlopen, Request as _Req
+                _payload = _json.dumps({'sessionId':'6c587d','location':'apply_pipeline.py:_sandboxed_validate','message':'desktop_diff_filter','data':{'full_diff_len':len(artifact.unified_diff),'desktop_diff_len':len(desktop_diff),'has_desktop_diff':bool(desktop_diff.strip()),'files_changed':artifact.files_changed},'timestamp':_time.time()*1000,'hypothesisId':'H-A'}).encode()
+                urlopen(_Req('http://127.0.0.1:7883/ingest/cdc69240-2558-4092-a6a2-058d79d39464',data=_payload,headers={'Content-Type':'application/json','X-Debug-Session-Id':'6c587d'}),timeout=2)
+            except Exception: pass
+            # #endregion
+            if desktop_diff.strip():
+                _apply_patch(desktop_diff, tmp_path, strip=1)
 
             try:
                 result = subprocess.run(
@@ -412,6 +433,15 @@ class ApplyPipeline:
     def _apply_and_commit(self, artifact: PatchArtifact) -> str:
         """Apply diff to real working copy, git add + git commit. Returns commit SHA."""
         # Apply to real working copy (strip=1 from repo_root)
+        # #region agent log
+        try:
+            import json as _json, time as _time
+            from urllib.request import urlopen, Request as _Req
+            _tree_status = subprocess.run(['git','status','--short'],cwd=str(self._repo_root),capture_output=True,text=True,timeout=10)
+            _payload = _json.dumps({'sessionId':'6c587d','location':'apply_pipeline.py:_apply_and_commit:entry','message':'working_tree_before_apply','data':{'status':_tree_status.stdout[:500],'files_changed':artifact.files_changed},'timestamp':_time.time()*1000,'hypothesisId':'H-B'}).encode()
+            urlopen(_Req('http://127.0.0.1:7883/ingest/cdc69240-2558-4092-a6a2-058d79d39464',data=_payload,headers={'Content-Type':'application/json','X-Debug-Session-Id':'6c587d'}),timeout=2)
+        except Exception: pass
+        # #endregion
         _apply_patch(artifact.unified_diff, self._repo_root, strip=1)
 
         add = _git(["add", "--"] + artifact.files_changed, self._repo_root)
@@ -457,6 +487,53 @@ def _git(
     )
 
 
+def _filter_diff_to_prefix(unified_diff: str, prefix: str) -> str:
+    """Return the subset of a unified diff containing only changes to paths starting with prefix.
+
+    Handles both `git diff` style (diff --git a/path b/path) and `difflib.unified_diff` style
+    (--- a/path / +++ b/path headers without a diff --git preamble).
+    """
+    result_blocks: list[str] = []
+    current_lines: list[str] = []
+    current_relevant: bool = False
+    # True after "diff --git" until the embedded "--- " header is consumed.
+    # While True, a "--- " line is part of the current git-diff block, not a new block.
+    git_header_pending: bool = False
+
+    def _flush() -> None:
+        if current_lines and current_relevant:
+            result_blocks.append("".join(current_lines))
+
+    for line in unified_diff.splitlines(keepends=True):
+        if line.startswith("diff --git "):
+            _flush()
+            current_lines = [line]
+            git_header_pending = True
+            try:
+                b_part = line.split(" b/", 1)[1].rstrip()
+                current_relevant = b_part.startswith(prefix)
+            except IndexError:
+                current_relevant = False
+        elif line.startswith("--- ") and not git_header_pending:
+            # difflib-style block boundary: "--- a/path" with no preceding "diff --git"
+            _flush()
+            current_lines = [line]
+            try:
+                a_part = line.split("--- a/", 1)[1].split("\t")[0].rstrip()
+                current_relevant = a_part.startswith(prefix)
+            except IndexError:
+                current_relevant = False
+        else:
+            # Consume the embedded "--- " inside a git-diff block so the next standalone
+            # "--- " from difflib output is correctly detected as a new block boundary.
+            if git_header_pending and line.startswith("--- "):
+                git_header_pending = False
+            current_lines.append(line)
+
+    _flush()
+    return "".join(result_blocks)
+
+
 def _apply_patch(unified_diff: str, cwd: Path, strip: int = 1) -> None:
     """Apply a unified diff string to files under cwd using the `patch` utility.
 
@@ -482,6 +559,14 @@ def _apply_patch(unified_diff: str, cwd: Path, strip: int = 1) -> None:
                 timeout=_PATCH_TIMEOUT,
                 stdin=subprocess.DEVNULL,
             )
+            # #region agent log
+            try:
+                import json as _json, time as _time
+                from urllib.request import urlopen, Request as _Req
+                _payload = _json.dumps({'sessionId':'6c587d','location':'apply_pipeline.py:_apply_patch','message':'patch_result','data':{'returncode':result.returncode,'stderr':result.stderr[:300],'stdout':result.stdout[:300],'cwd':str(cwd),'diff_len':len(unified_diff)},'timestamp':_time.time()*1000,'hypothesisId':'H-A H-B'}).encode()
+                urlopen(_Req('http://127.0.0.1:7883/ingest/cdc69240-2558-4092-a6a2-058d79d39464',data=_payload,headers={'Content-Type':'application/json','X-Debug-Session-Id':'6c587d'}),timeout=2)
+            except Exception: pass
+            # #endregion
             if result.returncode != 0:
                 raise ApplyError(
                     "patch_apply_failed",
