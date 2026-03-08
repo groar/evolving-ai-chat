@@ -7,7 +7,7 @@
 - Priority: P1
 - Owner: ai-agent
 - Created: 2026-03-07
-- Updated: 2026-03-07
+- Updated: 2026-03-08
 - Design Spec: `docs/m13-self-evolve-reliability.md`
 
 ## Goal
@@ -37,11 +37,14 @@ The M8/M10/M12 milestones established the self-modification loop infrastructure:
 | Rank | Ticket | Description | Priority | Status |
 |------|--------|-------------|----------|--------|
 | — | T-0088 | M13 design spec: reliability gaps analysis + hardening plan | P1 | done |
-| 1 | T-0089 | Prompt improvements: structured template + dynamic allowlist + context assembly | P1 | ready |
-| 2 | T-0090 | Eval harness expansion: `files_in_allowlist` + `npm_validate_passes` + blocking policy | P1 | ready |
-| 3 | T-0091 | Retry with failure context: one auto-retry on retriable failures | P1 | ready |
-| 4 | T-0092 | Conversational feedback-refinement: refinement conversation mode + context endpoint + UI | P1 | ready |
-| 5 | T-0093 | Progress reporting: elapsed-time in poll response + frontend counter | P2 | ready |
+| 1 | T-0089 | Prompt improvements: structured template + dynamic allowlist + context assembly | P1 | done |
+| 2 | T-0090 | Eval harness expansion: `files_in_allowlist` + `npm_validate_passes` + blocking policy | P1 | done |
+| 3 | T-0091 | Retry with failure context: one auto-retry on retriable failures | P1 | done |
+| 4 | T-0092 | Conversational feedback-refinement: refinement conversation mode + context endpoint + UI | P1 | done |
+| 5 | T-0093 | Progress reporting: elapsed-time in poll response + frontend counter | P2 | done |
+| 6 | T-0095 | Git commit when agent succeeds (timeout/config; F-20260308-002) | P1 | done |
+| 7 | T-0096 | Patches missing from Activity — refresh state when sheet opens (F-20260308-003) | P2 | done |
+| 8 | T-0097 | Progress in refinement + Activity in-progress cards (F-20260308-004) | P2 | ready |
 
 ## Feedback References
 - F-20260307-001 (conversational feedback refinement — primary design input for M13).
@@ -61,3 +64,4 @@ Results to be recorded in this epic file or a dedicated QA checkpoint.
 - 2026-03-07: T-0088 accepted. Design spec shipped in `docs/m13-self-evolve-reliability.md`. 5 implementation tickets confirmed. Status → in-progress. PM to create T-0089–T-0093 and replenish ready queue.
 - 2026-03-07: PM run created T-0089–T-0093 (all 5 implementation tickets). Ready queue replenished. Ticket table updated with confirmed IDs.
 - 2026-03-08: PM run added T-0095 (git commit when agent succeeds), T-0096 (patches missing from Activity), T-0097 (progress in refinement + Activity cards) from Fix with AI playtest feedback F-20260308-002 to 004.
+- 2026-03-08: T-0095, T-0096 accepted and moved to done. T-0097 moved from backlog to ready (rank 1); dependency T-0096 satisfied. Epic table updated: T-0089–T-0093, T-0095, T-0096 done; T-0097 ready.

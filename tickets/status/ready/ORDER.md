@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| *(empty)* | | | PM to replenish from backlog. |
+| 1 | T-0097 | P2 | Progress in refinement + Activity in-progress cards (F-20260308-004); unblocked after T-0096. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -64,3 +64,4 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-08: PM run triaged Fix with AI feedback (F-20260308-002 to 004). Created T-0095 (git commit when agent succeeds), T-0096 (patches missing from Activity), T-0097 (progress in refinement + Activity in-progress cards). T-0096 and T-0095 moved to ready; T-0097 remains in backlog (depends on T-0096).
 - 2026-03-08: T-0096 accepted and moved to done (refresh state when Activity sheet opens so Fix with AI patches appear). Rank 1 is now T-0095.
 - 2026-03-08: T-0095 accepted and moved to done (apply-pipeline 300s defaults + APPLY_*_TIMEOUT_SEC env; validation_timeout handling). Ready queue empty; PM to replenish.
+- 2026-03-08: PM run replenished ready queue. T-0097 (progress in refinement + Activity in-progress cards) moved from backlog to ready as rank 1; dependency T-0096 done.

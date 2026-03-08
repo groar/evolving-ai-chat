@@ -2,14 +2,14 @@
 
 ## Metadata
 - ID: T-0097
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: feature
 - Area: ui
 - Epic: E-0016
 - Owner: ai-agent
 - Created: 2026-03-08
-- Updated: 2026-03-08
+- Updated: 2026-03-08 (moved to ready)
 
 ## Summary
 Improve Fix with AI UX by (1) showing agent progress in the refinement conversation (not the Suggest an improvement panel), (2) making progress feel more granular, and (3) showing in-progress evolutions in the Activity feed as cards with links to the refinement discussion.
