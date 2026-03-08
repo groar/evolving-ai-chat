@@ -231,10 +231,12 @@ export function useRefinement() {
         systemPromptRef.current = sysPrompt;
 
         // Create a dedicated conversation for the refinement session
+        // API allows title max_length=120 (NewConversationRequest); feedbackTitle can be up to 240 chars.
+        const refinementTitle = `Refining: ${feedbackTitle}`.slice(0, 120);
         const convResponse = await fetch(`${runtimeBase}/conversations`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: `Refining: ${feedbackTitle}`, set_active: false }),
+          body: JSON.stringify({ title: refinementTitle, set_active: false }),
         });
         if (!convResponse.ok) {
           setError("Could not create a refinement conversation. Please try again.");
