@@ -226,8 +226,9 @@ export function useRuntime() {
   const activateConversation = useCallback(
     async (conversationId: string) => {
       const conv = useConversationStore.getState();
+      if (conversationId === conv.activeConversationId) return;
+      // T-0103: allow navigation during send so left-panel and Activity deep-link always switch discussion
       const rt = useRuntimeStore.getState();
-      if (conversationId === conv.activeConversationId || rt.isSending) return;
       try {
         const response = await fetch(`${runtimeBase}/conversations/${conversationId}/activate`, {
           method: "POST"

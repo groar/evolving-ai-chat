@@ -15,9 +15,9 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0103 | P1 | Fix with AI regression: discussion navigation/deep-link routing and in-progress state leakage |
-| 2 | T-0102 | P1 | M14 kickoff: architecture docs baseline to close known-gap documentation debt |
+| 1 | T-0102 | P1 | M14 kickoff: architecture docs baseline to close known-gap documentation debt |
 
+(T-0103 moved to `review/` 2026-03-08; next P1 pickup is T-0102 above.)
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -80,3 +80,5 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-08: T-0099 accepted and moved to `done/` after QA PASS. Ready queue remains T-0100 as rank 1.
 - 2026-03-08: T-0100 moved to `review` after implementation. Ready queue is now empty.
 - 2026-03-08: T-0100 accepted and moved to `done/` after QA PASS. Ready queue remains empty.
+- 2026-03-08: PM run — T-0103 in progress (discussion routing fix). Ready folder contains only T-0102; ORDER table shows T-0102 as rank 1. Removed T-0104 stub from ready/.
+- 2026-03-08: T-0103 implementation completed (activateConversation during isSending + regression test). Moved to review.

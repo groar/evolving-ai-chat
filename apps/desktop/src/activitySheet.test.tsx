@@ -180,6 +180,22 @@ describe("ActivitySheet", () => {
     fetchSpy.mockRestore();
   });
 
+  it("calls onOpenRefinement with refinement_conversation_id when opening discussion from Activity (T-0103)", async () => {
+    const onOpenRefinement = vi.fn();
+    const patch = makePatch({
+      id: "p1",
+      feedback_id: "fb-1",
+      title: "My patch",
+      refinement_conversation_id: "conv-ref-1"
+    });
+    renderSheet({ patches: [patch], onOpenRefinement });
+    const sheet = getCurrentSheet();
+    const card = within(sheet).getByTestId("activity-patch-p1");
+    await userEvent.click(within(card).getByRole("button"));
+    await userEvent.click(within(sheet).getByRole("button", { name: "Open refinement discussion" }));
+    expect(onOpenRefinement).toHaveBeenCalledWith("fb-1", "My patch", "conv-ref-1");
+  });
+
   it("groups stub and low-signal entries under collapsible sections", () => {
     const patches: PatchEntry[] = [
       makePatch({ id: "main1", title: "Real change with diff", unified_diff: "--- a/x\n+++ b/x\n", created_at: "2026-03-04T10:00:00.000Z" }),
