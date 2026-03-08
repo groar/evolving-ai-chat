@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0095
-- Status: ready
+- Status: done
 - Priority: P1
 - Type: bug
 - Area: core
@@ -28,15 +28,21 @@ When the Fix with AI flow completes successfully (pi agent produces the right re
 - F-20260308-002
 
 ## Acceptance Criteria
-- [ ] When pi agent produces a valid diff and the apply pipeline runs, either:
+- [x] When pi agent produces a valid diff and the apply pipeline runs, either:
   - (a) The validate step completes within a reasonable timeout and git commit succeeds, or
   - (b) The timeout is configurable/increased so typical runs complete, or
   - (c) A documented fallback path exists for when validate times out (e.g. user can retry with relaxed gate).
-- [ ] `uv run pytest` exits 0.
-- [ ] No regression: scope-blocked or validation-failed patches still do not get committed.
+- [x] `uv run pytest` exits 0.
+- [x] No regression: scope-blocked or validation-failed patches still do not get committed.
 
 ## User-Facing Acceptance Criteria
-- [ ] User sees a git commit when the Fix with AI agent successfully produces and applies a change (under normal conditions).
+- [x] User sees a git commit when the Fix with AI agent successfully produces and applies a change (under normal conditions).
+
+## Evidence
+- **Option (a)+(b) implemented**: Default timeouts increased from 120s/180s to 300s for validate and patch steps so typical runs complete. Env overrides `APPLY_VALIDATE_TIMEOUT_SEC` and `APPLY_PATCH_TIMEOUT_SEC` (min 60s) allow extending without code change; documented in `apps/desktop/runtime/.env.example`.
+- **Explicit validation timeout**: `_sandboxed_validate` now catches `subprocess.TimeoutExpired` for `npm run validate` and raises `ApplyError("validation_timeout", ...)`; frontend `getFailureReasonCopy("validation_timeout")` added in `PatchNotification.tsx`.
+- **Tests**: `uv run pytest apps/desktop/runtime/` — 109 passed, 13 skipped. `test_patch_timeout_raises_apply_error_patch_timeout` updated to assert current `_PATCH_TIMEOUT` in details.
+- **No regression**: Apply flow unchanged for scope_blocked/validation_failed; only timeout values and env configurability added.
 
 ## Dependencies / Sequencing
 - Depends on: none
@@ -48,3 +54,5 @@ When the Fix with AI flow completes successfully (pi agent produces the right re
 
 ## Change Log
 - 2026-03-08: Ticket created from F-20260308-002.
+- 2026-03-08: Implementation complete. Increased default timeouts to 300s; env APPLY_PATCH_TIMEOUT_SEC / APPLY_VALIDATE_TIMEOUT_SEC; validation_timeout handling and UI copy; .env.example and test updated. Moved to review.
+- 2026-03-08: QA checkpoint 2026-03-08-qa-T-0095: PASS. PM accepted; moved to done.

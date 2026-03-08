@@ -28,7 +28,13 @@ from unittest.mock import MagicMock, patch as mock_patch
 import pytest
 from fastapi.testclient import TestClient
 
-from runtime.agent.apply_pipeline import ApplyError, ApplyPipeline, RollbackError, _apply_patch
+from runtime.agent.apply_pipeline import (
+    ApplyError,
+    ApplyPipeline,
+    RollbackError,
+    _apply_patch,
+    _PATCH_TIMEOUT,
+)
 from runtime.agent.patch_agent import PatchArtifact
 from runtime.agent.patch_storage import PatchStorage
 from runtime.main import app
@@ -614,7 +620,7 @@ class ApplyPatchHelperTests(unittest.TestCase):
                 with self.assertRaises(ApplyError) as ctx:
                     _apply_patch(_STUB_DIFF, tmp_path, strip=1)
                 self.assertEqual(ctx.exception.reason, "patch_timeout")
-                self.assertIn("180", ctx.exception.details)
+                self.assertIn(str(_PATCH_TIMEOUT), ctx.exception.details)
 
 
 if __name__ == "__main__":

@@ -162,6 +162,8 @@ function getFailureReasonCopy(reason?: string | null): string {
       return "the AI agent couldn't be reached";
     case "patch_timeout":
       return "the patch timed out (large or complex changes can take longer). Please try again.";
+    case "validation_timeout":
+      return "validation timed out (build/lint took too long). You can increase APPLY_VALIDATE_TIMEOUT_SEC and try again.";
     default:
       return "an unexpected error occurred";
   }

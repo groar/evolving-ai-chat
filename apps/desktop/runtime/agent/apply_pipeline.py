@@ -31,9 +31,22 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_VALIDATE_TIMEOUT = 120
+
+def _timeout_seconds(env_key: str, default_sec: int) -> int:
+    """Return timeout in seconds from env or default. T-0095: configurable so typical runs complete."""
+    raw = os.environ.get(env_key, "").strip()
+    if not raw:
+        return default_sec
+    try:
+        return max(60, int(raw))
+    except ValueError:
+        return default_sec
+
+
+# T-0095: increased defaults (300s) so typical Fix with AI runs complete; override via env.
+_VALIDATE_TIMEOUT = _timeout_seconds("APPLY_VALIDATE_TIMEOUT_SEC", 300)
 _GIT_TIMEOUT = 30
-_PATCH_TIMEOUT = 180
+_PATCH_TIMEOUT = _timeout_seconds("APPLY_PATCH_TIMEOUT_SEC", 300)
 _EVALS_TIMEOUT = 60
 
 
@@ -278,13 +291,19 @@ class ApplyPipeline:
             # Apply patch to temp copy (strip=1 matches `a/apps/desktop/src/...` paths)
             _apply_patch(artifact.unified_diff, tmp_path, strip=1)
 
-            result = subprocess.run(
-                [self._npm_cmd, "run", "validate"],
-                cwd=str(tmp_desktop),
-                capture_output=True,
-                text=True,
-                timeout=_VALIDATE_TIMEOUT,
-            )
+            try:
+                result = subprocess.run(
+                    [self._npm_cmd, "run", "validate"],
+                    cwd=str(tmp_desktop),
+                    capture_output=True,
+                    text=True,
+                    timeout=_VALIDATE_TIMEOUT,
+                )
+            except subprocess.TimeoutExpired:
+                raise ApplyError(
+                    "validation_timeout",
+                    f"npm run validate timed out after {_VALIDATE_TIMEOUT}s",
+                )
             if result.returncode != 0:
                 details = (
                     (result.stdout or "")[-1500:] + "\n" + (result.stderr or "")[-1500:]
