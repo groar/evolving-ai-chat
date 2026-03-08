@@ -84,6 +84,19 @@ describe("PatchNotification — UI states (spec §5 copy compliance)", () => {
     expect(markup).not.toContain("validation_failed");
   });
 
+  it("validation_failed shows failure copy and does not expose raw code", () => {
+    const markup = renderToStaticMarkup(
+      <PatchNotification
+        patch={makePatch({ status: "validation_failed", failure_reason: "validation_failed" })}
+        onUndo={noop}
+        onDismiss={noop}
+      />
+    );
+    expect(markup).toContain("apply the change");
+    expect(markup).toContain("checks didn");
+    expect(markup).not.toContain("validation_failed");
+  });
+
   it("scope_blocked shows spec copy", () => {
     const markup = renderToStaticMarkup(
       <PatchNotification patch={makePatch({ status: "scope_blocked" })} onUndo={noop} onDismiss={noop} />
@@ -123,6 +136,7 @@ describe("PatchNotification — copy constraints (spec §5 must-not violations)"
     "applied",
     "reloading",
     "apply_failed",
+    "validation_failed",
     "scope_blocked",
     "reverted",
     "rollback_conflict",
@@ -195,6 +209,7 @@ describe("PatchNotification — Undo action", () => {
 describe("PatchNotification — Dismiss action", () => {
   const dismissableStatuses: PatchStatus[] = [
     "apply_failed",
+    "validation_failed",
     "scope_blocked",
     "rollback_conflict",
     "rollback_unavailable"

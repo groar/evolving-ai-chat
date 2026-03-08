@@ -10,6 +10,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { hasFunctionalDescription, type RefinementMessage } from "./hooks/useRefinement";
 import type { PatchEntry } from "./PatchNotification";
+import { getFailureReasonCopy } from "./PatchNotification";
 import { isElapsedStatus, useElapsedCounter } from "./PatchNotification";
 
 type RefinementConversationProps = {
@@ -45,6 +46,17 @@ export function RefinementConversation({
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const showProgress = activePatch != null && isElapsedStatus(activePatch.status);
+  const showTerminalStatus =
+    activePatch != null &&
+    [
+      "applied",
+      "apply_failed",
+      "validation_failed",
+      "scope_blocked",
+      "reverted",
+      "rollback_conflict",
+      "rollback_unavailable",
+    ].includes(activePatch.status);
   const elapsed = useElapsedCounter(
     showProgress,
     activePatch?.elapsed_seconds,
@@ -157,28 +169,52 @@ export function RefinementConversation({
         )}
 
         {/* T-0097: progress in refinement view when patch is in flight */}
-        {showProgress && activePatch && (
+        {(showProgress || showTerminalStatus) && activePatch && (
           <div
-            className="border border-[#dfbe78] rounded-xl p-4 bg-[#fff7e6] grid gap-2"
+            className={`border rounded-xl p-4 grid gap-2 ${
+              showProgress
+                ? "border-[#dfbe78] bg-[#fff7e6]"
+                : activePatch.status === "applied" || activePatch.status === "reverted"
+                  ? "border-[#9ebf97] bg-[#effbe8]"
+                  : "border-[#f4a58b] bg-[#fff0ea]"
+            }`}
             role="status"
             aria-live="polite"
-            aria-label="Code change in progress"
+            aria-label={showProgress ? "Code change in progress" : "Code change result"}
           >
-            <div className="flex items-center gap-2">
-              <span
-                className="inline-block w-3.5 h-3.5 border-2 border-[#6b4e00]/30 border-t-[#6b4e00] rounded-full animate-spin shrink-0"
-                aria-hidden="true"
-              />
+            {showProgress ? (
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block w-3.5 h-3.5 border-2 border-[#6b4e00]/30 border-t-[#6b4e00] rounded-full animate-spin shrink-0"
+                  aria-hidden="true"
+                />
+                <p className="m-0 text-sm text-foreground">
+                  {activePatch.status === "pending_apply" || activePatch.status === "pending"
+                    ? `Working on your change…${elapsedSuffix}`
+                    : activePatch.status === "applying"
+                      ? `Applying change…${elapsedSuffix}`
+                      : activePatch.status === "retrying"
+                        ? `Retrying…${elapsedSuffix}`
+                        : `In progress…${elapsedSuffix}`}
+                </p>
+              </div>
+            ) : (
               <p className="m-0 text-sm text-foreground">
-                {activePatch.status === "pending_apply" || activePatch.status === "pending"
-                  ? `Working on your change…${elapsedSuffix}`
-                  : activePatch.status === "applying"
-                    ? `Applying change…${elapsedSuffix}`
-                    : activePatch.status === "retrying"
-                      ? `Retrying…${elapsedSuffix}`
-                      : `In progress…${elapsedSuffix}`}
+                {activePatch.status === "applied"
+                  ? "Applied. Your change finished successfully."
+                  : activePatch.status === "reverted"
+                    ? "Undone. The app is back to the previous state."
+                    : activePatch.status === "scope_blocked"
+                      ? "Blocked. The patch attempted to change files outside the allowed scope."
+                      : activePatch.status === "rollback_conflict"
+                        ? "Undo conflict. A later change touched the same files."
+                        : activePatch.status === "rollback_unavailable"
+                          ? "Undo unavailable for this change."
+                          : activePatch.status === "apply_failed" || activePatch.status === "validation_failed"
+                            ? `Failed: ${getFailureReasonCopy(activePatch.failure_reason)}.`
+                            : "Completed."}
               </p>
-            </div>
+            )}
           </div>
         )}
 

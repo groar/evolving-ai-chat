@@ -66,7 +66,7 @@ export function App() {
   const isRequestingPatch = useSettingsStore((s) => s.isRequestingPatch);
 
   const patchInProgress = patches.some((p) =>
-    ["pending_apply", "pending", "applying", "reverting"].includes(p.status)
+    ["pending_apply", "pending", "applying", "retrying", "reverting"].includes(p.status)
   );
   const isFeedbackBusy =
     isSending || isResetting || isRequestingPatch || patchInProgress;
@@ -170,15 +170,21 @@ export function App() {
     [patches, notificationPatchId]
   );
 
-  // T-0097: in-flight patch for current refinement (same feedback_id) so progress shows in refinement view
+  // T-0101: patch for current refinement so terminal status is visible in the same flow.
   const refinementActivePatch = useMemo(() => {
     const fid = refinement.feedbackInfo?.feedbackId;
     if (!fid) return null;
-    const inFlight = ["pending_apply", "pending", "applying", "retrying"];
-    return patches.find(
-      (p) => p.feedback_id === fid && inFlight.includes(p.status)
-    ) ?? null;
-  }, [patches, refinement.feedbackInfo?.feedbackId]);
+    const refinementConversationId = refinement.conversationId;
+    const feedbackMatches = patches.filter((p) => p.feedback_id === fid);
+    if (feedbackMatches.length === 0) return null;
+    if (refinementConversationId) {
+      const exactMatch = feedbackMatches.find(
+        (p) => p.refinement_conversation_id === refinementConversationId
+      );
+      if (exactMatch) return exactMatch;
+    }
+    return feedbackMatches[0] ?? null;
+  }, [patches, refinement.feedbackInfo?.feedbackId, refinement.conversationId]);
 
   const hasMessages = messages.length > 0;
   const isRuntimeOffline = runtimeIssue?.kind === "offline";

@@ -12,6 +12,7 @@ export type PatchStatus =
   | "applied"
   | "reloading" // display-only: transient state before window.location.reload(); never stored in backend/Zustand
   | "apply_failed"
+  | "validation_failed"
   | "scope_blocked"
   | "reverted"
   | "rollback_conflict"
@@ -156,7 +157,7 @@ type Props = {
   onDismiss: () => void;
 };
 
-function getFailureReasonCopy(reason?: string | null): string {
+export function getFailureReasonCopy(reason?: string | null): string {
   switch (reason) {
     case "validation_failed":
       return "checks didn't pass";
@@ -195,6 +196,7 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
     reloading: "border-[#9ebf97] bg-[#effbe8]",
     reverted: "border-[#9ebf97] bg-[#effbe8]",
     apply_failed: "border-[#f4a58b] bg-[#fff0ea]",
+    validation_failed: "border-[#f4a58b] bg-[#fff0ea]",
     scope_blocked: "border-[#f4a58b] bg-[#fff0ea]",
     rollback_conflict: "border-[#f4a58b] bg-[#fff0ea]",
     rollback_unavailable: "border-[#f4a58b] bg-[#fff0ea]",
@@ -234,7 +236,7 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
                   ? "Applying your update — reloading…"
                   : status === "applied"
                   ? `${patch.description || patch.title}. Undo?`
-                  : status === "apply_failed"
+                  : status === "apply_failed" || status === "validation_failed"
                     ? `Couldn't apply the change: ${getFailureReasonCopy(patch.failure_reason)}. No files were modified.`
                     : status === "scope_blocked"
                       ? "The agent tried to modify files outside the allowed area. Change blocked."
@@ -298,6 +300,7 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
           )}
 
           {(status === "apply_failed" ||
+            status === "validation_failed" ||
             status === "scope_blocked" ||
             status === "rollback_conflict" ||
             status === "rollback_unavailable") && (
