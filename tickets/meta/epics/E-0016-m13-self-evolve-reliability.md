@@ -58,6 +58,8 @@ Tier-2 micro-validation after TBD-1 through TBD-4 ship (per spec §11):
 3. Retry probe: deliberate retriable failure → verify retry fires with context → different patch produced.
 Results to be recorded in this epic file or a dedicated QA checkpoint.
 
+**Tier-2 run (2026-03-08):** See `tickets/meta/feedback/2026-03-08-pm-checkpoint-m13-tier2-validation.md`. Probe 1 (prompt quality / E2E): FAIL (refinement + prompt OK; patch_timeout; UX bugs). Probe 2 (refinement conversation): PASS. Probe 3 (retry): not run. Follow-up bugs: T-0099 (progress visible after Run Agent), T-0100 (correct conversation after Run Agent), T-0101 (Activity card status when patch completes).
+
 ## Change Log
 - 2026-03-07: Epic created during PM run. T-0088 (design spec) created as first ready ticket.
 - 2026-03-07: F-20260307-001 (conversational feedback refinement) added as primary design input. Epic goal, problem statement, DoD, and candidate tickets updated.
@@ -66,3 +68,4 @@ Results to be recorded in this epic file or a dedicated QA checkpoint.
 - 2026-03-08: PM run added T-0095 (git commit when agent succeeds), T-0096 (patches missing from Activity), T-0097 (progress in refinement + Activity cards) from Fix with AI playtest feedback F-20260308-002 to 004.
 - 2026-03-08: T-0095, T-0096 accepted and moved to done. T-0097 moved from backlog to ready (rank 1); dependency T-0096 satisfied. Epic table updated: T-0089–T-0093, T-0095, T-0096 done; T-0097 ready.
 - 2026-03-08: T-0097 accepted and moved to done. M13 implementation batch complete. Epic status → done. DoD checkboxes updated (refinement, prompt, evals, retry shipped). Tier-2 validation remains optional per Validation Plan.
+- 2026-03-08: Tier-2 validation run (facilitator session logs). Probe 1 FAIL (patch_timeout + 3 UX bugs); Probe 2 PASS. Validation Plan section updated with outcome. Bug tickets T-0099, T-0100, T-0101 created and added to backlog.
