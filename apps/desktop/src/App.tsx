@@ -170,6 +170,16 @@ export function App() {
     [patches, notificationPatchId]
   );
 
+  // T-0097: in-flight patch for current refinement (same feedback_id) so progress shows in refinement view
+  const refinementActivePatch = useMemo(() => {
+    const fid = refinement.feedbackInfo?.feedbackId;
+    if (!fid) return null;
+    const inFlight = ["pending_apply", "pending", "applying", "retrying"];
+    return patches.find(
+      (p) => p.feedback_id === fid && inFlight.includes(p.status)
+    ) ?? null;
+  }, [patches, refinement.feedbackInfo?.feedbackId]);
+
   const hasMessages = messages.length > 0;
   const isRuntimeOffline = runtimeIssue?.kind === "offline";
   const selectedModel = useMemo(
@@ -377,6 +387,10 @@ export function App() {
         changelog={changelog}
         isBusy={isSending || isResetting}
         onRollbackPatch={(patchId) => rollbackPatch(patchId)}
+        onOpenRefinement={(feedbackId, feedbackTitle) => {
+          setActivitySheetOpen(false);
+          void refinement.start(feedbackId, feedbackTitle, "", "ui");
+        }}
       />
 
       {/* Settings sheet */}
@@ -564,12 +578,13 @@ export function App() {
             isLoading={refinement.isLoading}
             error={refinement.error}
             feedbackTitle={refinement.feedbackInfo?.feedbackTitle ?? ""}
+            activePatch={refinementActivePatch}
             onSendMessage={(text) => void refinement.sendMessage(text)}
             onRunAgent={(description) => {
               const info = refinement.feedbackInfo;
               if (!info) return;
               const convId = refinement.conversationId;
-              refinement.cancel();
+              // T-0097: keep refinement view open so progress is visible there; do not call refinement.cancel()
               void requestPatch(
                 info.feedbackId,
                 info.feedbackTitle,

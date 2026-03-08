@@ -47,6 +47,8 @@ type ActivitySheetProps = {
   changelog: ChangelogEntry[];
   isBusy: boolean;
   onRollbackPatch: (patchId: string) => void;
+  /** T-0097: open refinement discussion for this feedback (in-progress or history link) */
+  onOpenRefinement?: (feedbackId: string, feedbackTitle: string) => void;
 };
 
 function formatTimestamp(value: string): string {
@@ -158,6 +160,7 @@ const PATCH_STATUS_LABEL: Record<string, string> = {
   pending_apply: "Pending",
   pending: "Pending",
   applying: "Applying…",
+  retrying: "Retrying…",
   applied: "Applied",
   apply_failed: "Failed",
   scope_blocked: "Blocked",
@@ -169,7 +172,7 @@ const PATCH_STATUS_LABEL: Record<string, string> = {
 };
 
 export function ActivitySheet(props: ActivitySheetProps) {
-  const { open, onOpenChange, patches, changelog, isBusy, onRollbackPatch } = props;
+  const { open, onOpenChange, patches, changelog, isBusy, onRollbackPatch, onOpenRefinement } = props;
   const [expandedPatchIds, setExpandedPatchIds] = useState<Set<string>>(new Set());
   const [expandedChangelogKeys, setExpandedChangelogKeys] = useState<Set<string>>(new Set());
   const [logStateByPatchId, setLogStateByPatchId] = useState<
@@ -254,6 +257,9 @@ export function ActivitySheet(props: ActivitySheetProps) {
 
   const isEmpty = patches.length === 0 && changelog.length === 0;
 
+  const isInProgress = (p: PatchEntry) =>
+    ["pending_apply", "pending", "applying", "retrying"].includes(p.status);
+
   function renderPatchCard(patch: PatchEntry) {
     const isApplied = patch.status === "applied";
     const isReverted = patch.status === "reverted";
@@ -266,6 +272,9 @@ export function ActivitySheet(props: ActivitySheetProps) {
     const expanded = expandedPatchIds.has(patch.id);
     const logState = logStateByPatchId[patch.id];
     const hasDiff = Boolean(patch.unified_diff);
+    const canOpenRefinement = Boolean(
+      onOpenRefinement && patch.feedback_id && (isInProgress(patch) || isApplied || isReverted || isError)
+    );
     const cardBorder = isApplied
       ? "border-[#9ebf97]"
       : isReverted
@@ -279,20 +288,36 @@ export function ActivitySheet(props: ActivitySheetProps) {
         className={`border rounded-lg bg-card p-3 grid gap-2 ${cardBorder}`}
         data-testid={`activity-patch-${patch.id}`}
       >
-        <button
-          type="button"
-          className="w-full text-left grid gap-2 focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2 rounded"
-          onClick={() => togglePatch(patch.id)}
-          aria-expanded={expanded}
-        >
-          <div className="flex justify-between gap-2 items-start">
-            <p className="m-0 text-sm font-bold line-clamp-2 flex-1 min-w-0">{patch.title}</p>
-            <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground shrink-0">
-              {PATCH_STATUS_LABEL[patch.status] ?? patch.status}
-            </span>
-          </div>
-          <p className="m-0 text-xs text-muted-foreground">{formatRelativeTime(patch.created_at)}</p>
-        </button>
+        <div className="grid gap-2">
+          <button
+            type="button"
+            className="w-full text-left grid gap-2 focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2 rounded"
+            onClick={() => togglePatch(patch.id)}
+            aria-expanded={expanded}
+          >
+            <div className="flex justify-between gap-2 items-start">
+              <p className="m-0 text-sm font-bold line-clamp-2 flex-1 min-w-0">{patch.title}</p>
+              <span className="border border-border rounded-full py-0.5 px-2 text-xs text-muted-foreground shrink-0">
+                {PATCH_STATUS_LABEL[patch.status] ?? patch.status}
+              </span>
+            </div>
+            <p className="m-0 text-xs text-muted-foreground">{formatRelativeTime(patch.created_at)}</p>
+          </button>
+          {isInProgress(patch) && canOpenRefinement && (
+            <button
+              type="button"
+              className={`${railBtn} text-xs w-full sm:w-auto`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenRefinement?.(patch.feedback_id!, patch.title || "Feedback");
+                onOpenChange(false);
+              }}
+              aria-label="Open refinement discussion to see progress"
+            >
+              View discussion
+            </button>
+          )}
+        </div>
         {expanded && (
           <div className="grid gap-2 pt-1 border-t border-border">
             {patch.description && (
@@ -319,6 +344,19 @@ export function ActivitySheet(props: ActivitySheetProps) {
                   aria-label={`Undo: ${patch.title}`}
                 >
                   Undo
+                </button>
+              )}
+              {canOpenRefinement && (
+                <button
+                  type="button"
+                  className={`${railBtn} text-sm`}
+                  onClick={() => {
+                    onOpenRefinement?.(patch.feedback_id!, patch.title || "Feedback");
+                    onOpenChange(false);
+                  }}
+                  aria-label="Open refinement discussion"
+                >
+                  {isInProgress(patch) ? "View discussion" : "Discussion"}
                 </button>
               )}
             </div>

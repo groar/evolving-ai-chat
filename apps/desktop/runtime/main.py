@@ -212,6 +212,10 @@ def state() -> RuntimeStateResponse:
             failure_reason=a.failure_reason,
             applied_at=a.applied_at,
             reverted_at=a.reverted_at,
+            feedback_id=getattr(a, "feedback_id", None) or None,
+            refinement_conversation_id=getattr(a, "refinement_conversation_id", None),
+            started_at=getattr(a, "started_at", None),
+            elapsed_seconds=_compute_elapsed_seconds(a),
         )
         for a in patch_storage.list_all()
         if _CANONICAL_PATCH_ID_RE.match(a.id)
@@ -708,6 +712,8 @@ def agent_code_patch(
     # T-0092: when a validated functional description is present, prefer it over raw summary
     if payload.refined_spec and payload.refined_spec.raw_description.strip():
         feedback["refined_spec_text"] = payload.refined_spec.raw_description.strip()
+    if payload.refined_spec and payload.refined_spec.refinement_conversation_id:
+        feedback["refinement_conversation_id"] = payload.refined_spec.refinement_conversation_id
 
     # Resolve base_ref from git HEAD when the frontend omits it
     base_ref = payload.base_ref
@@ -842,6 +848,8 @@ def agent_patch_status(patch_id: str) -> PatchStatusResponse | JSONResponse:
         revert_commit_sha=artifact.revert_commit_sha,
         started_at=getattr(artifact, "started_at", None),
         elapsed_seconds=_compute_elapsed_seconds(artifact),
+        feedback_id=getattr(artifact, "feedback_id", None) or None,
+        refinement_conversation_id=getattr(artifact, "refinement_conversation_id", None),
     )
 
 

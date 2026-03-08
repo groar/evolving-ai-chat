@@ -1,5 +1,6 @@
 /**
  * T-0092: Refinement conversation UI.
+ * T-0097: progress in refinement view when patch is in flight.
  *
  * Shown in the main chat area when the user clicks "Fix with AI".
  * Displays the conversational refinement session with action buttons
@@ -8,6 +9,8 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { hasFunctionalDescription, type RefinementMessage } from "./hooks/useRefinement";
+import type { PatchEntry } from "./PatchNotification";
+import { isElapsedStatus, useElapsedCounter } from "./PatchNotification";
 
 type RefinementConversationProps = {
   messages: RefinementMessage[];
@@ -16,6 +19,8 @@ type RefinementConversationProps = {
   isLoading: boolean;
   error: string | null;
   feedbackTitle: string;
+  /** T-0097: in-flight patch for this refinement so progress is visible in this view */
+  activePatch: PatchEntry | null;
   onSendMessage: (text: string) => void;
   onRunAgent: (description: string) => void;
   onEdit: () => void;
@@ -29,6 +34,7 @@ export function RefinementConversation({
   isLoading,
   error,
   feedbackTitle,
+  activePatch,
   onSendMessage,
   onRunAgent,
   onEdit,
@@ -37,6 +43,14 @@ export function RefinementConversation({
   const [composer, setComposer] = useState("");
   const transcriptEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const showProgress = activePatch != null && isElapsedStatus(activePatch.status);
+  const elapsed = useElapsedCounter(
+    showProgress,
+    activePatch?.elapsed_seconds,
+    activePatch?.started_at,
+  );
+  const elapsedSuffix = elapsed != null ? ` (${elapsed}s)` : "";
 
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -142,8 +156,34 @@ export function RefinementConversation({
           </article>
         )}
 
-        {/* Action buttons once the model produces a functional description */}
-        {showActionButtons && lastAssistantText && (
+        {/* T-0097: progress in refinement view when patch is in flight */}
+        {showProgress && activePatch && (
+          <div
+            className="border border-[#dfbe78] rounded-xl p-4 bg-[#fff7e6] grid gap-2"
+            role="status"
+            aria-live="polite"
+            aria-label="Code change in progress"
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className="inline-block w-3.5 h-3.5 border-2 border-[#6b4e00]/30 border-t-[#6b4e00] rounded-full animate-spin shrink-0"
+                aria-hidden="true"
+              />
+              <p className="m-0 text-sm text-foreground">
+                {activePatch.status === "pending_apply" || activePatch.status === "pending"
+                  ? `Working on your change…${elapsedSuffix}`
+                  : activePatch.status === "applying"
+                    ? `Applying change…${elapsedSuffix}`
+                    : activePatch.status === "retrying"
+                      ? `Retrying…${elapsedSuffix}`
+                      : `In progress…${elapsedSuffix}`}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Action buttons once the model produces a functional description (hidden while patch in flight) */}
+        {showActionButtons && !showProgress && lastAssistantText && (
           <div
             className="border border-[#efbe91] rounded-xl p-4 bg-[#fffaf0] grid gap-3"
             data-testid="refinement-action-buttons"

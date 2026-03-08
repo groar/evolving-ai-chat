@@ -30,6 +30,10 @@ export type PatchEntry = {
   reverted_at?: string | null;
   started_at?: string | null;
   elapsed_seconds?: number | null;
+  /** T-0097: feedback id when started from Fix with AI; used for Activity "View discussion" link. */
+  feedback_id?: string | null;
+  /** T-0097: refinement conversation id when started from refinement flow. */
+  refinement_conversation_id?: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -47,7 +51,8 @@ function isSpinnerStatus(status: PatchStatus): boolean {
   );
 }
 
-function isElapsedStatus(status: PatchStatus): boolean {
+/** T-0097: exported for progress display in RefinementConversation */
+export function isElapsedStatus(status: PatchStatus): boolean {
   return (
     status === "pending_apply" ||
     status === "pending" ||
@@ -56,7 +61,8 @@ function isElapsedStatus(status: PatchStatus): boolean {
   );
 }
 
-function useElapsedCounter(
+/** T-0097: exported for progress display in RefinementConversation */
+export function useElapsedCounter(
   active: boolean,
   serverElapsed: number | null | undefined,
   startedAt: string | null | undefined,

@@ -15,13 +15,13 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0097 | P2 | Progress in refinement + Activity in-progress cards (F-20260308-004); unblocked after T-0096. |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
 - If the table is empty, pause new implementation pickup and wait for PM queue updates.
 
 ## Notes
+- 2026-03-08: T-0097 moved to review (progress in refinement + Activity in-progress cards). Ready queue empty; PM to replenish.
 - T-0058 (M8 design spec) completed 2026-03-01; canonical spec in `docs/m8-code-loop.md`.
 - T-0059 (M8 agent harness integration) completed 2026-03-01.
 - T-0060 (M8 git-backed apply/rollback) completed 2026-03-02.

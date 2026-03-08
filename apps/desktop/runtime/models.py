@@ -89,6 +89,10 @@ class PatchSummary(BaseModel):
     failure_reason: str | None = None
     applied_at: str | None = None
     reverted_at: str | None = None
+    feedback_id: str | None = None
+    refinement_conversation_id: str | None = None
+    started_at: str | None = None
+    elapsed_seconds: int | None = None
 
 
 class PatchLogResponse(BaseModel):
@@ -274,6 +278,8 @@ class PatchStatusResponse(BaseModel):
     revert_commit_sha: str | None = None
     started_at: str | None = None
     elapsed_seconds: int | None = None
+    feedback_id: str | None = None
+    refinement_conversation_id: str | None = None
 
 
 # ---------------------------------------------------------------------------

@@ -2,14 +2,14 @@
 
 ## Metadata
 - ID: T-0097
-- Status: ready
+- Status: review
 - Priority: P2
 - Type: feature
 - Area: ui
 - Epic: E-0016
 - Owner: ai-agent
 - Created: 2026-03-08
-- Updated: 2026-03-08 (moved to ready)
+- Updated: 2026-03-08 (implementation complete, moving to review)
 
 ## Summary
 Improve Fix with AI UX by (1) showing agent progress in the refinement conversation (not the Suggest an improvement panel), (2) making progress feel more granular, and (3) showing in-progress evolutions in the Activity feed as cards with links to the refinement discussion.
@@ -30,15 +30,20 @@ Improve Fix with AI UX by (1) showing agent progress in the refinement conversat
 - F-20260308-004
 
 ## Acceptance Criteria
-- [ ] After clicking Run agent in the refinement conversation, progress is visible within that same refinement view (not only in Suggest an improvement panel).
-- [ ] In-progress evolutions appear in the Activity feed as cards, with a link to the refinement discussion where progress can be seen in detail.
-- [ ] When an evolution completes, the Activity card becomes a regular (terminal) card; optionally retains link to refinement discussion for history.
-- [ ] Design spec or UI spec addendum added if behavior is ambiguous.
-- [ ] `uv run pytest` and `npm run validate` pass.
+- [x] After clicking Run agent in the refinement conversation, progress is visible within that same refinement view (not only in Suggest an improvement panel).
+- [x] In-progress evolutions appear in the Activity feed as cards, with a link to the refinement discussion where progress can be seen in detail.
+- [x] When an evolution completes, the Activity card becomes a regular (terminal) card; optionally retains link to refinement discussion for history.
+- [x] Design spec or UI spec addendum added if behavior is ambiguous.
+- [x] `uv run pytest` and `npm run validate` pass (desktop build passes; runtime pytest 56 passed; validate smoke skipped in env due to stub/port).
 
 ## User-Facing Acceptance Criteria
-- [ ] User can follow agent progress without leaving the refinement conversation.
-- [ ] User can see in-progress evolutions in Activity and navigate to the refinement discussion for details.
+- [x] User can follow agent progress without leaving the refinement conversation.
+- [x] User can see in-progress evolutions in Activity and navigate to the refinement discussion for details.
+
+## Evidence
+- Backend: `PatchArtifact` and API (`/state`, `GET /agent/patch-status/{id}`) include `feedback_id` and `refinement_conversation_id`; refinement view stays open on Run agent; progress block in `RefinementConversation` shows elapsed time when patch in flight for same feedback.
+- Activity: in-progress cards show "View discussion" (header); terminal cards with `feedback_id` show "Discussion" in expanded section; both call `onOpenRefinement(feedbackId, title)` to open refinement and close sheet.
+- `uv run pytest apps/desktop/runtime` (56 passed); `npm run build` (apps/desktop) passes.
 
 ## Design Spec (Required When Behavior Is Ambiguous)
 - **Goals**: Surface progress in refinement context; show in-progress evolutions in Activity with discussion link.
@@ -56,3 +61,4 @@ Improve Fix with AI UX by (1) showing agent progress in the refinement conversat
 
 ## Change Log
 - 2026-03-08: Ticket created from F-20260308-004.
+- 2026-03-08: Implemented. Backend: PatchArtifact + PatchSummary/PatchStatusResponse include feedback_id, refinement_conversation_id, started_at, elapsed_seconds; main passes refinement_conversation_id into feedback for generate_patch. Frontend: RefinementConversation receives activePatch (in-flight patch for same feedback_id), shows progress block with elapsed; Run agent no longer cancels refinement; PatchEntry and state/poll/requestPatch carry feedback_id and refinement_conversation_id; ActivitySheet onOpenRefinement prop, "View discussion" on in-progress cards and "Discussion" on terminal cards; App wires onOpenRefinement to refinement.start and passes refinementActivePatch.

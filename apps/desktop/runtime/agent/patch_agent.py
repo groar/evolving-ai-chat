@@ -196,6 +196,8 @@ class PatchArtifact:
     # Raw agent execution log for this patch run (stdout/stderr, tool events, etc.).
     # Persisted separately in the runtime database; kept here for transport only.
     log_text: str | None = None
+    # T-0097: refinement conversation id when patch was started from Fix with AI refinement flow.
+    refinement_conversation_id: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -218,6 +220,7 @@ class PatchArtifact:
             "failure_reason": self.failure_reason,
             "started_at": self.started_at,
             "log_text": self.log_text,
+            "refinement_conversation_id": self.refinement_conversation_id,
         }
 
     @classmethod
@@ -242,6 +245,7 @@ class PatchArtifact:
             failure_reason=data.get("failure_reason"),
             started_at=data.get("started_at"),
             log_text=data.get("log_text"),
+            refinement_conversation_id=data.get("refinement_conversation_id"),
         )
 
 
@@ -395,6 +399,7 @@ class PiDevPatchAgent(PatchAgent):
             agent_harness="stub-v1",
             started_at=started_at,
             log_text="\n".join(log_lines),
+            refinement_conversation_id=feedback.get("refinement_conversation_id"),
         )
 
     # ------------------------------------------------------------------
@@ -542,4 +547,5 @@ class PiDevPatchAgent(PatchAgent):
             agent_harness="pi-v1",
             started_at=started_at,
             log_text=log_text,
+            refinement_conversation_id=feedback.get("refinement_conversation_id"),
         )

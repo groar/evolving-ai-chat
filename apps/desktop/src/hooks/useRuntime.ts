@@ -66,6 +66,10 @@ type PatchSummaryPayload = {
   failure_reason?: string | null;
   applied_at?: string | null;
   reverted_at?: string | null;
+  started_at?: string | null;
+  elapsed_seconds?: number | null;
+  feedback_id?: string | null;
+  refinement_conversation_id?: string | null;
 };
 
 export type AssistantRerunVariant = {
@@ -132,7 +136,11 @@ function applyState(
         created_at: p.created_at,
         failure_reason: p.failure_reason,
         applied_at: p.applied_at,
-        reverted_at: p.reverted_at
+        reverted_at: p.reverted_at,
+        started_at: p.started_at,
+        elapsed_seconds: p.elapsed_seconds,
+        feedback_id: p.feedback_id,
+        refinement_conversation_id: p.refinement_conversation_id,
       }))
     );
   }
@@ -645,23 +653,27 @@ export function useRuntime() {
             reverted_at?: string | null;
             started_at?: string | null;
             elapsed_seconds?: number | null;
+            feedback_id?: string | null;
+            refinement_conversation_id?: string | null;
           };
+          const existingPatches = setts.patches;
+          const idx = existingPatches.findIndex((p) => p.id === patchId);
+          const existing = idx >= 0 ? existingPatches[idx] : null;
           const updatedPatch: PatchEntry = {
             id: data.patch_id,
             status: data.status as PatchStatus,
-            title: data.title ?? "",
-            description: data.description ?? "",
-            unified_diff: data.unified_diff ?? "",
-            created_at: new Date().toISOString(),
+            title: data.title ?? existing?.title ?? "",
+            description: data.description ?? existing?.description ?? "",
+            unified_diff: data.unified_diff ?? existing?.unified_diff ?? "",
+            created_at: existing?.created_at ?? new Date().toISOString(),
             failure_reason: data.failure_reason,
             applied_at: data.applied_at,
             reverted_at: data.reverted_at,
             started_at: data.started_at,
             elapsed_seconds: data.elapsed_seconds,
+            feedback_id: data.feedback_id ?? existing?.feedback_id,
+            refinement_conversation_id: data.refinement_conversation_id ?? existing?.refinement_conversation_id,
           };
-          // Upsert into patches list
-          const existingPatches = setts.patches;
-          const idx = existingPatches.findIndex((p) => p.id === patchId);
           const nextPatches: PatchEntry[] =
             idx >= 0
               ? existingPatches.map((p) => (p.id === patchId ? updatedPatch : p))
@@ -812,14 +824,16 @@ export function useRuntime() {
           return;
         }
 
-        // Optimistically add a pending entry and start polling
+        // Optimistically add a pending entry and start polling (T-0097: link to refinement)
         const pendingEntry: PatchEntry = {
           id: data.patch_id,
           status: data.status as PatchStatus,
           title: data.title ?? feedbackTitle,
           description: data.description ?? "",
           unified_diff: "",
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          feedback_id: feedbackId,
+          refinement_conversation_id: refinedSpec?.refinement_conversation_id ?? null,
         };
         const existingPatches = useSettingsStore.getState().patches;
         setts.setPatches([pendingEntry, ...existingPatches]);
