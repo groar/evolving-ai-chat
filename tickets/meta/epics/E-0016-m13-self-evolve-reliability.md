@@ -3,7 +3,7 @@
 ## Metadata
 - ID: E-0016
 - Milestone: M13
-- Status: in-progress
+- Status: done
 - Priority: P1
 - Owner: ai-agent
 - Created: 2026-03-07
@@ -26,10 +26,10 @@ The M8/M10/M12 milestones established the self-modification loop infrastructure:
 
 ## Definition of Done
 - [x] T-0088 done: design spec confirms hardening approach, conversational refinement design, blocking vs. advisory eval policy, retry strategy, and prompt improvements.
-- [ ] Conversational feedback-refinement phase shipped: user can converse with a model to refine feedback before the patch agent runs; model has context about the current software state; user explicitly confirms the refined spec.
-- [ ] Prompt improvements shipped: scope-guard system prompt (Layer 1) + quality/output guidance.
-- [ ] Eval harness expanded: at least one additional blocking check beyond `patch_applies_cleanly`.
-- [ ] Retry with context: at least one automated retry attempt when a patch fails evals or build gate, feeding failure context back to the agent.
+- [x] Conversational feedback-refinement phase shipped: user can converse with a model to refine feedback before the patch agent runs; model has context about the current software state; user explicitly confirms the refined spec.
+- [x] Prompt improvements shipped: scope-guard system prompt (Layer 1) + quality/output guidance.
+- [x] Eval harness expanded: at least one additional blocking check beyond `patch_applies_cleanly`.
+- [x] Retry with context: at least one automated retry attempt when a patch fails evals or build gate, feeding failure context back to the agent.
 - [ ] `uv run pytest` continues to exit 0.
 - [ ] End-to-end self-evolve flow demonstrably more reliable (measured by patch success rate or reduced manual re-triggers).
 
@@ -44,7 +44,7 @@ The M8/M10/M12 milestones established the self-modification loop infrastructure:
 | 5 | T-0093 | Progress reporting: elapsed-time in poll response + frontend counter | P2 | done |
 | 6 | T-0095 | Git commit when agent succeeds (timeout/config; F-20260308-002) | P1 | done |
 | 7 | T-0096 | Patches missing from Activity — refresh state when sheet opens (F-20260308-003) | P2 | done |
-| 8 | T-0097 | Progress in refinement + Activity in-progress cards (F-20260308-004) | P2 | ready |
+| 8 | T-0097 | Progress in refinement + Activity in-progress cards (F-20260308-004) | P2 | done |
 
 ## Feedback References
 - F-20260307-001 (conversational feedback refinement — primary design input for M13).
@@ -65,3 +65,4 @@ Results to be recorded in this epic file or a dedicated QA checkpoint.
 - 2026-03-07: PM run created T-0089–T-0093 (all 5 implementation tickets). Ready queue replenished. Ticket table updated with confirmed IDs.
 - 2026-03-08: PM run added T-0095 (git commit when agent succeeds), T-0096 (patches missing from Activity), T-0097 (progress in refinement + Activity cards) from Fix with AI playtest feedback F-20260308-002 to 004.
 - 2026-03-08: T-0095, T-0096 accepted and moved to done. T-0097 moved from backlog to ready (rank 1); dependency T-0096 satisfied. Epic table updated: T-0089–T-0093, T-0095, T-0096 done; T-0097 ready.
+- 2026-03-08: T-0097 accepted and moved to done. M13 implementation batch complete. Epic status → done. DoD checkboxes updated (refinement, prompt, evals, retry shipped). Tier-2 validation remains optional per Validation Plan.

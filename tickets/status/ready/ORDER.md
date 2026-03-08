@@ -65,3 +65,4 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-08: T-0096 accepted and moved to done (refresh state when Activity sheet opens so Fix with AI patches appear). Rank 1 is now T-0095.
 - 2026-03-08: T-0095 accepted and moved to done (apply-pipeline 300s defaults + APPLY_*_TIMEOUT_SEC env; validation_timeout handling). Ready queue empty; PM to replenish.
 - 2026-03-08: PM run replenished ready queue. T-0097 (progress in refinement + Activity in-progress cards) moved from backlog to ready as rank 1; dependency T-0096 done.
+- 2026-03-08: PM run: T-0097 already accepted (in done). Removed duplicate T-0097 from in-progress. Ready queue empty; backlog empty. E-0016 (M13) marked done. Next: scope next milestone or replenish from backlog when new work is identified.
