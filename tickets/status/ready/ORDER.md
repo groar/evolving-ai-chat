@@ -15,13 +15,15 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| — | (empty) | — | No ready tickets; waiting for PM replenishment |
+| 1 | T-0102 | P1 | M14 kickoff: architecture docs baseline to close known-gap documentation debt |
+
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
 - If the table is empty, pause new implementation pickup and wait for PM queue updates.
 
 ## Notes
+- 2026-03-08: PM run scoped M14 (E-0017) and created T-0102 in `ready/` as rank 1 (architecture docs baseline).
 - 2026-03-08: T-0097 moved to review (progress in refinement + Activity in-progress cards). Ready queue empty; PM to replenish.
 - T-0058 (M8 design spec) completed 2026-03-01; canonical spec in `docs/m8-code-loop.md`.
 - T-0059 (M8 agent harness integration) completed 2026-03-01.

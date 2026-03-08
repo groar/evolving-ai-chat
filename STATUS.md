@@ -119,6 +119,8 @@ Agentic harness options (to evaluate): pi.dev-style “coding agents that open P
   - Additional self-evolve tickets shipped same day: T-0085 (rerun assistant answer with model variants), T-0086 (apply-pipeline patch timeout fix), T-0087 (rename conversation from chat header).
 - **M13 — "Self-Evolve Reliability Hardening" (E-0016) — complete (2026-03-08)**
   - T-0088 (design spec), T-0089 (prompt template + allowlist + context), T-0090 (eval blocking + files_in_allowlist + npm_validate), T-0091 (retry with context), T-0092 (refinement conversation + UI), T-0093 (elapsed-time reporting), T-0095 (git commit on success + timeouts), T-0096 (Activity refresh), T-0097 (progress in refinement + Activity cards) all done. Tier-2 validation optional per epic Validation Plan.
+- **M14 — "Architecture Docs Baseline" (E-0017) — scoped (2026-03-08)**
+  - T-0102 (architecture docs baseline) is ready as rank-1 pickup to close the known gap for product/technical architecture docs (UI platform, runtime, storage, release channels).
 - Previous: M7 (E-0009) superseded 2026-03-01; T-0056 cancelled, T-0057 cancelled. T-0052–T-0055 done but scope superseded.
 - Previous: M7 — "Improvement Class Expansion" (E-0009) (superseded 2026-03-01; T-0052–T-0055 done, T-0056 cancelled)
 - Previous: M6.1 — "Loop Legibility and UX Clarity" (E-0008) (completed 2026-03-01)
@@ -150,4 +152,4 @@ Record important decisions so future agents do not re-litigate context.
 - ~~M8 diff UI: unified diff view inline, or dedicated panel?~~ — Resolved by T-0074/T-0076: color-coded `DiffBlock` inline in `PatchNotification`; no dedicated panel needed.
   - ~~M11: Are `test_chat.py` / `test_proposals.py` / `test_apply_rollback.py` failures caused by missing mocks, schema drift, or genuine code bugs?~~ → Resolved by T-0077: missing mock injection, sqlite3.Row.get() usage, and git sandbox restriction respectively. Fixed in T-0078–T-0080.
   - ~~M12: What is the minimum viable eval harness for gating agent-proposed patches?~~ → Resolved by T-0081–T-0084: `evals/run.py` with `patch_applies_cleanly` check, advisory hook in apply pipeline, test coverage.
-  - **M14**: What is the next milestone after M13 (self-evolve reliability)? Candidates: multi-model adapters, persistence/state management, architecture docs, or tier-2 validation run for M13.
+  - ~~M14: What is the next milestone after M13 (self-evolve reliability)?~~ → Resolved 2026-03-08: M14 is architecture-docs baseline (E-0017), starting with T-0102.
