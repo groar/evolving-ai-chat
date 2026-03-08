@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0099
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: bug
 - Area: ui

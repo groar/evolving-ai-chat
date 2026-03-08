@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0100
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: bug
 - Area: ui
@@ -20,6 +20,10 @@ Discovered in M13 tier-2 validation (Probe 1). Checkpoint: `tickets/meta/feedbac
 ## Acceptance Criteria
 - [ ] After "Run Agent", the user remains in (or is returned to) the same refinement conversation context; no unrelated conversation is shown as the active one.
 - [ ] Progress and final outcome for that patch run are visible in association with the same refinement conversation (or the Activity card that corresponds to it).
+
+## UX Acceptance Criteria (Area: ui)
+- [ ] Primary flow: active conversation after "Run Agent" is the same refinement conversation (or user is returned to it); no unrelated chat is shown.
+- [ ] Empty/error states: if the run fails, failure is visible in the same flow (refinement or Activity card for that run).
 
 ## Evidence (Verification)
 - M13 tier-2 Session 1 (Probe 1): facilitator report + screenshot reference.

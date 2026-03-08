@@ -69,3 +69,4 @@ Results to be recorded in this epic file or a dedicated QA checkpoint.
 - 2026-03-08: T-0095, T-0096 accepted and moved to done. T-0097 moved from backlog to ready (rank 1); dependency T-0096 satisfied. Epic table updated: T-0089–T-0093, T-0095, T-0096 done; T-0097 ready.
 - 2026-03-08: T-0097 accepted and moved to done. M13 implementation batch complete. Epic status → done. DoD checkboxes updated (refinement, prompt, evals, retry shipped). Tier-2 validation remains optional per Validation Plan.
 - 2026-03-08: Tier-2 validation run (facilitator session logs). Probe 1 FAIL (patch_timeout + 3 UX bugs); Probe 2 PASS. Validation Plan section updated with outcome. Bug tickets T-0099, T-0100, T-0101 created and added to backlog.
+- 2026-03-08: PM run moved T-0101, T-0099, T-0100 to ready (ranks 1–3). Follow-up bugs now in pickup order.

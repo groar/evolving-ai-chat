@@ -15,6 +15,9 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
+| 1 | T-0101 | P2 | Activity card terminal status (applied/failed) — M13 tier-2 follow-up |
+| 2 | T-0099 | P2 | Progress in main UI after Run Agent — M13 tier-2 follow-up |
+| 3 | T-0100 | P2 | Correct conversation after Run Agent — M13 tier-2 follow-up |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -66,3 +69,4 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-08: T-0095 accepted and moved to done (apply-pipeline 300s defaults + APPLY_*_TIMEOUT_SEC env; validation_timeout handling). Ready queue empty; PM to replenish.
 - 2026-03-08: PM run replenished ready queue. T-0097 (progress in refinement + Activity in-progress cards) moved from backlog to ready as rank 1; dependency T-0096 done.
 - 2026-03-08: PM run: T-0097 already accepted (in done). Removed duplicate T-0097 from in-progress. Ready queue empty; backlog empty. E-0016 (M13) marked done. Next: scope next milestone or replenish from backlog when new work is identified.
+- 2026-03-08: PM run replenished ready from backlog. T-0101 (Activity card terminal status), T-0099 (progress after Run Agent), T-0100 (correct conversation after Run Agent) moved to ready; order 1–3. Backlog now empty.

@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0101
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: bug
 - Area: ui
@@ -20,6 +20,10 @@ Discovered in M13 tier-2 validation (Probe 1). Checkpoint: `tickets/meta/feedbac
 ## Acceptance Criteria
 - [ ] When the patch run reaches a terminal status (`applied`, `apply_failed`, etc.), the Activity card (and any refinement view tied to that run) updates to show that status within a reasonable time (e.g. next poll or event).
 - [ ] User can distinguish "in progress" from "completed successfully" and "failed" (with reason if available) without consulting backend logs.
+
+## UX Acceptance Criteria (Area: ui)
+- [ ] Primary flow: Activity card and refinement view show terminal status (e.g. "Applied", "Failed: &lt;reason&gt;") within one poll cycle of completion.
+- [ ] Empty/error states: failed runs show reason text when available (e.g. patch_timeout); applied runs show clear success state.
 
 ## Evidence (Verification)
 - M13 tier-2 Session 1 (Probe 1): card stayed "in progress" after agent completed; server had `apply_failed reason=patch_timeout`.
