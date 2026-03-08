@@ -42,3 +42,4 @@ Tracks all feedback intake items for easy triage, deferral, and ticket linkage.
 | F-20260308-002 | ticketed | reliability, fix-with-ai | S2 | T-0095 | 2026-03-08 |
 | F-20260308-003 | ticketed | observability, fix-with-ai | S2 | T-0096 | 2026-03-08 |
 | F-20260308-004 | ticketed | ux, fix-with-ai, observability | S3 | T-0097 | 2026-03-08 |
+| F-20260308-005 | ticketed | ux, reliability, fix-with-ai | S2 | T-0103 | 2026-03-08 |

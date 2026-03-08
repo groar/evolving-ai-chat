@@ -1,0 +1,116 @@
+# T-0103: Fix discussion routing during agent run
+
+## Metadata
+- ID: T-0103
+- Status: ready
+- Priority: P1
+- Type: bug
+- Area: ui
+- Epic: none
+- Owner: ai-agent
+- Created: 2026-03-08
+- Updated: 2026-03-08
+
+## Summary
+After launching Fix with AI, discussion routing can break across multiple navigation entry points: selecting another discussion from the left panel can be ignored, opening a discussion from an Activity card can create a brand new discussion and trigger an unexpected model message, and in-progress state can appear in unrelated discussions. This causes context loss and makes run status untrustworthy.
+
+## Design Spec (Required When Behavior Is Ambiguous)
+- Goals:
+  - Ensure explicit user navigation always changes to the selected existing discussion.
+  - Ensure Activity discussion links open the intended existing discussion without creating a new one.
+  - Ensure in-progress status is scoped only to the discussion/run it belongs to.
+- Non-goals:
+  - No redesign of discussion list layout or Activity information architecture.
+  - No new run-status model beyond correct routing/scoping of existing state.
+- Rules and state transitions:
+  - If a user clicks a discussion in the left panel, active discussion must switch to that target unless the target no longer exists.
+  - If a user clicks an Activity card "open discussion" action, app must resolve and activate the referenced discussion id; do not call any "start new discussion" path.
+  - A new discussion may only be created from explicit "new discussion" actions, never from discussion deep-links.
+  - In-progress badge/state must render only where discussion id (or canonical run link) matches the active run association.
+  - If a referenced discussion no longer exists, show non-destructive fallback behavior (stay on current discussion and show a clear error/toast/log note).
+- User-facing feedback plan:
+  - Navigation immediately reflects the selected discussion.
+  - Activity deep-link opens the expected historical discussion without spawning assistant output.
+  - Unrelated discussions do not show another run's in-progress indicator.
+- Scope bounds:
+  - Restrict implementation to discussion selection/deep-link routing and run-status association logic.
+  - Do not alter backend patch execution semantics.
+- Edge cases / failure modes:
+  - Multiple concurrent or recent runs attached to different discussions.
+  - Activity card references deleted or stale discussion ids.
+  - Rapid user navigation while polling updates are in flight.
+- Validation plan:
+  - Add/extend deterministic UI tests for left-panel switching, Activity deep-link routing, and status isolation.
+  - Add regression assertion that no model call/new discussion creation happens on Activity deep-link.
+  - QA manual pass with one active run and at least one unrelated discussion.
+
+### UI Spec Addendum (Required If `Area: ui`)
+- Primary job-to-be-done:
+  - Move between discussions confidently while a Fix with AI run is active.
+- Primary action and what must be visually primary:
+  - Discussion selection actions (left panel, Activity deep-link) must deterministically open the chosen discussion.
+- Navigation / progressive disclosure notes (what is secondary, and where it lives):
+  - Run progress can remain in refinement/activity surfaces, but must not override or hijack explicit navigation intent.
+- Key states to design and verify (happy, empty, error/offline):
+  - Happy: selected discussion opens correctly.
+  - Error: referenced discussion missing; user remains in current context with clear message.
+  - In-progress: badge/status appears only on associated discussion.
+- Copy constraints (what must not be implied):
+  - Must not imply a newly created discussion belongs to an old Activity card link.
+  - Must not imply unrelated discussions are currently running the same fix.
+
+## Context
+- Reported directly by user after running Fix with AI flow.
+- Similar area was recently addressed in T-0100/T-0101, indicating possible regression or incomplete state-binding coverage.
+
+## References
+- `STATUS.md`
+- `tickets/status/done/T-0099-fix-with-ai-show-progress-after-run-agent.md`
+- `tickets/status/done/T-0100-fix-with-ai-correct-conversation-after-run-agent.md`
+- `tickets/status/done/T-0101-activity-card-status-when-patch-completes.md`
+
+## Feedback References
+- `F-20260308-005`
+
+## Acceptance Criteria
+- [ ] While a Fix with AI run is in progress, clicking a different discussion in the left panel switches to that discussion immediately and reliably.
+- [ ] Clicking "open discussion" from an Activity card opens the referenced existing discussion and does not create a new discussion.
+- [ ] Activity-card discussion deep-link does not trigger unintended model generation or assistant message creation.
+- [ ] In-progress status/badges are shown only for the discussion linked to that run and never leak to unrelated discussions.
+- [ ] Deterministic regression tests cover left-panel navigation, Activity deep-link routing, and in-progress state scoping.
+
+## User-Facing Acceptance Criteria (Only If End-User Behavior Changes)
+- [ ] A user can switch discussions during a run and always lands in the selected discussion.
+- [ ] A user opening a historical discussion from Activity sees that exact discussion history, without unexpected new-thread content.
+
+## UX Acceptance Criteria (Only If `Area: ui`)
+- [ ] Primary flow is keyboard-usable for discussion switching and opening discussion links from Activity.
+- [ ] Error state for stale/missing discussion links is clear and actionable.
+- [ ] In-progress copy and indicators are unambiguous about which discussion/run they belong to.
+- [ ] Layout and navigation behavior remain stable at common desktop breakpoints used by the app.
+
+## Dependencies / Sequencing
+- Depends on: none.
+- Blocks: reliable post-run navigation confidence in Fix with AI flow.
+
+## QA Evidence Links (Required Only When Software/Behavior Changes)
+- QA checkpoint: (to be filled after implementation)
+- Screenshots/artifacts: (to be filled after implementation)
+
+## Evidence (Verification)
+- Tests run: (to be filled during implementation)
+- Manual checks performed: (to be filled during QA)
+- Screenshots/logs/notes: (to be filled during implementation/QA)
+
+## Subtasks
+- [ ] Reproduce and isolate routing/state-leak paths
+- [ ] Implement discussion selection and deep-link routing fixes
+- [ ] Add regression tests for routing and status scoping
+- [ ] QA validation for multi-discussion scenario
+- [ ] Update changelog/docs if user-visible behavior copy changes
+
+## Notes
+Treat this as a regression cluster in one flow and fix as a cohesive slice to avoid partial routing/state mismatches.
+
+## Change Log
+- 2026-03-08: Ticket created from user feedback F-20260308-005 and moved directly to `ready/` as next P1 pickup.
