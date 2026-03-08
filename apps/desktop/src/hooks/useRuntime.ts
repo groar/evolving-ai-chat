@@ -771,7 +771,10 @@ export function useRuntime() {
     ) => {
       const setts = useSettingsStore.getState();
       const rt = useRuntimeStore.getState();
-      if (rt.isSending || rt.isResetting) return;
+      const patchInFlight = setts.patches.some((p) =>
+        ["pending_apply", "pending", "applying", "retrying", "reverting"].includes(p.status)
+      );
+      if (rt.isSending || rt.isResetting || setts.isRequestingPatch || patchInFlight) return;
       setts.setSettingsError(null);
       setts.setRequestingPatch(true);
       try {

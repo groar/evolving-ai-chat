@@ -582,11 +582,13 @@ export function App() {
             streamingText={refinement.streamingText}
             isSending={refinement.isSending}
             isLoading={refinement.isLoading}
+            isRequestingPatch={isRequestingPatch}
             error={refinement.error}
             feedbackTitle={refinement.feedbackInfo?.feedbackTitle ?? ""}
             activePatch={refinementActivePatch}
             onSendMessage={(text) => void refinement.sendMessage(text)}
             onRunAgent={(description) => {
+              if (isRequestingPatch || patchInProgress) return;
               const info = refinement.feedbackInfo;
               if (!info) return;
               const convId = refinement.conversationId;

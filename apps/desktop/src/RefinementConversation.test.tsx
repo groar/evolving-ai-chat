@@ -29,6 +29,7 @@ function renderConversation(activePatch: PatchEntry | null) {
       streamingText=""
       isSending={false}
       isLoading={false}
+      isRequestingPatch={false}
       error={null}
       feedbackTitle="Status feedback"
       activePatch={activePatch}
@@ -49,5 +50,29 @@ describe("RefinementConversation patch status", () => {
   it("shows terminal failure status with reason when patch fails", () => {
     renderConversation(makePatch({ status: "apply_failed", failure_reason: "patch_timeout" }));
     expect(screen.getByText(/Failed: the patch timed out/i)).toBeTruthy();
+  });
+
+  it("shows immediate startup progress and hides Run Agent while patch request is starting", () => {
+    render(
+      <RefinementConversation
+        messages={[
+          { role: "assistant", text: "**Goal**: Improve progress visibility\n**Current behavior**: none\n**Desired behavior**: show progress\n**Constraints**: keep flow simple" },
+        ]}
+        streamingText=""
+        isSending={false}
+        isLoading={false}
+        isRequestingPatch={true}
+        error={null}
+        feedbackTitle="Status feedback"
+        activePatch={null}
+        onSendMessage={vi.fn()}
+        onRunAgent={vi.fn()}
+        onEdit={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText("Starting code change…")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Run Agent" })).toBeNull();
   });
 });

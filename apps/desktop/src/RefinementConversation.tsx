@@ -18,6 +18,7 @@ type RefinementConversationProps = {
   streamingText: string;
   isSending: boolean;
   isLoading: boolean;
+  isRequestingPatch: boolean;
   error: string | null;
   feedbackTitle: string;
   /** T-0097: in-flight patch for this refinement so progress is visible in this view */
@@ -33,6 +34,7 @@ export function RefinementConversation({
   streamingText,
   isSending,
   isLoading,
+  isRequestingPatch,
   error,
   feedbackTitle,
   activePatch,
@@ -46,6 +48,7 @@ export function RefinementConversation({
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const showProgress = activePatch != null && isElapsedStatus(activePatch.status);
+  const showRequestPending = isRequestingPatch && !showProgress;
   const showTerminalStatus =
     activePatch != null &&
     [
@@ -169,20 +172,28 @@ export function RefinementConversation({
         )}
 
         {/* T-0097: progress in refinement view when patch is in flight */}
-        {(showProgress || showTerminalStatus) && activePatch && (
+        {(showRequestPending || showProgress || showTerminalStatus) && (
           <div
             className={`border rounded-xl p-4 grid gap-2 ${
-              showProgress
+              showRequestPending || showProgress
                 ? "border-[#dfbe78] bg-[#fff7e6]"
-                : activePatch.status === "applied" || activePatch.status === "reverted"
+                : activePatch?.status === "applied" || activePatch?.status === "reverted"
                   ? "border-[#9ebf97] bg-[#effbe8]"
                   : "border-[#f4a58b] bg-[#fff0ea]"
             }`}
             role="status"
             aria-live="polite"
-            aria-label={showProgress ? "Code change in progress" : "Code change result"}
+            aria-label={showRequestPending || showProgress ? "Code change in progress" : "Code change result"}
           >
-            {showProgress ? (
+            {showRequestPending ? (
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block w-3.5 h-3.5 border-2 border-[#6b4e00]/30 border-t-[#6b4e00] rounded-full animate-spin shrink-0"
+                  aria-hidden="true"
+                />
+                <p className="m-0 text-sm text-foreground">Starting code change…</p>
+              </div>
+            ) : showProgress && activePatch ? (
               <div className="flex items-center gap-2">
                 <span
                   className="inline-block w-3.5 h-3.5 border-2 border-[#6b4e00]/30 border-t-[#6b4e00] rounded-full animate-spin shrink-0"
@@ -200,18 +211,18 @@ export function RefinementConversation({
               </div>
             ) : (
               <p className="m-0 text-sm text-foreground">
-                {activePatch.status === "applied"
+                {activePatch?.status === "applied"
                   ? "Applied. Your change finished successfully."
-                  : activePatch.status === "reverted"
+                  : activePatch?.status === "reverted"
                     ? "Undone. The app is back to the previous state."
-                    : activePatch.status === "scope_blocked"
+                    : activePatch?.status === "scope_blocked"
                       ? "Blocked. The patch attempted to change files outside the allowed scope."
-                      : activePatch.status === "rollback_conflict"
+                      : activePatch?.status === "rollback_conflict"
                         ? "Undo conflict. A later change touched the same files."
-                        : activePatch.status === "rollback_unavailable"
+                        : activePatch?.status === "rollback_unavailable"
                           ? "Undo unavailable for this change."
-                          : activePatch.status === "apply_failed" || activePatch.status === "validation_failed"
-                            ? `Failed: ${getFailureReasonCopy(activePatch.failure_reason)}.`
+                          : activePatch?.status === "apply_failed" || activePatch?.status === "validation_failed"
+                            ? `Failed: ${getFailureReasonCopy(activePatch?.failure_reason)}.`
                             : "Completed."}
               </p>
             )}
@@ -219,7 +230,7 @@ export function RefinementConversation({
         )}
 
         {/* Action buttons once the model produces a functional description (hidden while patch in flight) */}
-        {showActionButtons && !showProgress && lastAssistantText && (
+        {showActionButtons && !showProgress && !showRequestPending && lastAssistantText && (
           <div
             className="border border-[#efbe91] rounded-xl p-4 bg-[#fffaf0] grid gap-3"
             data-testid="refinement-action-buttons"
