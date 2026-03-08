@@ -2,7 +2,7 @@
 
 Covers: successful patch generation, scope-blocked response, malformed agent
 response (no changes), harness timeout, not-installed error, in-flight guard,
-and the GET /agent/patch-status/{patch_id} endpoint.
+the GET /agent/patch-status/{patch_id} endpoint, and elapsed-time reporting (T-0093).
 """
 
 from __future__ import annotations
@@ -13,6 +13,7 @@ import sqlite3
 import subprocess
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -597,3 +598,170 @@ class PatchLogEndpointTests(unittest.TestCase):
             resp = client.get("/patches/PA-does-not-exist/log")
 
         self.assertEqual(resp.status_code, 404)
+
+
+# ---------------------------------------------------------------------------
+# T-0093: elapsed-time reporting — started_at + elapsed_seconds
+# ---------------------------------------------------------------------------
+
+from runtime.main import _compute_elapsed_seconds  # noqa: E402
+
+
+class StartedAtTrackingTests(unittest.TestCase):
+    """started_at is set on artifacts produced by both stub and real harness."""
+
+    def test_stub_sets_started_at(self) -> None:
+        agent = _stub_agent()
+        artifact = agent.generate_patch(_feedback(), base_ref="abc1234")
+        self.assertIsNotNone(artifact.started_at, "started_at must be set in stub mode")
+        # Should be a parseable ISO timestamp
+        dt = datetime.fromisoformat(artifact.started_at)
+        self.assertIsNotNone(dt)
+
+    def test_real_sets_started_at(self) -> None:
+        tmpdir = tempfile.TemporaryDirectory()
+        agent = _real_agent(repo_root=Path(tmpdir.name))
+        fake = MagicMock(spec=subprocess.CompletedProcess)
+        fake.returncode = 0
+        fake.stdout = "Updated copy."
+        fake.stderr = ""
+        stub_diff = "--- a/apps/desktop/src/App.tsx\n+++ b/apps/desktop/src/App.tsx\n"
+        with (
+            patch("runtime.agent.patch_agent._git_diff",
+                  return_value=(["apps/desktop/src/App.tsx"], stub_diff)),
+            patch("runtime.agent.patch_agent.subprocess.run", return_value=fake),
+        ):
+            artifact = agent._call_pi(_feedback(), "abc1234")
+        tmpdir.cleanup()
+        self.assertIsNotNone(artifact.started_at)
+        datetime.fromisoformat(artifact.started_at)  # must not raise
+
+    def test_started_at_roundtrip(self) -> None:
+        agent = _stub_agent()
+        artifact = agent.generate_patch(_feedback(), base_ref="abc1234")
+        restored = PatchArtifact.from_dict(artifact.to_dict())
+        self.assertEqual(restored.started_at, artifact.started_at)
+
+
+class ElapsedSecondsTests(unittest.TestCase):
+    """_compute_elapsed_seconds returns correct values for various artifact states."""
+
+    def _artifact(self, status: str, started_at: str | None = None) -> PatchArtifact:
+        return PatchArtifact(
+            id="PA-test",
+            created_at="2026-03-07T10:00:00+00:00",
+            feedback_id="FB-001",
+            base_ref="abc",
+            status=status,
+            title="t",
+            description="d",
+            files_changed=[],
+            unified_diff="",
+            scope_violations=[],
+            agent_model="stub",
+            agent_harness="stub-v1",
+            started_at=started_at,
+        )
+
+    def test_in_flight_with_started_at_returns_nonnegative_int(self) -> None:
+        started = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        for status in ("pending_apply", "pending", "applying", "retrying"):
+            with self.subTest(status=status):
+                artifact = self._artifact(status, started_at=started)
+                elapsed = _compute_elapsed_seconds(artifact)
+                self.assertIsNotNone(elapsed)
+                self.assertGreaterEqual(elapsed, 0)
+
+    def test_terminal_status_returns_none(self) -> None:
+        started = datetime.now(timezone.utc).isoformat()
+        for status in ("applied", "apply_failed", "scope_blocked", "reverted",
+                       "rollback_conflict", "rollback_unavailable"):
+            with self.subTest(status=status):
+                artifact = self._artifact(status, started_at=started)
+                self.assertIsNone(_compute_elapsed_seconds(artifact))
+
+    def test_no_started_at_returns_none(self) -> None:
+        artifact = self._artifact("applying", started_at=None)
+        self.assertIsNone(_compute_elapsed_seconds(artifact))
+
+    def test_elapsed_computed_from_past_timestamp(self) -> None:
+        past = datetime(2026, 3, 7, 10, 0, 0, tzinfo=timezone.utc).isoformat()
+        artifact = self._artifact("applying", started_at=past)
+        elapsed = _compute_elapsed_seconds(artifact)
+        self.assertIsNotNone(elapsed)
+        self.assertGreater(elapsed, 0, "elapsed must be > 0 for a past timestamp")
+
+
+class PatchStatusElapsedEndpointTests(unittest.TestCase):
+    """GET /agent/patch-status returns started_at + elapsed_seconds fields."""
+
+    def _setup(self):
+        patch_dir = Path(tempfile.mkdtemp()) / "patches"
+        ps = PatchStorage(storage_dir=patch_dir)
+        db_fd, db_path = tempfile.mkstemp(suffix=".db")
+        os.close(db_fd)
+        storage = RuntimeStorage(db_path=db_path)
+        return ps, storage
+
+    def test_in_flight_patch_returns_elapsed_seconds(self) -> None:
+        ps, storage = self._setup()
+        started = datetime.now(timezone.utc).isoformat()
+        artifact = PatchArtifact(
+            id="PA-20260307-elapsed01",
+            created_at="2026-03-07T10:00:00+00:00",
+            feedback_id="FB-elapsed",
+            base_ref="abc",
+            status="applying",
+            title="t",
+            description="d",
+            files_changed=[],
+            unified_diff="",
+            scope_violations=[],
+            agent_model="stub",
+            agent_harness="stub-v1",
+            started_at=started,
+        )
+        ps.save(artifact)
+
+        with (
+            patch("runtime.main.storage", storage),
+            patch("runtime.main.patch_storage", ps),
+        ):
+            client = TestClient(app)
+            resp = client.get("/agent/patch-status/PA-20260307-elapsed01")
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data["started_at"], started)
+        self.assertIsNotNone(data["elapsed_seconds"])
+        self.assertGreaterEqual(data["elapsed_seconds"], 0)
+
+    def test_terminal_patch_returns_no_elapsed(self) -> None:
+        ps, storage = self._setup()
+        artifact = PatchArtifact(
+            id="PA-20260307-elapsed02",
+            created_at="2026-03-07T10:00:00+00:00",
+            feedback_id="FB-elapsed2",
+            base_ref="abc",
+            status="applied",
+            title="t",
+            description="d",
+            files_changed=[],
+            unified_diff="",
+            scope_violations=[],
+            agent_model="stub",
+            agent_harness="stub-v1",
+            started_at=datetime.now(timezone.utc).isoformat(),
+        )
+        ps.save(artifact)
+
+        with (
+            patch("runtime.main.storage", storage),
+            patch("runtime.main.patch_storage", ps),
+        ):
+            client = TestClient(app)
+            resp = client.get("/agent/patch-status/PA-20260307-elapsed02")
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIsNone(data["elapsed_seconds"])

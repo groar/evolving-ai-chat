@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0093 | P2 | Progress reporting: elapsed-time in poll response + frontend counter |
+| — | *(empty — queue depleted after T-0093)* | — | PM to replenish from backlog |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -60,3 +60,4 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-07: T-0090 accepted and moved to done (eval harness blocking policy + files_in_allowlist + npm_validate_passes). Rank 1 is now T-0091.
 - 2026-03-07: T-0091 accepted and moved to done (retry with failure context: one auto-retry, retrying status, PREVIOUS ATTEMPT context). Rank 1 is now T-0092.
 - 2026-03-07: T-0092 accepted and moved to done (conversational feedback-refinement: /agent/refine-context endpoint, useRefinement hook, RefinementConversation component, refined_spec on CodePatchRequest, 12 new tests). Rank 1 is now T-0093.
+- 2026-03-07: T-0093 accepted and moved to done (elapsed-time reporting: started_at on PatchArtifact, elapsed_seconds on poll response, useElapsedCounter hook in PatchNotification, started_at reset on retrying transition). M13 (E-0016) implementation batch complete; ready queue empty.

@@ -272,6 +272,8 @@ class PatchStatusResponse(BaseModel):
     git_commit_sha: str | None = None
     reverted_at: str | None = None
     revert_commit_sha: str | None = None
+    started_at: str | None = None
+    elapsed_seconds: int | None = None
 
 
 # ---------------------------------------------------------------------------

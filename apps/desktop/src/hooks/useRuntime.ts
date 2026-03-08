@@ -643,6 +643,8 @@ export function useRuntime() {
             failure_reason?: string | null;
             applied_at?: string | null;
             reverted_at?: string | null;
+            started_at?: string | null;
+            elapsed_seconds?: number | null;
           };
           const updatedPatch: PatchEntry = {
             id: data.patch_id,
@@ -653,7 +655,9 @@ export function useRuntime() {
             created_at: new Date().toISOString(),
             failure_reason: data.failure_reason,
             applied_at: data.applied_at,
-            reverted_at: data.reverted_at
+            reverted_at: data.reverted_at,
+            started_at: data.started_at,
+            elapsed_seconds: data.elapsed_seconds,
           };
           // Upsert into patches list
           const existingPatches = setts.patches;

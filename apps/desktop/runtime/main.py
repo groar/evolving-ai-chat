@@ -110,6 +110,7 @@ def _apply_with_retry(
         return
     # One automatic retry with enriched prompt
     artifact.status = "retrying"
+    artifact.started_at = None  # reset so elapsed counter shows nothing until new run starts
     patch_storage.save(artifact)
     retry_context = _build_retry_context(artifact)
     try:
@@ -134,6 +135,7 @@ def _apply_with_retry(
     artifact.files_changed = new_artifact.files_changed
     artifact.status = "applying"
     artifact.failure_reason = None
+    artifact.started_at = getattr(new_artifact, "started_at", None)
     if getattr(new_artifact, "log_text", None):
         storage.write_patch_log(artifact.id, new_artifact.log_text or "")
     patch_storage.save(artifact)
@@ -794,6 +796,28 @@ def patch_log(patch_id: str) -> PatchLogResponse:
     return PatchLogResponse(**row)
 
 
+_TERMINAL_PATCH_STATUSES = frozenset({
+    "applied", "apply_failed", "scope_blocked", "reverted",
+    "rollback_conflict", "rollback_unavailable",
+})
+
+
+def _compute_elapsed_seconds(artifact) -> int | None:
+    """Return elapsed seconds since started_at for non-terminal in-flight patches."""
+    if artifact.status in _TERMINAL_PATCH_STATUSES:
+        return None
+    if not artifact.started_at:
+        return None
+    try:
+        started = datetime.fromisoformat(artifact.started_at)
+        now = datetime.now(timezone.utc)
+        if started.tzinfo is None:
+            started = started.replace(tzinfo=timezone.utc)
+        return max(0, int((now - started).total_seconds()))
+    except (ValueError, TypeError):
+        return None
+
+
 @app.get("/agent/patch-status/{patch_id}", response_model=PatchStatusResponse)
 def agent_patch_status(patch_id: str) -> PatchStatusResponse | JSONResponse:
     """Return current status of a patch artifact (spec §4)."""
@@ -816,6 +840,8 @@ def agent_patch_status(patch_id: str) -> PatchStatusResponse | JSONResponse:
         git_commit_sha=artifact.git_commit_sha,
         reverted_at=artifact.reverted_at,
         revert_commit_sha=artifact.revert_commit_sha,
+        started_at=getattr(artifact, "started_at", None),
+        elapsed_seconds=_compute_elapsed_seconds(artifact),
     )
 
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // ---------------------------------------------------------------------------
 // Types (also exported for use in settingsPanel, stores, and hooks)
@@ -28,6 +28,8 @@ export type PatchEntry = {
   failure_reason?: string | null;
   applied_at?: string | null;
   reverted_at?: string | null;
+  started_at?: string | null;
+  elapsed_seconds?: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -43,6 +45,50 @@ function isSpinnerStatus(status: PatchStatus): boolean {
     status === "reverting" ||
     status === "reloading"
   );
+}
+
+function isElapsedStatus(status: PatchStatus): boolean {
+  return (
+    status === "pending_apply" ||
+    status === "pending" ||
+    status === "applying" ||
+    status === "retrying"
+  );
+}
+
+function useElapsedCounter(
+  active: boolean,
+  serverElapsed: number | null | undefined,
+  startedAt: string | null | undefined,
+): number | null {
+  const [elapsed, setElapsed] = useState<number | null>(null);
+  const baseRef = useRef<{ serverElapsed: number; capturedAt: number } | null>(null);
+
+  useEffect(() => {
+    if (!active) {
+      setElapsed(null);
+      baseRef.current = null;
+      return;
+    }
+    if (serverElapsed != null) {
+      baseRef.current = { serverElapsed, capturedAt: Date.now() };
+      setElapsed(serverElapsed);
+    } else if (startedAt) {
+      const diffMs = Date.now() - new Date(startedAt).getTime();
+      const secs = Math.max(0, Math.floor(diffMs / 1000));
+      baseRef.current = { serverElapsed: secs, capturedAt: Date.now() };
+      setElapsed(secs);
+    }
+
+    const id = window.setInterval(() => {
+      if (baseRef.current == null) return;
+      const delta = Math.floor((Date.now() - baseRef.current.capturedAt) / 1000);
+      setElapsed(baseRef.current.serverElapsed + delta);
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [active, serverElapsed, startedAt]);
+
+  return elapsed;
 }
 
 function Spinner() {
@@ -124,6 +170,12 @@ function getFailureReasonCopy(reason?: string | null): string {
 export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
   const [diffExpanded, setDiffExpanded] = useState(false);
   const { status } = patch;
+  const elapsed = useElapsedCounter(
+    isElapsedStatus(status),
+    patch.elapsed_seconds,
+    patch.started_at,
+  );
+  const elapsedSuffix = elapsed != null ? ` (${elapsed}s)` : "";
 
   const hasDiff = Boolean(patch.unified_diff);
 
@@ -163,10 +215,12 @@ export function PatchNotification({ patch, onUndo, onDismiss }: Props) {
         )}
         <p className="m-0 text-sm text-foreground flex-1">
           {status === "pending_apply" || status === "pending"
-            ? "Working on a change based on your feedback…"
+            ? `Working on your change…${elapsedSuffix}`
             : status === "applying"
-              ? "Applying change…"
-              : status === "reverting"
+              ? `Applying change…${elapsedSuffix}`
+              : status === "retrying"
+                ? `Retrying…${elapsedSuffix}`
+                : status === "reverting"
                 ? "Undoing change…"
                 : status === "reloading"
                   ? "Applying your update — reloading…"

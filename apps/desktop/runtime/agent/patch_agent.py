@@ -191,6 +191,8 @@ class PatchArtifact:
     reverted_at: str | None = None
     revert_commit_sha: str | None = None
     failure_reason: str | None = None
+    # ISO timestamp recorded just before the pi subprocess is launched (T-0093).
+    started_at: str | None = None
     # Raw agent execution log for this patch run (stdout/stderr, tool events, etc.).
     # Persisted separately in the runtime database; kept here for transport only.
     log_text: str | None = None
@@ -214,6 +216,7 @@ class PatchArtifact:
             "reverted_at": self.reverted_at,
             "revert_commit_sha": self.revert_commit_sha,
             "failure_reason": self.failure_reason,
+            "started_at": self.started_at,
             "log_text": self.log_text,
         }
 
@@ -237,6 +240,7 @@ class PatchArtifact:
             reverted_at=data.get("reverted_at"),
             revert_commit_sha=data.get("revert_commit_sha"),
             failure_reason=data.get("failure_reason"),
+            started_at=data.get("started_at"),
             log_text=data.get("log_text"),
         )
 
@@ -372,6 +376,7 @@ class PiDevPatchAgent(PatchAgent):
         )
         patch_id = existing_artifact_id or _new_patch_id()
         created_at = existing_created_at or datetime.now(timezone.utc).isoformat()
+        started_at = datetime.now(timezone.utc).isoformat()
         return PatchArtifact(
             id=patch_id,
             created_at=created_at,
@@ -388,6 +393,7 @@ class PiDevPatchAgent(PatchAgent):
             scope_violations=[],
             agent_model="stub",
             agent_harness="stub-v1",
+            started_at=started_at,
             log_text="\n".join(log_lines),
         )
 
@@ -464,6 +470,7 @@ class PiDevPatchAgent(PatchAgent):
             shlex.join(redacted_for_log),
         )
 
+        started_at = datetime.now(timezone.utc).isoformat()
         try:
             result = subprocess.run(
                 cmd,
@@ -533,5 +540,6 @@ class PiDevPatchAgent(PatchAgent):
             scope_violations=[],
             agent_model=self._model or "pi-default",
             agent_harness="pi-v1",
+            started_at=started_at,
             log_text=log_text,
         )

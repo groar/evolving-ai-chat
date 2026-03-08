@@ -33,18 +33,18 @@ describe("PatchNotification — UI states (spec §5 copy compliance)", () => {
     expect(markup).toContain("animate-spin");
   });
 
-  it("pending_apply shows spec copy: 'Working on a change based on your feedback…'", () => {
+  it("pending_apply shows working copy with elapsed suffix", () => {
     const markup = renderToStaticMarkup(
       <PatchNotification patch={makePatch({ status: "pending_apply" })} onUndo={noop} onDismiss={noop} />
     );
-    expect(markup).toContain("Working on a change based on your feedback");
+    expect(markup).toContain("Working on your change");
   });
 
-  it("pending shows spec copy: 'Working on a change based on your feedback…'", () => {
+  it("pending shows working copy with elapsed suffix", () => {
     const markup = renderToStaticMarkup(
       <PatchNotification patch={makePatch({ status: "pending" })} onUndo={noop} onDismiss={noop} />
     );
-    expect(markup).toContain("Working on a change based on your feedback");
+    expect(markup).toContain("Working on your change");
   });
 
   it("applying shows spec copy: 'Applying change…'", () => {
