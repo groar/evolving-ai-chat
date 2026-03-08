@@ -45,4 +45,3 @@ Tracks all feedback intake items for easy triage, deferral, and ticket linkage.
 | F-20260308-005 | ticketed | ux, reliability, fix-with-ai | S2 | T-0103 | 2026-03-08 |
 | F-20260308-006 | ticketed | ux, visual-hierarchy | S3 | T-0104 | 2026-03-08 |
 | F-20260308-007 | ticketed | ux, visual-hierarchy | S3 | T-0104 | 2026-03-08 |
-| F-20260308-008 | ticketed | ux, layout | S2 | T-0105 | 2026-03-08 |

@@ -125,7 +125,6 @@ export function App() {
     isRequestingPatch ? "Starting code change…" : patchInProgress ? "Code change in progress…" : null;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isNarrowViewport, setIsNarrowViewport] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [activitySheetOpen, setActivitySheetOpen] = useState(false);
   const [improvementSheetOpen, setImprovementSheetOpen] = useState(false);
@@ -144,14 +143,6 @@ export function App() {
 
   useEffect(() => {
     inputRef.current?.focus();
-  }, []);
-
-  useEffect(() => {
-    const media = window.matchMedia("(max-width: 900px)");
-    const sync = () => setIsNarrowViewport(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
   }, []);
 
   useEffect(() => {
@@ -202,12 +193,6 @@ export function App() {
     if (!activitySheetOpen) return;
     void runtime.refreshState(activeConversationId);
   }, [activitySheetOpen, runtime.refreshState, activeConversationId]);
-
-  useEffect(() => {
-    if (sidebarOpen) return;
-    setEditingConversationId(null);
-    setRenameError(null);
-  }, [sidebarOpen]);
 
   useEffect(() => {
     function handleKeyDown(e: globalThis.KeyboardEvent) {
@@ -305,16 +290,18 @@ export function App() {
 
   return (
     <main className="app-shell grid grid-cols-1 gap-0 h-screen min-h-screen">
-      {/* Conversation sidebar (collapsible inline on desktop; drawer-style on narrow viewports) */}
-      {sidebarOpen && (
-        <aside
-          className={`border-r border-border bg-panel flex flex-col min-h-0 ${
-            isNarrowViewport
-              ? "fixed inset-y-0 left-0 z-50 w-[min(360px,85vw)] shadow-lg"
-              : "w-[min(360px,32vw)]"
-          }`}
-          aria-label="Conversations"
-        >
+      {/* Conversation sidebar (collapsible) */}
+      <Sheet
+        open={sidebarOpen}
+        onOpenChange={(open) => {
+          setSidebarOpen(open);
+          if (!open) {
+            setEditingConversationId(null);
+            setRenameError(null);
+          }
+        }}
+      >
+        <SheetContent side="left" className="w-[min(360px,85vw)] p-0 flex flex-col" showCloseButton={true}>
           <SheetHeader className="px-4 pt-4 pb-2 border-b border-border shrink-0">
             <SheetTitle>Conversations</SheetTitle>
           </SheetHeader>
@@ -324,7 +311,7 @@ export function App() {
               className="w-full border border-border bg-white text-foreground rounded-lg py-2 px-2.5 font-inherit cursor-pointer transition-all hover:border-[#efbe91] hover:bg-[#fff8f2] disabled:opacity-55 disabled:cursor-not-allowed"
               onClick={() => {
                 void createConversation();
-                if (isNarrowViewport) setSidebarOpen(false);
+                setSidebarOpen(false);
               }}
               disabled={isSending || isResetting}
             >
@@ -381,7 +368,7 @@ export function App() {
                         }`}
                         onClick={() => {
                           void activateConversation(conversation.conversation_id);
-                          if (isNarrowViewport) setSidebarOpen(false);
+                          setSidebarOpen(false);
                         }}
                       >
                         {conversation.title}
@@ -403,8 +390,8 @@ export function App() {
               ))}
             </ul>
           </section>
-        </aside>
-      )}
+        </SheetContent>
+      </Sheet>
 
       {/* Improvement sheet (Suggest an improvement — independent of Settings) */}
       <Sheet open={improvementSheetOpen} onOpenChange={setImprovementSheetOpen}>
@@ -516,13 +503,12 @@ export function App() {
         </SheetContent>
       </Sheet>
 
-      <div className="flex min-h-0 flex-1">
       {/* Chat pane (primary, fills the window) */}
-      <section className="border border-border rounded-2xl bg-panel shadow-sm grid grid-rows-[auto_1fr_auto] min-h-0 mx-4 my-4 flex-1">
+      <section className="border border-border rounded-2xl bg-panel shadow-sm grid grid-rows-[auto_1fr_auto] min-h-0 mx-4 my-4">
         <header className="flex items-center gap-2 border-b border-border py-3.5 px-4">
           <button
             type="button"
-            onClick={() => setSidebarOpen((open) => !open)}
+            onClick={() => setSidebarOpen(true)}
             className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2"
             aria-label="Toggle conversation list (Cmd+B)"
           >
@@ -917,7 +903,6 @@ export function App() {
           </>
         )}
       </section>
-      </div>
       {/* M8 patch notification — floating banner for in-flight and terminal patch states. T-0103: only show when patch is not tied to a discussion or we're viewing that discussion. */}
       {notificationPatch &&
         (!notificationPatch.refinement_conversation_id ||
