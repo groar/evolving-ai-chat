@@ -138,6 +138,12 @@ export function App() {
     return () => window.clearTimeout(timeoutId);
   }, [improvementSheetOpen]);
 
+  // When opening the Activity sheet, refresh state so Fix with AI patches are visible (T-0096).
+  useEffect(() => {
+    if (!activitySheetOpen) return;
+    void runtime.refreshState(activeConversationId);
+  }, [activitySheetOpen, runtime.refreshState, activeConversationId]);
+
   useEffect(() => {
     function handleKeyDown(e: globalThis.KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "b") {

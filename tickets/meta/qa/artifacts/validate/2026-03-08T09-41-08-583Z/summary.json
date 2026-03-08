@@ -1,0 +1,39 @@
+{
+  "run_id": "2026-03-08T09-41-08-583Z",
+  "mode": "standard",
+  "started_at": "2026-03-08T09:41:08.583Z",
+  "finished_at": "2026-03-08T09:41:14.358Z",
+  "overall": {
+    "status": "failed",
+    "reason": "required check skipped"
+  },
+  "steps": [
+    {
+      "id": "desktop-build",
+      "name": "Desktop build",
+      "required": true,
+      "command": "npm run build",
+      "cwd": "/Users/alois/dev/software/evolving-ai-chat/apps/desktop",
+      "log": "logs/desktop-build.log",
+      "status": "passed",
+      "reason": "",
+      "exit_code": 0,
+      "started_at": "2026-03-08T09:41:08.585Z",
+      "finished_at": "2026-03-08T09:41:13.100Z"
+    },
+    {
+      "id": "runtime-contract-smoke",
+      "name": "Runtime contract smoke",
+      "required": true,
+      "command": "npm run smoke (with runtime stub)",
+      "cwd": "/Users/alois/dev/software/evolving-ai-chat/apps/desktop",
+      "log": "logs/runtime-contract-smoke.log",
+      "runtime_log": "logs/runtime-stub.log",
+      "status": "skipped",
+      "reason": "runtime stub exited early with code 1",
+      "exit_code": -1,
+      "started_at": "2026-03-08T09:41:13.102Z",
+      "finished_at": "2026-03-08T09:41:14.358Z"
+    }
+  ]
+}
