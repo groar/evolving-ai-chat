@@ -111,6 +111,7 @@ export function App() {
   const notificationPatchId = useSettingsStore((s) => s.notificationPatchId);
   const setNotificationPatchId = useSettingsStore((s) => s.setNotificationPatchId);
   const settingsNotice = useSettingsStore((s) => s.settingsNotice);
+  const setSettingsNotice = useSettingsStore((s) => s.setSettingsNotice);
   const settingsError = useSettingsStore((s) => s.settingsError);
   const isRequestingPatch = useSettingsStore((s) => s.isRequestingPatch);
 
@@ -427,7 +428,11 @@ export function App() {
               onSubmitFeedback={feedback.submitFeedback}
               onRequestCodePatch={(feedbackId, feedbackTitle, feedbackSummary) => {
                 setImprovementSheetOpen(false);
-                void refinement.start(feedbackId, feedbackTitle, feedbackSummary, "ui");
+                void refinement
+                  .start(feedbackId, feedbackTitle, feedbackSummary, "ui")
+                  .then((newConvId) => {
+                    if (newConvId) void activateConversation(newConvId);
+                  });
               }}
             />
           </div>
@@ -442,9 +447,15 @@ export function App() {
         changelog={changelog}
         isBusy={isSending || isResetting}
         onRollbackPatch={(patchId) => rollbackPatch(patchId)}
-        onOpenRefinement={(feedbackId, feedbackTitle) => {
+        onOpenRefinement={(feedbackId, feedbackTitle, refinementConversationIdFromPatch?: string) => {
           setActivitySheetOpen(false);
-          void refinement.start(feedbackId, feedbackTitle, "", "ui");
+          if (refinementConversationIdFromPatch) {
+            void activateConversation(refinementConversationIdFromPatch);
+          } else {
+            // T-0103: do not create a new discussion when opening from Activity; no linked discussion.
+            setSettingsNotice("No discussion linked to this activity item.");
+            window.setTimeout(() => setSettingsNotice(null), 5000);
+          }
         }}
       />
 
@@ -529,17 +540,19 @@ export function App() {
               {renameError && <p className="m-0 text-xs text-destructive">{renameError}</p>}
             </div>
           ) : (
-            <h1 className="m-0 flex-1 text-base font-bold truncate">{topBarTitle}</h1>
-          )}
-          {editingConversationId !== activeConversationId && (
-            <button
-              type="button"
-              className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2"
-              onClick={() => activeConversation && startRenameConversation(activeConversation.conversation_id, activeConversation.title)}
-              aria-label="Rename current conversation"
-            >
-              <PencilIcon className="size-4" />
-            </button>
+            <div className="flex-1 min-w-0 flex items-center gap-1">
+              <h1 className="m-0 text-base font-bold truncate">{topBarTitle}</h1>
+              {editingConversationId !== activeConversationId && (
+                <button
+                  type="button"
+                  className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#fff8f2] transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91] focus:ring-offset-2"
+                  onClick={() => activeConversation && startRenameConversation(activeConversation.conversation_id, activeConversation.title)}
+                  aria-label="Rename current conversation"
+                >
+                  <PencilIcon className="size-4" />
+                </button>
+              )}
+            </div>
           )}
           {typeof conversationCostTotal === "number" && conversationCostTotal > 0 && (
             <span className="shrink-0 text-xs text-muted-foreground" title="Approximate conversation cost">
@@ -625,7 +638,13 @@ export function App() {
           </section>
         )}
 
-        {refinement.isActive ? (
+        {settingsNotice && !settingsError && !runtimeIssue && (
+          <section className="mx-4 mt-2 px-3 py-2 border border-[#9ebf97] rounded-lg bg-[#effbe8] text-[#2e5a2b] text-sm" role="status">
+            <p className="m-0">{settingsNotice}</p>
+          </section>
+        )}
+
+        {refinement.isActive && activeConversationId === refinement.conversationId ? (
           <RefinementConversation
             messages={refinement.messages}
             streamingText={refinement.streamingText}
@@ -884,8 +903,10 @@ export function App() {
           </>
         )}
       </section>
-      {/* M8 patch notification — floating banner for in-flight and terminal patch states */}
-      {notificationPatch && (
+      {/* M8 patch notification — floating banner for in-flight and terminal patch states. T-0103: only show when patch is not tied to a discussion or we're viewing that discussion. */}
+      {notificationPatch &&
+        (!notificationPatch.refinement_conversation_id ||
+          notificationPatch.refinement_conversation_id === activeConversationId) && (
         <PatchNotification
           patch={
             reloadingPatchId === notificationPatch.id

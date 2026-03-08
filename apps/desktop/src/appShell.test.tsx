@@ -26,6 +26,7 @@ describe("App shell IA", () => {
   it("shows rename affordance for the active conversation in the chat header", () => {
     const markup = renderToStaticMarkup(<App />);
     expect(markup).toContain("Rename current conversation");
+    expect(markup).toMatch(/<h1[^>]*>[^<]*<\/h1><button[^>]*aria-label="Rename current conversation"/);
   });
 
   it("does not render secondary-surface content by default (chat pane only)", () => {

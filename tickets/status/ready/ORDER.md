@@ -24,6 +24,7 @@ This file is the source of truth for ready-ticket pickup order.
 - If the table is empty, pause new implementation pickup and wait for PM queue updates.
 
 ## Notes
+- 2026-03-08: Self-evolving run completed T-0104 (rename button adjacent to discussion title), moved it to `done/`, and removed it from ready ranking.
 - 2026-03-08: PM triage logged F-20260308-005 and added T-0103 (P1) to `ready/` as rank 1 due to Fix with AI discussion-routing regression reports.
 - 2026-03-08: PM run scoped M14 (E-0017) and created T-0102 in `ready/` as rank 1 (architecture docs baseline).
 - 2026-03-08: T-0097 moved to review (progress in refinement + Activity in-progress cards). Ready queue empty; PM to replenish.

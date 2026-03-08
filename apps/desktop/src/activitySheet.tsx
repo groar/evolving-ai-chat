@@ -47,8 +47,8 @@ type ActivitySheetProps = {
   changelog: ChangelogEntry[];
   isBusy: boolean;
   onRollbackPatch: (patchId: string) => void;
-  /** T-0097: open refinement discussion for this feedback (in-progress or history link) */
-  onOpenRefinement?: (feedbackId: string, feedbackTitle: string) => void;
+  /** T-0097: open refinement discussion for this feedback (in-progress or history link). T-0103: pass refinement_conversation_id when present to open existing discussion. */
+  onOpenRefinement?: (feedbackId: string, feedbackTitle: string, refinementConversationId?: string) => void;
 };
 
 function formatTimestamp(value: string): string {
@@ -309,7 +309,7 @@ export function ActivitySheet(props: ActivitySheetProps) {
               className={`${railBtn} text-xs w-full sm:w-auto`}
               onClick={(e) => {
                 e.stopPropagation();
-                onOpenRefinement?.(patch.feedback_id!, patch.title || "Feedback");
+                onOpenRefinement?.(patch.feedback_id!, patch.title || "Feedback", patch.refinement_conversation_id ?? undefined);
                 onOpenChange(false);
               }}
               aria-label="Open refinement discussion to see progress"
@@ -351,7 +351,7 @@ export function ActivitySheet(props: ActivitySheetProps) {
                   type="button"
                   className={`${railBtn} text-sm`}
                   onClick={() => {
-                    onOpenRefinement?.(patch.feedback_id!, patch.title || "Feedback");
+                    onOpenRefinement?.(patch.feedback_id!, patch.title || "Feedback", patch.refinement_conversation_id ?? undefined);
                     onOpenChange(false);
                   }}
                   aria-label="Open refinement discussion"

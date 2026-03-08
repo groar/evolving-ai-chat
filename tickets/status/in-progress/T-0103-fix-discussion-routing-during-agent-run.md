@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0103
-- Status: ready
+- Status: in-progress
 - Priority: P1
 - Type: bug
 - Area: ui
@@ -103,8 +103,8 @@ After launching Fix with AI, discussion routing can break across multiple naviga
 - Screenshots/logs/notes: (to be filled during implementation/QA)
 
 ## Subtasks
-- [ ] Reproduce and isolate routing/state-leak paths
-- [ ] Implement discussion selection and deep-link routing fixes
+- [x] Reproduce and isolate routing/state-leak paths (debug instrumentation in place)
+- [ ] Implement discussion selection and deep-link routing fixes (Activity deep-link: use refinement_conversation_id when present)
 - [ ] Add regression tests for routing and status scoping
 - [ ] QA validation for multi-discussion scenario
 - [ ] Update changelog/docs if user-visible behavior copy changes
@@ -114,3 +114,5 @@ Treat this as a regression cluster in one flow and fix as a cohesive slice to av
 
 ## Change Log
 - 2026-03-08: Ticket created from user feedback F-20260308-005 and moved directly to `ready/` as next P1 pickup.
+- 2026-03-08: Implementation agent started debug run. Moved to in-progress. Instrumentation added for hypotheses: (A) left-panel switch ignored when isSending early-return, (B) Activity always calls refinement.start (new discussion), (C) refinement panel shown when activeConversationId !== refinement.conversationId, (D) Activity click has refinement_conversation_id on patch, (E) activateConversation completes. Activity sheet and App now pass/use refinement_conversation_id when present to open existing discussion (no new discussion). Awaiting user reproduction and log analysis.
+- 2026-03-08: Log analysis: C CONFIRMED (match=false while refinement visible on wrong discussion). B CONFIRMED (refinementConversationIdFromPatch null → start() called). A,E REJECTED; D INCONCLUSIVE. Fix applied: show RefinementConversation only when activeConversationId === refinement.conversationId so in-progress state does not leak to other discussions. Instrumentation kept for verification run.

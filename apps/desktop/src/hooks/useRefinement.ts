@@ -209,7 +209,7 @@ export function useRefinement() {
       feedbackTitle: string,
       feedbackSummary: string,
       feedbackArea: string,
-    ) => {
+    ): Promise<string | null> => {
       cancel();
       setIsLoading(true);
       setFeedbackInfo({ feedbackId, feedbackTitle, feedbackSummary, feedbackArea });
@@ -241,20 +241,22 @@ export function useRefinement() {
         if (!convResponse.ok) {
           setError("Could not create a refinement conversation. Please try again.");
           setIsLoading(false);
-          return;
+          return null;
         }
         const convPayload = (await convResponse.json()) as { conversation_id: string };
         const newConvId = convPayload.conversation_id;
         setConversationId(newConvId);
         setIsLoading(false);
 
-        // Kick off the refinement with the feedback as the first user message
+        // Return immediately so caller can switch the view; kick off first message in background.
         const kickoff = feedbackSummary.trim() || feedbackTitle;
         userMessageCountRef.current += 1;
-        await sendRefinementMessage(kickoff, [], newConvId, sysPrompt);
+        void sendRefinementMessage(kickoff, [], newConvId, sysPrompt);
+        return newConvId;
       } catch {
         setError("Could not start the refinement conversation. Please try again.");
         setIsLoading(false);
+        return null;
       }
     },
     [cancel, sendRefinementMessage],
