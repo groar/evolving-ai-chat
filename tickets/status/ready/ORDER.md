@@ -15,7 +15,7 @@ This file is the source of truth for ready-ticket pickup order.
 ## Current Order
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
-| 1 | T-0100 | P2 | Correct conversation after Run Agent — M13 tier-2 follow-up |
+| — | (empty) | — | No ready tickets; waiting for PM replenishment |
 
 ## Agent Pickup Rule
 - Unless the user explicitly reprioritizes, implementers should select rank 1 next.
@@ -73,3 +73,5 @@ This file is the source of truth for ready-ticket pickup order.
 - 2026-03-08: T-0099 moved to `in-progress` for implementation. Ready queue now has T-0100 as rank 1.
 - 2026-03-08: T-0099 moved to `review` after implementation. Ready queue remains T-0100 as rank 1.
 - 2026-03-08: T-0099 accepted and moved to `done/` after QA PASS. Ready queue remains T-0100 as rank 1.
+- 2026-03-08: T-0100 moved to `review` after implementation. Ready queue is now empty.
+- 2026-03-08: T-0100 accepted and moved to `done/` after QA PASS. Ready queue remains empty.

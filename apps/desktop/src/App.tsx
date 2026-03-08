@@ -30,6 +30,55 @@ export function isApiKeyNotSet(runtimeIssue: RuntimeIssue | null): boolean {
   return runtimeIssue?.kind === "api_key_not_set";
 }
 
+type RunAgentFromRefinementParams = {
+  description: string;
+  isRequestingPatch: boolean;
+  patchInProgress: boolean;
+  feedbackInfo: {
+    feedbackId: string;
+    feedbackTitle: string;
+    feedbackSummary: string;
+    feedbackArea: string;
+  } | null;
+  refinementConversationId: string | null;
+  activateConversation: (conversationId: string) => Promise<void>;
+  requestPatch: (
+    feedbackId: string,
+    feedbackTitle: string,
+    feedbackSummary: string,
+    feedbackArea: string,
+    refinedSpec?: { raw_description: string; refinement_conversation_id?: string | null }
+  ) => Promise<void>;
+};
+
+export async function runAgentFromRefinement(params: RunAgentFromRefinementParams): Promise<void> {
+  const {
+    description,
+    isRequestingPatch,
+    patchInProgress,
+    feedbackInfo,
+    refinementConversationId,
+    activateConversation,
+    requestPatch,
+  } = params;
+
+  if (isRequestingPatch || patchInProgress || !feedbackInfo) return;
+
+  // Ensure the refinement conversation is the active one before triggering the run.
+  // This keeps context stable when the app later refreshes/reloads.
+  if (refinementConversationId) {
+    await activateConversation(refinementConversationId);
+  }
+
+  await requestPatch(
+    feedbackInfo.feedbackId,
+    feedbackInfo.feedbackTitle,
+    feedbackInfo.feedbackSummary,
+    feedbackInfo.feedbackArea,
+    { raw_description: description, refinement_conversation_id: refinementConversationId }
+  );
+}
+
 export function App() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
@@ -588,18 +637,16 @@ export function App() {
             activePatch={refinementActivePatch}
             onSendMessage={(text) => void refinement.sendMessage(text)}
             onRunAgent={(description) => {
-              if (isRequestingPatch || patchInProgress) return;
-              const info = refinement.feedbackInfo;
-              if (!info) return;
-              const convId = refinement.conversationId;
               // T-0097: keep refinement view open so progress is visible there; do not call refinement.cancel()
-              void requestPatch(
-                info.feedbackId,
-                info.feedbackTitle,
-                info.feedbackSummary,
-                info.feedbackArea,
-                { raw_description: description, refinement_conversation_id: convId }
-              );
+              void runAgentFromRefinement({
+                description,
+                isRequestingPatch,
+                patchInProgress,
+                feedbackInfo: refinement.feedbackInfo,
+                refinementConversationId: refinement.conversationId,
+                activateConversation,
+                requestPatch,
+              });
             }}
             onEdit={() => {
               // Edit: just focus the refinement composer (already open)
