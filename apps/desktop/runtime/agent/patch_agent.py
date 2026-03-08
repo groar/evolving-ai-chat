@@ -518,15 +518,6 @@ class PiDevPatchAgent(PatchAgent):
         except Exception:
             logger.warning("patch_agent: failed to reset working tree after pi run; apply pipeline may fail")
 
-        # #region agent log
-        try:
-            import json as _json, time as _time
-            from urllib.request import urlopen, Request as _Req
-            _payload = _json.dumps({'sessionId':'6c587d','location':'patch_agent.py:_call_pi:after_reset','message':'working_tree_reset','data':{'changed_files':changed_files,'diff_len':len(unified_diff)},'timestamp':_time.time()*1000,'hypothesisId':'H-B'}).encode()
-            urlopen(_Req('http://127.0.0.1:7883/ingest/cdc69240-2558-4092-a6a2-058d79d39464',data=_payload,headers={'Content-Type':'application/json','X-Debug-Session-Id':'6c587d'}),timeout=2)
-        except Exception: pass
-        # #endregion
-
         if not changed_files:
             output_preview = (result.stdout or "")[:300]
             raise MalformedPatchError(
