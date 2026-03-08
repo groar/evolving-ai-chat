@@ -736,24 +736,36 @@ export function App() {
             <footer className="border-t border-border py-3 px-4 pb-4">
               <div className="flex items-center gap-2 mb-2">
                 {models.length > 0 && (
-                  <>
-                    <label htmlFor="model-select" className="text-xs text-muted-foreground shrink-0">
+                  <div
+                    aria-label="Model picker"
+                    className="inline-flex items-center gap-2 rounded-xl border border-[#d6c4aa] bg-gradient-to-b from-[#fffdf6] to-[#fff3de] px-2.5 py-1.5 shadow-[0_1px_0_rgba(255,255,255,0.9),0_6px_14px_rgba(107,78,0,0.09)]"
+                  >
+                    <SparklesIcon className="w-3.5 h-3.5 text-[#c06a2f]" aria-hidden="true" />
+                    <label htmlFor="model-select" className="text-xs font-medium text-muted-foreground shrink-0">
                       Model
                     </label>
-                    <select
-                      id="model-select"
-                      className="text-xs border border-border rounded-lg bg-white py-1.5 px-2 text-foreground focus:outline-none focus:ring-2 focus:ring-[#efbe91]/50"
-                      value={selectedModelId}
-                      onChange={(e) => void runtime.setSelectedModel(e.target.value)}
-                    >
-                      {models.map((m) => (
-                        <option key={m.model_id} value={m.model_id}>
-                          {m.display_name}
-                          {!apiKeys[m.provider as keyof typeof apiKeys] ? " (no key)" : ""}
-                        </option>
-                      ))}
-                    </select>
-                  </>
+                    <div className="relative">
+                      <select
+                        id="model-select"
+                        className="min-w-[190px] appearance-none text-xs font-medium border border-[#cfbda3] rounded-lg bg-white/90 py-1.5 pl-2 pr-7 text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-[#efbe91]/60 focus:border-[#d49a67]"
+                        value={selectedModelId}
+                        onChange={(e) => void runtime.setSelectedModel(e.target.value)}
+                      >
+                        {models.map((m) => (
+                          <option key={m.model_id} value={m.model_id}>
+                            {m.display_name}
+                            {!apiKeys[m.provider as keyof typeof apiKeys] ? " (no key)" : ""}
+                          </option>
+                        ))}
+                      </select>
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[10px] text-[#8a735a]"
+                      >
+                        ▾
+                      </span>
+                    </div>
+                  </div>
                 )}
               </div>
               <label htmlFor="composer" className="sr-only">

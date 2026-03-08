@@ -60,3 +60,4 @@ Results to be recorded in this epic file or a dedicated QA checkpoint.
 - 2026-03-07: F-20260307-001 (conversational feedback refinement) added as primary design input. Epic goal, problem statement, DoD, and candidate tickets updated.
 - 2026-03-07: T-0088 accepted. Design spec shipped in `docs/m13-self-evolve-reliability.md`. 5 implementation tickets confirmed. Status → in-progress. PM to create T-0089–T-0093 and replenish ready queue.
 - 2026-03-07: PM run created T-0089–T-0093 (all 5 implementation tickets). Ready queue replenished. Ticket table updated with confirmed IDs.
+- 2026-03-08: PM run added T-0095 (git commit when agent succeeds), T-0096 (patches missing from Activity), T-0097 (progress in refinement + Activity cards) from Fix with AI playtest feedback F-20260308-002 to 004.

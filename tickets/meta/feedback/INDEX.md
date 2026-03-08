@@ -38,3 +38,7 @@ Tracks all feedback intake items for easy triage, deferral, and ticket linkage.
 | F-20260306-004 | ticketed | ux | S2 | T-0087 | 2026-03-06 |
 | F-20260307-001 | ticketed | direction, reliability | S1 | T-0088 | 2026-03-07 |
 | F-20260307-002 | closed | process | S3 | — | 2026-03-07 |
+| F-20260308-001 | ticketed | ux, visual-design | S4 | T-0094 | 2026-03-08 |
+| F-20260308-002 | ticketed | reliability, fix-with-ai | S2 | T-0095 | 2026-03-08 |
+| F-20260308-003 | ticketed | observability, fix-with-ai | S2 | T-0096 | 2026-03-08 |
+| F-20260308-004 | ticketed | ux, fix-with-ai, observability | S3 | T-0097 | 2026-03-08 |
