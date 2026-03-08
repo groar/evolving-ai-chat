@@ -458,7 +458,11 @@ def _git(
 
 
 def _apply_patch(unified_diff: str, cwd: Path, strip: int = 1) -> None:
-    """Apply a unified diff string to files under cwd using the `patch` utility."""
+    """Apply a unified diff string to files under cwd using the `patch` utility.
+
+    Uses -f (force) and stdin=DEVNULL so patch never blocks on TTY prompts (Fix with AI
+    runs in a background task with no terminal).
+    """
     if not unified_diff.strip():
         raise ApplyError("empty_or_malformed_patch", "unified_diff is empty")
 
@@ -471,11 +475,12 @@ def _apply_patch(unified_diff: str, cwd: Path, strip: int = 1) -> None:
     try:
         try:
             result = subprocess.run(
-                ["patch", f"-p{strip}", "--input", patch_file],
+                ["patch", f"-p{strip}", "-f", "--input", patch_file],
                 cwd=str(cwd),
                 capture_output=True,
                 text=True,
                 timeout=_PATCH_TIMEOUT,
+                stdin=subprocess.DEVNULL,
             )
             if result.returncode != 0:
                 raise ApplyError(
