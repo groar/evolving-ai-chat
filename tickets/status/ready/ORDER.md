@@ -16,6 +16,7 @@ This file is the source of truth for ready-ticket pickup order.
 | Rank | Ticket | Priority | Notes |
 | --- | --- | --- | --- |
 | 1 | T-0102 | P1 | M14 kickoff: architecture docs baseline to close known-gap documentation debt |
+| 2 | T-0105 | P2 | Activity card visible as soon as Run agent clicked (F-20260308-008) |
 
 (T-0103 moved to `review/` 2026-03-08; next P1 pickup is T-0102 above.)
 
@@ -24,6 +25,7 @@ This file is the source of truth for ready-ticket pickup order.
 - If the table is empty, pause new implementation pickup and wait for PM queue updates.
 
 ## Notes
+- 2026-03-08: T-0105 moved from backlog to ready (rank 2); F-20260308-008 (Activity card only after validation).
 - 2026-03-08: Self-evolving run completed T-0104 (rename button adjacent to discussion title), moved it to `done/`, and removed it from ready ranking.
 - 2026-03-08: PM triage logged F-20260308-005 and added T-0103 (P1) to `ready/` as rank 1 due to Fix with AI discussion-routing regression reports.
 - 2026-03-08: PM run scoped M14 (E-0017) and created T-0102 in `ready/` as rank 1 (architecture docs baseline).

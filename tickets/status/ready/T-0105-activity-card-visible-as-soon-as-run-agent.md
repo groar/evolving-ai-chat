@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: T-0105
-- Status: backlog
+- Status: ready
 - Priority: P2
 - Type: feature
 - Area: ui
@@ -46,3 +46,4 @@ When the user clicks "Run agent" in the Fix with AI flow, no card appears in the
 
 ## Change Log
 - 2026-03-08: Ticket created from F-20260308-008 (PM feedback triage).
+- 2026-03-08: Moved to ready (rank 2 in ORDER.md).
